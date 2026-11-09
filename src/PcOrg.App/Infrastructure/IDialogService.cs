@@ -6,7 +6,10 @@ namespace PcOrg.App.Infrastructure;
 public interface IDialogService
 {
     string? PickFolder(string title);
-    bool Confirm(string message, string title);
+
+    /// <summary>Chiede conferma; <paramref name="confirmText"/> è il testo del pulsante principale.</summary>
+    bool Confirm(string message, string title, string confirmText = "Conferma");
+
     void Info(string message, string title);
     void Error(string message, string title);
 

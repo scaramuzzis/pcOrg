@@ -25,7 +25,11 @@ public sealed record CategoryItem(FileCategory? Category, string Name, long Coun
     IReadOnlyList<string>? Extensions = null)
 {
     public bool IsSubcategory => Extensions is not null;
+    public string Glyph => Glyphs.ForCategory(Category);
+    public Brush Accent => CategoryColors.For(Category);
 }
+
+public enum ToastKind { Success, Info, Warning }
 
 /// <summary>Riga dell'elenco dei file di un prodotto.</summary>
 public sealed record ProductFileItem(FileRecord File, string State, bool IsOld);
@@ -58,6 +62,72 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     public ObservableCollection<RootFolder> Roots { get; } = [];
+
+    /// <summary>Falso finché non c'è nessuna cartella: mostra la schermata di benvenuto.</summary>
+    public bool HasRoots => Roots.Count > 0;
+
+    // ------------------------------------------------------------------ Notifiche a comparsa
+
+    [ObservableProperty]
+    private bool _isToastVisible;
+
+    [ObservableProperty]
+    private string _toastMessage = "";
+
+    [ObservableProperty]
+    private string _toastGlyph = Glyphs.Success;
+
+    [ObservableProperty]
+    private Brush _toastAccent = CategoryColors.Brush("#16A34A");
+
+    [ObservableProperty]
+    private string? _toastActionText;
+
+    private Func<Task>? _toastAction;
+    private CancellationTokenSource? _toastCts;
+
+    /// <summary>Mostra una notifica in basso a destra che sparisce da sola; può avere un pulsante (es. "Annulla").</summary>
+    public void ShowToast(string message, ToastKind kind = ToastKind.Success, string? actionText = null, Func<Task>? action = null)
+    {
+        _toastCts?.Cancel();
+        ToastMessage = message;
+        (ToastGlyph, ToastAccent) = kind switch
+        {
+            ToastKind.Warning => (Glyphs.Warning, CategoryColors.Brush("#D97706")),
+            ToastKind.Info => (Glyphs.Info, CategoryColors.Brush("#2563EB")),
+            _ => (Glyphs.Success, CategoryColors.Brush("#16A34A")),
+        };
+        ToastActionText = actionText;
+        _toastAction = action;
+        IsToastVisible = true;
+
+        var cts = _toastCts = new CancellationTokenSource();
+        _ = Task.Delay(action is null ? 5000 : 10000, cts.Token).ContinueWith(t =>
+        {
+            if (!t.IsCanceled)
+                IsToastVisible = false;
+        }, CancellationToken.None, TaskContinuationOptions.None,
+           SynchronizationContext.Current is null ? TaskScheduler.Default : TaskScheduler.FromCurrentSynchronizationContext());
+    }
+
+    [RelayCommand]
+    private void DismissToast()
+    {
+        _toastCts?.Cancel();
+        IsToastVisible = false;
+    }
+
+    [RelayCommand]
+    private async Task ToastActionAsync()
+    {
+        var action = _toastAction;
+        DismissToast();
+        if (action is not null)
+            await action();
+    }
+
+    [RelayCommand]
+    private void ClearSearch() => SearchText = "";
     public ObservableCollection<CategoryItem> Categories { get; } = [];
     public ObservableCollection<FileRecord> Results { get; } = [];
 
@@ -209,12 +279,13 @@ public sealed partial class MainViewModel : ObservableObject
         if (SelectedRoot is not { } root)
             return;
         if (!_dialogs.Confirm(
-                $"Smettere di monitorare \"{root.Path}\"?\n\nI file restano dove sono: vengono solo tolti dall'elenco di pcOrg.",
-                "Rimuovi cartella"))
+                $"pcOrg smetterà di tenere in ordine \"{root.Path}\".\n\nI file restano dove sono: vengono solo tolti dall'elenco.",
+                "Rimuovere la cartella?", "Rimuovi"))
             return;
         _index.RemoveRoot(root.Id);
         ReloadRoots();
         await RefreshAsync();
+        ShowToast($"Cartella rimossa: {root.Path}", ToastKind.Info);
     }
 
     private bool CanModify() => !IsBusy;
@@ -253,10 +324,12 @@ public sealed partial class MainViewModel : ObservableObject
                     () => _index.SyncRoot(root.Id, FolderScanner.Enumerate(root.Path, token), progress, token), token);
             }
             Status = $"Scansione completata: {total:N0} file in {stopwatch.Elapsed.TotalSeconds:N1} s";
+            ShowToast($"Indice aggiornato: {total:N0} file trovati");
         }
         catch (OperationCanceledException)
         {
             Status = "Scansione interrotta.";
+            ShowToast("Scansione interrotta", ToastKind.Warning);
             return;
         }
         finally
@@ -303,6 +376,7 @@ public sealed partial class MainViewModel : ObservableObject
         foreach (var root in _index.GetRoots())
             Roots.Add(root);
         SelectedRoot = Roots.FirstOrDefault(r => r.Id == selected);
+        OnPropertyChanged(nameof(HasRoots));
     }
 
     // ------------------------------------------------------------------ Categorie e ricerca
@@ -400,7 +474,9 @@ public sealed partial class MainViewModel : ObservableObject
         }
         var runsCode = file.Category is FileCategory.Installer or FileCategory.Programma
             or FileCategory.Driver or FileCategory.Script;
-        if (runsCode && !_dialogs.Confirm($"Eseguire \"{file.Name}\"?", "Esegui file"))
+        if (runsCode && !_dialogs.Confirm(
+                $"\"{file.Name}\" è un programma o un installer: verrà avviato.\n\nPercorso: {file.Path}",
+                "Eseguire il file?", "Esegui"))
             return;
         Process.Start(new ProcessStartInfo(file.Path) { UseShellExecute = true });
     }
@@ -417,8 +493,10 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void CopyPath()
     {
-        if (SelectedFiles.Count > 0)
-            Clipboard.SetText(string.Join(Environment.NewLine, SelectedFiles.Select(f => f.Path)));
+        if (SelectedFiles.Count == 0)
+            return;
+        Clipboard.SetText(string.Join(Environment.NewLine, SelectedFiles.Select(f => f.Path)));
+        ShowToast(SelectedFiles.Count == 1 ? "Percorso copiato negli appunti" : $"{SelectedFiles.Count} percorsi copiati negli appunti", ToastKind.Info);
     }
 
     [RelayCommand(CanExecute = nameof(CanModify))]
@@ -427,7 +505,7 @@ public sealed partial class MainViewModel : ObservableObject
         var files = SelectedFiles.ToList();
         if (files.Count == 0)
         {
-            _dialogs.Info("Seleziona uno o più file da spostare.", "Sposta");
+            ShowToast("Seleziona prima uno o più file da spostare", ToastKind.Info);
             return;
         }
 
@@ -438,7 +516,7 @@ public sealed partial class MainViewModel : ObservableObject
         var plan = MovePlanner.Plan(files.Select(f => f.Path), destination);
         if (!plan.Any(p => p.WillMove))
         {
-            _dialogs.Info("Nessun file da spostare: sono già nella cartella scelta o non esistono più.", "Sposta");
+            ShowToast("Nessun file da spostare: sono già in quella cartella", ToastKind.Info);
             return;
         }
 
@@ -468,6 +546,9 @@ public sealed partial class MainViewModel : ObservableObject
             var result = await Task.Run(() => _moves.Execute(plan, description, progress));
 
             Status = $"Spostati {result.Moved:N0} file in {destination}";
+            if (result.Moved > 0)
+                ShowToast($"{result.Moved:N0} file spostati in {Path.GetFileName(destination.TrimEnd('\\'))}",
+                    ToastKind.Success, "Annulla", () => UndoMoveAsync(result.BatchId));
             if (result.Errors.Count > 0)
                 _dialogs.Error(
                     $"{result.Errors.Count} file non sono stati spostati:\n\n" + string.Join("\n", result.Errors.Take(15)),
@@ -478,6 +559,17 @@ public sealed partial class MainViewModel : ObservableObject
             IsBusy = false;
         }
         await RefreshAsync();
+    }
+
+    private async Task UndoMoveAsync(long batchId)
+    {
+        var result = await Task.Run(() => _moves.Undo(batchId));
+        await RefreshAsync();
+        if (result.Errors.Count == 0)
+            ShowToast($"Spostamento annullato: {result.Moved:N0} file tornati al loro posto", ToastKind.Info);
+        else
+            _dialogs.Error($"Ripristinati {result.Moved} file. {result.Errors.Count} non sono stati ripristinati:\n\n"
+                + string.Join("\n", result.Errors.Take(15)), "Annullamento incompleto");
     }
 
     [RelayCommand]

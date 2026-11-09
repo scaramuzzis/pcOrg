@@ -5,7 +5,10 @@ sparsi nel PC. Scegli le cartelle da tenere sotto controllo; pcOrg le indicizza,
 per categoria e li trova all'istante mentre scrivi. Sei tu a decidere se e dove spostarli: prima
 vedi un'anteprima, e ogni spostamento si può annullare.
 
-## Cosa fa oggi (v0.2.3)
+## Cosa fa oggi (v0.3)
+- **Interfaccia moderna** con tema Fluent di Windows 11 (chiaro/scuro automatico), icone colorate
+  per ogni categoria, schermata di benvenuto, suggerimenti su ogni pulsante, finestre di conferma
+  chiare e notifiche a comparsa (dopo uno spostamento la notifica offre subito **Annulla**).
 - **Cartelle monitorate**: aggiungi/rimuovi cartelle; rimuoverne una non tocca i file su disco.
 - **Categorie automatiche**: Installer, Driver, Programmi, Archivi, Immagini disco, PDF, Word
   (doc/docx/odt/rtf), Testo (txt/md/log), Fogli di calcolo, Presentazioni, Altri documenti, Immagini,

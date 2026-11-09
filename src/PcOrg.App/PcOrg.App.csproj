@@ -11,10 +11,11 @@
     <AssemblyName>PcOrg</AssemblyName>
     <RootNamespace>PcOrg.App</RootNamespace>
     <Product>pcOrg</Product>
-    <Version>0.2.3</Version>
+    <Version>0.3.0</Version>
     <NeutralLanguage>it-IT</NeutralLanguage>
     <!-- ThemeMode (tema Fluent) è ancora marcato come sperimentale -->
     <NoWarn>$(NoWarn);WPF0001</NoWarn>
+    <ApplicationIcon>Assets\pcorg.ico</ApplicationIcon>
   </PropertyGroup>
 
   <!-- Eseguibile unico da copiare: dotnet publish -c Release (solo in pubblicazione,
@@ -28,6 +29,11 @@
     <DebugType>embedded</DebugType>
     <SatelliteResourceLanguages>it</SatelliteResourceLanguages>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\pcorg.ico" />
+    <Resource Include="Assets\pcorg.png" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />

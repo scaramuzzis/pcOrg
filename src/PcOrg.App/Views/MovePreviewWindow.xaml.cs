@@ -14,11 +14,11 @@ public partial class MovePreviewWindow : Window
         var toMove = plan.Count(p => p.WillMove);
         var renamed = plan.Count(p => p.Status == MoveItemStatus.Rinominato);
         var skipped = plan.Count - toMove;
-        Summary.Text = $"Verranno spostati {toMove} file in \"{destination}\"."
-            + (renamed > 0 ? $" {renamed} avranno un nuovo nome perché esiste già un file con lo stesso nome." : "")
+        Summary.Text = $"{toMove} file andranno in \"{destination}\"."
+            + (renamed > 0 ? $" {renamed} avranno un nuovo nome perché lì esiste già un file con lo stesso nome." : "")
             + (skipped > 0 ? $" {skipped} saranno ignorati." : "")
-            + " Nessun file viene sovrascritto e l'operazione si può annullare dalla cronologia.";
-        ConfirmButton.Content = $"Sposta {toMove} file";
+            + " Nessun file viene sovrascritto e potrai annullare tutto con un clic.";
+        ConfirmButton.Label = $"Sposta {toMove} file";
 
         if (destinationMonitored)
             AddToMonitored.Visibility = Visibility.Collapsed;

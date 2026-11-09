@@ -35,7 +35,8 @@ public partial class MoveHistoryWindow : Window
     {
         if (BatchGrid.SelectedItem is not MoveBatch batch)
             return;
-        if (!_dialogs.Confirm($"Riportare i {batch.ItemCount} file nella posizione originale?", "Annulla spostamento"))
+        if (!_dialogs.Confirm($"I {batch.ItemCount} file di questo spostamento torneranno nella posizione originale.",
+                "Annullare lo spostamento?", "Ripristina"))
             return;
 
         var result = new MoveService(_index).Undo(batch.Id);

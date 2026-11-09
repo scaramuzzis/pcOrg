@@ -21,7 +21,7 @@ public class UiSmokeTests
     private sealed class SilentDialogs : IDialogService
     {
         public string? PickFolder(string title) => null;
-        public bool Confirm(string message, string title) => false;
+        public bool Confirm(string message, string title, string confirmText = "Conferma") => false;
         public void Info(string message, string title) { }
         public void Error(string message, string title) => throw new InvalidOperationException(message);
         public MovePreviewResult? PreviewMove(IReadOnlyList<MoveItem> plan, string destination, bool destinationMonitored) => null;
@@ -75,6 +75,7 @@ public class UiSmokeTests
 
         var app = new App();
         app.InitializeComponent(); // carica App.xaml: tema e risorse
+        app.ShutdownMode = ShutdownMode.OnExplicitShutdown; // il test apre e chiude più finestre principali
         var window = new MainWindow { DataContext = new MainViewModel(index, new SilentDialogs()) };
         app.MainWindow = window;
         window.Show();
@@ -112,12 +113,37 @@ public class UiSmokeTests
         Pump(TimeSpan.FromMilliseconds(300));
         preview.Close();
 
+        // Notifica a comparsa con azione
+        var undone = false;
+        vm.ShowToast("3 file spostati", ToastKind.Success, "Annulla", () => { undone = true; return Task.CompletedTask; });
+        Pump(TimeSpan.FromMilliseconds(300));
+        Assert.True(vm.IsToastVisible);
+        vm.ToastActionCommand.Execute(null);
+        Pump(TimeSpan.FromMilliseconds(200));
+        Assert.True(undone);
+        Assert.False(vm.IsToastVisible);
+
+        // Finestra di dialogo moderna
+        var dialog = new ModernDialog("Titolo", "Messaggio di prova", DialogKind.Warning, "OK", "Annulla") { Owner = window };
+        dialog.Show();
+        Pump(TimeSpan.FromMilliseconds(300));
+        dialog.Close();
+
         var history = new MoveHistoryWindow(index, new SilentDialogs(), () => { }) { Owner = window };
         history.Show();
         Pump(TimeSpan.FromMilliseconds(300));
         history.Close();
 
         window.Close();
+
+        // Schermata di benvenuto con un indice vuoto
+        var empty = FileIndex.Open(Path.Combine(temp, "vuoto.db"));
+        var welcome = new MainWindow { DataContext = new MainViewModel(empty, new SilentDialogs()) };
+        welcome.Show();
+        Pump(TimeSpan.FromSeconds(1));
+        Assert.False(((MainViewModel)welcome.DataContext).HasRoots);
+        welcome.Close();
+
         app.Shutdown();
         Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
         try { Directory.Delete(temp, recursive: true); } catch (IOException) { }

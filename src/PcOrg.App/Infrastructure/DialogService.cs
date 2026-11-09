@@ -16,14 +16,14 @@ public sealed class DialogService : IDialogService
         return dialog.ShowDialog(Owner) == true ? dialog.FolderName : null;
     }
 
-    public bool Confirm(string message, string title) =>
-        MessageBox.Show(Owner!, message, title, MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes;
+    public bool Confirm(string message, string title, string confirmText = "Conferma") =>
+        ModernDialog.Show(Owner, title, message, DialogKind.Question, confirmText, "Annulla");
 
     public void Info(string message, string title) =>
-        MessageBox.Show(Owner!, message, title, MessageBoxButton.OK, MessageBoxImage.Information);
+        ModernDialog.Show(Owner, title, message, DialogKind.Info);
 
     public void Error(string message, string title) =>
-        MessageBox.Show(Owner!, message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
+        ModernDialog.Show(Owner, title, message, DialogKind.Warning);
 
     public MovePreviewResult? PreviewMove(IReadOnlyList<MoveItem> plan, string destination, bool destinationMonitored)
     {
