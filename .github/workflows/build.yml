@@ -1,0 +1,38 @@
+name: Build
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Test
+        run: dotnet test tests/PcOrg.Core.Tests -c Release
+
+      - name: Pubblica eseguibile unico
+        run: dotnet publish src/PcOrg.App -c Release -o publish
+
+      - name: Carica PcOrg.exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: PcOrg-win-x64
+          path: publish/PcOrg.exe
+
+      - name: Release (solo per i tag v*)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: publish/PcOrg.exe

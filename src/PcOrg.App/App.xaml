@@ -1,0 +1,11 @@
+<Application x:Class="PcOrg.App.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:inf="clr-namespace:PcOrg.App.Infrastructure"
+             ThemeMode="System"
+             ShutdownMode="OnMainWindowClose">
+    <Application.Resources>
+        <inf:FileSizeConverter x:Key="FileSize" />
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+    </Application.Resources>
+</Application>

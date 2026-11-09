@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <!-- Permette di compilare anche da Linux/macOS (CI e sviluppo) -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <AssemblyName>PcOrg</AssemblyName>
+    <RootNamespace>PcOrg.App</RootNamespace>
+    <Product>pcOrg</Product>
+    <Version>0.1.0</Version>
+    <NeutralLanguage>it-IT</NeutralLanguage>
+    <!-- ThemeMode (tema Fluent) è ancora marcato come sperimentale -->
+    <NoWarn>$(NoWarn);WPF0001</NoWarn>
+  </PropertyGroup>
+
+  <!-- Eseguibile unico da copiare: dotnet publish -c Release -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <DebugType>embedded</DebugType>
+    <SatelliteResourceLanguages>it</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PcOrg.Core\PcOrg.Core.csproj" />
+  </ItemGroup>
+
+</Project>
