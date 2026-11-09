@@ -4,7 +4,7 @@
         xmlns:vm="clr-namespace:PcOrg.App.ViewModels"
         xmlns:inf="clr-namespace:PcOrg.App.Infrastructure"
         xmlns:c="clr-namespace:PcOrg.App.Controls"
-        Title="Cronologia spostamenti" Icon="/Assets/pcorg.ico" Width="940" Height="620" MinWidth="620" MinHeight="360"
+        Title="Cronologia spostamenti" Icon="pack://application:,,,/PcOrg;component/Assets/pcorg.ico" Width="940" Height="620" MinWidth="620" MinHeight="360"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
     <Grid>
         <Grid.RowDefinitions>

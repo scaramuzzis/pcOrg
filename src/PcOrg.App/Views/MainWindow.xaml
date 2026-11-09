@@ -9,7 +9,7 @@
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
         Title="pcOrg — i tuoi file in ordine"
-        Icon="/Assets/pcorg.ico"
+        Icon="pack://application:,,,/PcOrg;component/Assets/pcorg.ico"
         Width="1320" Height="820" MinWidth="900" MinHeight="560"
         WindowStartupLocation="CenterScreen">
 
@@ -38,7 +38,7 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <Image Source="/Assets/pcorg.png" Width="36" Height="36" RenderOptions.BitmapScalingMode="HighQuality" />
+                    <Image Source="pack://application:,,,/PcOrg;component/Assets/pcorg.png" Width="36" Height="36" RenderOptions.BitmapScalingMode="HighQuality" />
                     <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
                         <TextBlock Text="pcOrg" FontSize="20" FontWeight="SemiBold" />
                         <TextBlock Text="I tuoi file in ordine" Style="{StaticResource Secondary}" />
@@ -460,7 +460,7 @@
             <Border Grid.Column="2" Style="{StaticResource Card}" Padding="40"
                     Visibility="{Binding HasRoots, Converter={x:Static inf:InverseBoolToVisibilityConverter.Instance}}">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="560">
-                    <Image Source="/Assets/pcorg.png" Width="96" Height="96" RenderOptions.BitmapScalingMode="HighQuality" />
+                    <Image Source="pack://application:,,,/PcOrg;component/Assets/pcorg.png" Width="96" Height="96" RenderOptions.BitmapScalingMode="HighQuality" />
                     <TextBlock Text="Benvenuto in pcOrg" FontSize="26" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,16,0,8" />
                     <TextBlock TextWrapping="Wrap" TextAlignment="Center" Foreground="{DynamicResource TextFillColorSecondaryBrush}" FontSize="14"
                                Text="Scegli le cartelle da mettere in ordine — Download, Desktop, un disco esterno con installer e driver. pcOrg le analizza e divide i file per categoria, versione e produttore." />
