@@ -1,4 +1,5 @@
 using PcOrg.Core.Classification;
+using PcOrg.Core.Metadata;
 
 namespace PcOrg.Core.Storage;
 
@@ -15,9 +16,15 @@ public sealed record FileRecord(
     string Folder,
     long Size,
     DateTime ModifiedUtc,
-    FileCategory Category)
+    FileCategory Category,
+    FileMeta? Meta = null)
 {
     public string CategoryName => Category.DisplayName();
+    public string? Version => Meta?.DisplayVersion;
+    public string? Company => Meta?.CompanyName;
+    public string? ProductName => Meta?.ProductName;
+    public string? ArchitectureText => Meta?.ArchitectureText;
+    public string? SignatureText => Meta?.SignatureText;
 }
 
 /// <summary>Numero di file e spazio occupato per categoria.</summary>
@@ -31,3 +38,6 @@ public sealed record MoveBatch(long Id, DateTime CreatedUtc, string Description,
 
 /// <summary>Singolo spostamento registrato nel log.</summary>
 public sealed record MoveLogEntry(long Id, long BatchId, string FromPath, string ToPath);
+
+/// <summary>File in attesa della lettura dei metadati.</summary>
+public sealed record PendingMetadata(long Id, string Path, long Size, long ModifiedUnix);

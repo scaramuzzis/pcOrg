@@ -60,16 +60,18 @@ PcOrg.sln
    └─ PcOrg.Core.Tests  # xUnit, girano anche su Linux
 ```
 
-Dalla fase 2 si aggiungerà `PcOrg.Windows` per gli estrattori che usano API solo Windows
-(versione PE, MSI, Authenticode, SetupAPI, registro).
+Gli estrattori dei metadati sono in `PcOrg.Core/Metadata`. La lettura del formato PE (versione,
+architettura, firma, sezioni) è scritta da zero e funziona su ogni sistema; MSI (`msi.dll`) e verifica
+della firma (`WinVerifyTrust`) usano API di Windows e fuori da Windows vengono saltate.
+`tests/PcOrg.App.Tests` apre le finestre WPF durante la build su Windows per intercettare errori nello XAML.
 
-Flusso: **Cartelle monitorate → Scanner → (Estrattori, dalla fase 2) → DB → UI**.
+Flusso: **Cartelle monitorate → Scanner → Estrattori metadati (in background) → DB → UI**.
 
 Modello dati (fase 1 in grassetto):
 - **`roots`** (cartelle monitorate)
 - **`files`** + **`files_fts`** (percorso, nome, cartella, dimensione, data, estensione, categoria; hash dalla fase 3)
+- **`file_meta`** (prodotto, produttore, descrizione, versioni, architettura, firma, tipo di installer, chiave prodotto)
 - **`move_batches`** / **`move_log`** (cronologia spostamenti annullabili)
-- `ProductInfo` (nome, produttore, versione, architettura, editore firmato)
 - `DriverInfo` (classe, provider, versione, data, hardware ID, periferica presente sì/no)
 - `InstalledApp` (dal registro, per l'incrocio "già installato")
 - `Tag` (manuali, liberi)
@@ -90,7 +92,7 @@ Documenti, Media, Script, Altro.
 |---|---|---|
 | 0. Setup ✅ | Repo, soluzione, CI GitHub Actions (build + test su `windows-latest`), convenzioni | 1–2 gg |
 | 1. MVP indice ✅ | Scelta cartelle, scansione, categorie da estensione, DB SQLite+FTS5, ricerca istantanea, apri file/cartella | 1–2 sett. |
-| 2. Metadati | Versione/produttore PE e MSI, firma Authenticode, architettura, raggruppamento per prodotto | 1–2 sett. |
+| 2. Metadati ✅ | Versione/produttore PE e MSI, firma Authenticode, architettura, raggruppamento per prodotto | 1–2 sett. |
 | 3. Duplicati e pulizia | Hash a tre stadi, vista duplicati, versioni obsolete, spostamento nel cestino | 1 sett. |
 | 4. Driver e installato | Parsing INF, incrocio con periferiche e con app installate | 1–2 sett. |
 | 5. Monitoraggio | FileSystemWatcher, aggiornamento incrementale, tray icon, avvio con Windows | 1 sett. |

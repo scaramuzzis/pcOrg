@@ -1,3 +1,5 @@
+using PcOrg.Core.Metadata;
+
 namespace PcOrg.Core.Classification;
 
 /// <summary>
@@ -41,6 +43,23 @@ public static class FileClassifier
                 return FileCategory.Installer;
         }
 
+        return category;
+    }
+
+    /// <summary>
+    /// Affina la categoria con i metadati letti dal file: un eseguibile che è un installer riconosciuto,
+    /// o che si descrive come "setup", diventa Installer; uno che si descrive come driver diventa Driver.
+    /// </summary>
+    public static FileCategory Refine(FileCategory category, FileMeta meta)
+    {
+        if (category is not (FileCategory.Programma or FileCategory.Installer))
+            return category;
+
+        var text = $"{meta.FileDescription} {meta.ProductName}";
+        if (ContainsWord(text, DriverHints))
+            return FileCategory.Driver;
+        if (meta.InstallerType is not null || ContainsWord(text, InstallerHints) || ContainsWord(text, ["installazione"]))
+            return FileCategory.Installer;
         return category;
     }
 

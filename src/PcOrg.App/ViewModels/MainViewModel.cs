@@ -1,13 +1,16 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
+using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PcOrg.App.Infrastructure;
 using PcOrg.Core;
 using PcOrg.Core.Classification;
 using PcOrg.Core.Indexing;
+using PcOrg.Core.Metadata;
 using PcOrg.Core.Moving;
 using PcOrg.Core.Storage;
 
@@ -15,6 +18,9 @@ namespace PcOrg.App.ViewModels;
 
 /// <summary>Voce del pannello categorie ("Tutti" ha Category = null).</summary>
 public sealed record CategoryItem(FileCategory? Category, string Name, long Count, long TotalSize);
+
+/// <summary>Riga dell'elenco dei file di un prodotto.</summary>
+public sealed record ProductFileItem(FileRecord File, string State, bool IsOld);
 
 public sealed partial class MainViewModel : ObservableObject
 {
@@ -29,16 +35,79 @@ public sealed partial class MainViewModel : ObservableObject
         _index = index;
         _dialogs = dialogs;
         _moves = new MoveService(index);
+        ProductsView = CollectionViewSource.GetDefaultView(Products);
+        ProductsView.Filter = FilterProduct;
         ReloadRoots();
-        _ = RefreshAsync();
+        _ = StartupAsync();
+    }
+
+    private async Task StartupAsync()
+    {
+        await RefreshAsync();
+        // Es. indice creato con la versione 0.1: legge subito versioni e firme mancanti.
+        if (await Task.Run(_index.CountFilesNeedingMetadata) > 0)
+            await UpdateMetadataAsync();
     }
 
     public ObservableCollection<RootFolder> Roots { get; } = [];
     public ObservableCollection<CategoryItem> Categories { get; } = [];
     public ObservableCollection<FileRecord> Results { get; } = [];
 
-    /// <summary>Righe selezionate nella griglia (aggiornate dalla vista).</summary>
-    public IReadOnlyList<FileRecord> SelectedFiles { get; set; } = [];
+    public ObservableCollection<ProductGroup> Products { get; } = [];
+    public ICollectionView ProductsView { get; }
+    public ObservableCollection<ProductFileItem> ProductFiles { get; } = [];
+
+    /// <summary>Righe selezionate nell'ultima griglia usata (aggiornate dalla vista).</summary>
+    public IReadOnlyList<FileRecord> SelectedFiles
+    {
+        get => _selectedFiles;
+        set
+        {
+            _selectedFiles = value;
+            SelectedFile = value.FirstOrDefault();
+        }
+    }
+    private IReadOnlyList<FileRecord> _selectedFiles = [];
+
+    /// <summary>File mostrato nel pannello dei dettagli.</summary>
+    [ObservableProperty]
+    private FileRecord? _selectedFile;
+
+    [ObservableProperty]
+    private ProductGroup? _selectedProduct;
+
+    [ObservableProperty]
+    private bool _onlyMultipleVersions = true;
+
+    [ObservableProperty]
+    private string _productsSummary = "";
+
+    partial void OnSelectedProductChanged(ProductGroup? value)
+    {
+        ProductFiles.Clear();
+        if (value is null)
+            return;
+        foreach (var file in value.Files)
+        {
+            var old = value.IsOld(file);
+            var state = value.IsLatest(file) ? "Più recente" : old ? "Versione vecchia" : "";
+            ProductFiles.Add(new ProductFileItem(file, state, old));
+        }
+    }
+
+    partial void OnOnlyMultipleVersionsChanged(bool value) => ProductsView.Refresh();
+
+    private bool FilterProduct(object item)
+    {
+        if (item is not ProductGroup group)
+            return false;
+        if (OnlyMultipleVersions && group.Files.Count < 2)
+            return false;
+        var text = SearchText.Trim();
+        return text.Length == 0
+            || group.Name.Contains(text, StringComparison.CurrentCultureIgnoreCase)
+            || (group.Company?.Contains(text, StringComparison.CurrentCultureIgnoreCase) ?? false);
+    }
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RemoveRootCommand))]
@@ -58,7 +127,11 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string _status = "Pronto";
 
-    partial void OnSearchTextChanged(string value) => _ = RefreshResultsAsync(debounce: true);
+    partial void OnSearchTextChanged(string value)
+    {
+        _ = RefreshResultsAsync(debounce: true);
+        ProductsView.Refresh();
+    }
 
     partial void OnSelectedCategoryChanged(CategoryItem? value) => _ = RefreshResultsAsync(debounce: false);
 
@@ -136,6 +209,35 @@ public sealed partial class MainViewModel : ObservableObject
         catch (OperationCanceledException)
         {
             Status = "Scansione interrotta.";
+            return;
+        }
+        finally
+        {
+            IsBusy = false;
+            _scanCts.Dispose();
+            _scanCts = null;
+            ReloadRoots();
+            await RefreshAsync();
+        }
+        await UpdateMetadataAsync();
+    }
+
+    /// <summary>Legge versione, produttore, architettura e firma dei file nuovi o modificati.</summary>
+    private async Task UpdateMetadataAsync()
+    {
+        IsBusy = true;
+        _scanCts = new CancellationTokenSource();
+        var token = _scanCts.Token;
+        try
+        {
+            var progress = new Progress<(int Done, int Total)>(p =>
+                Status = $"Lettura di versioni e firme: {p.Done:N0} di {p.Total:N0} file…");
+            var count = await Task.Run(() => MetadataUpdater.Run(_index, progress, token), token);
+            Status = count == 0 ? "Indice aggiornato." : $"Lette versioni e firme di {count:N0} file.";
+        }
+        catch (OperationCanceledException)
+        {
+            Status = "Lettura di versioni e firme interrotta: riprenderà al prossimo aggiornamento.";
         }
         finally
         {
@@ -143,7 +245,6 @@ public sealed partial class MainViewModel : ObservableObject
             _scanCts.Dispose();
             _scanCts = null;
         }
-        ReloadRoots();
         await RefreshAsync();
     }
 
@@ -162,6 +263,7 @@ public sealed partial class MainViewModel : ObservableObject
     {
         var stats = await Task.Run(_index.GetCategoryStats);
         var selected = SelectedCategory?.Category;
+        await RefreshProductsAsync();
 
         Categories.Clear();
         Categories.Add(new CategoryItem(null, "Tutti", stats.Sum(s => s.Count), stats.Sum(s => s.TotalSize)));
@@ -176,6 +278,21 @@ public sealed partial class MainViewModel : ObservableObject
         _selectedCategory = null;
 #pragma warning restore MVVMTK0034
         SelectedCategory = Categories.FirstOrDefault(c => c.Category == selected) ?? Categories[0];
+    }
+
+    private async Task RefreshProductsAsync()
+    {
+        var selectedKey = SelectedProduct?.Key;
+        var groups = await Task.Run(() => ProductCatalog.Build(_index.GetProductFiles()));
+        Products.Clear();
+        foreach (var group in groups)
+            Products.Add(group);
+        SelectedProduct = Products.FirstOrDefault(p => p.Key == selectedKey);
+
+        var multi = groups.Where(g => g.Files.Count > 1).ToList();
+        var reclaimable = multi.Sum(g => g.OldVersionsSize);
+        ProductsSummary = $"{groups.Count:N0} prodotti, {multi.Count:N0} con più file. "
+            + $"Le versioni vecchie occupano {FileSizeConverter.Format(reclaimable)}.";
     }
 
     private async Task RefreshResultsAsync(bool debounce)

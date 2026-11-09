@@ -20,7 +20,7 @@ jobs:
           global-json-file: global.json
 
       - name: Test
-        run: dotnet test tests/PcOrg.Core.Tests -c Release
+        run: dotnet test PcOrg.sln -c Release
 
       - name: Pubblica eseguibile unico
         run: dotnet publish src/PcOrg.App -c Release -o publish

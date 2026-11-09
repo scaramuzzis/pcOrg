@@ -78,19 +78,18 @@
 
         <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Center" VerticalAlignment="Stretch" />
 
-        <!-- Pannello destro: ricerca, azioni, risultati -->
+        <!-- Pannello destro: ricerca e schede File / Prodotti -->
         <Grid Grid.Column="2">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
             <TextBox x:Name="SearchBox" FontSize="16" Padding="6"
                      Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                     ToolTip="Scrivi parte del nome o della cartella (Ctrl+F)" />
+                     ToolTip="Scrivi parte del nome, della cartella, del prodotto o del produttore (Ctrl+F)" />
             <TextBlock IsHitTestVisible="False" Margin="12,0,0,0" VerticalAlignment="Center" Opacity="0.5" FontSize="16"
-                       Text="Cerca per nome o cartella… (es. nvidia 566, setup x64)">
+                       Text="Cerca per nome, cartella, prodotto o produttore… (es. nvidia 566, setup x64)">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock">
                         <Setter Property="Visibility" Value="Collapsed" />
@@ -103,46 +102,175 @@
                 </TextBlock.Style>
             </TextBlock>
 
-            <WrapPanel Grid.Row="1" Margin="0,8,0,8">
-                <Button Content="Apri" Command="{Binding OpenFileCommand}" Margin="0,0,6,0" />
-                <Button Content="Apri cartella" Command="{Binding OpenFolderCommand}" Margin="0,0,6,0" />
-                <Button Content="Copia percorso" Command="{Binding CopyPathCommand}" Margin="0,0,6,0" />
-                <Button Content="Sposta in…" Command="{Binding MoveSelectedCommand}" Margin="0,0,6,0" FontWeight="SemiBold" />
-                <Button Content="Cronologia spostamenti" Command="{Binding ShowHistoryCommand}" Margin="0,0,6,0" />
-            </WrapPanel>
+            <TabControl x:Name="Tabs" x:FieldModifier="public" Grid.Row="1" Margin="0,8,0,0">
+                <!-- Scheda File -->
+                <TabItem Header="File">
+                    <Grid Margin="0,8,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
 
-            <DataGrid x:Name="ResultsGrid" Grid.Row="2" ItemsSource="{Binding Results}"
-                      AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Extended"
-                      HeadersVisibility="Column" GridLinesVisibility="None"
-                      EnableRowVirtualization="True" EnableColumnVirtualization="True"
-                      VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
-                      SelectionChanged="ResultsGrid_SelectionChanged" MouseDoubleClick="ResultsGrid_MouseDoubleClick">
-                <DataGrid.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Header="Apri" Command="{Binding OpenFileCommand}" />
-                        <MenuItem Header="Apri cartella" Command="{Binding OpenFolderCommand}" />
-                        <MenuItem Header="Copia percorso" Command="{Binding CopyPathCommand}" />
-                        <Separator />
-                        <MenuItem Header="Sposta in…" Command="{Binding MoveSelectedCommand}" />
-                    </ContextMenu>
-                </DataGrid.ContextMenu>
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Nome" Binding="{Binding Name}" Width="2*" />
-                    <DataGridTextColumn Header="Categoria" Binding="{Binding CategoryName}" SortMemberPath="Category" Width="110" />
-                    <DataGridTextColumn Header="Tipo" Binding="{Binding Extension}" Width="70" />
-                    <DataGridTextColumn Header="Dimensione" Binding="{Binding Size, Converter={StaticResource FileSize}}" Width="95"
-                                        SortMemberPath="Size">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="HorizontalAlignment" Value="Right" />
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
-                    <DataGridTextColumn Header="Modificato" Binding="{Binding ModifiedUtc, StringFormat=g, Converter={x:Static vm:UtcToLocalConverter.Instance}}"
-                                        Width="130" SortMemberPath="ModifiedUtc" />
-                    <DataGridTextColumn Header="Cartella" Binding="{Binding Folder}" Width="3*" />
-                </DataGrid.Columns>
-            </DataGrid>
+                        <WrapPanel Margin="0,0,0,8">
+                            <Button Content="Apri" Command="{Binding OpenFileCommand}" Margin="0,0,6,0" />
+                            <Button Content="Apri cartella" Command="{Binding OpenFolderCommand}" Margin="0,0,6,0" />
+                            <Button Content="Copia percorso" Command="{Binding CopyPathCommand}" Margin="0,0,6,0" />
+                            <Button Content="Sposta in…" Command="{Binding MoveSelectedCommand}" Margin="0,0,6,0" FontWeight="SemiBold" />
+                            <Button Content="Cronologia spostamenti" Command="{Binding ShowHistoryCommand}" Margin="0,0,6,0" />
+                        </WrapPanel>
+
+                        <DataGrid x:Name="ResultsGrid" Grid.Row="1" ItemsSource="{Binding Results}"
+                                  AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Extended"
+                                  HeadersVisibility="Column" GridLinesVisibility="None"
+                                  EnableRowVirtualization="True" EnableColumnVirtualization="True"
+                                  VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
+                                  SelectionChanged="FileGrid_SelectionChanged" MouseDoubleClick="FileGrid_MouseDoubleClick">
+                            <DataGrid.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Apri" Command="{Binding OpenFileCommand}" />
+                                    <MenuItem Header="Apri cartella" Command="{Binding OpenFolderCommand}" />
+                                    <MenuItem Header="Copia percorso" Command="{Binding CopyPathCommand}" />
+                                    <Separator />
+                                    <MenuItem Header="Sposta in…" Command="{Binding MoveSelectedCommand}" />
+                                </ContextMenu>
+                            </DataGrid.ContextMenu>
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Nome" Binding="{Binding Name}" Width="2*" />
+                                <DataGridTextColumn Header="Categoria" Binding="{Binding CategoryName}" SortMemberPath="Category" Width="105" />
+                                <DataGridTextColumn Header="Versione" Binding="{Binding Version}" Width="95" />
+                                <DataGridTextColumn Header="Produttore" Binding="{Binding Company}" Width="*" />
+                                <DataGridTextColumn Header="Dimensione" Binding="{Binding Size, Converter={StaticResource FileSize}}" Width="90"
+                                                    SortMemberPath="Size">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="HorizontalAlignment" Value="Right" />
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                <DataGridTextColumn Header="Modificato" Binding="{Binding ModifiedUtc, StringFormat=g, Converter={x:Static vm:UtcToLocalConverter.Instance}}"
+                                                    Width="125" SortMemberPath="ModifiedUtc" />
+                                <DataGridTextColumn Header="Cartella" Binding="{Binding Folder}" Width="2*" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <!-- Dettagli del file selezionato -->
+                        <Border Grid.Row="2" Margin="0,8,0,0" Padding="10" BorderThickness="1" CornerRadius="4"
+                                BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+                                Visibility="{Binding SelectedFile, Converter={x:Static vm:NullToCollapsedConverter.Instance}}">
+                            <Grid DataContext="{Binding SelectedFile}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.Resources>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Margin" Value="0,1,12,1" />
+                                        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                    </Style>
+                                </Grid.Resources>
+
+                                <TextBlock Grid.ColumnSpan="4" FontWeight="SemiBold" Text="{Binding Path}" ToolTip="{Binding Path}" />
+
+                                <TextBlock Grid.Row="1" Opacity="0.7" Text="Prodotto" />
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Meta.ProductName}" />
+                                <TextBlock Grid.Row="1" Grid.Column="2" Opacity="0.7" Text="Descrizione" />
+                                <TextBlock Grid.Row="1" Grid.Column="3" Text="{Binding Meta.FileDescription}" />
+
+                                <TextBlock Grid.Row="2" Opacity="0.7" Text="Produttore" />
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Meta.CompanyName}" />
+                                <TextBlock Grid.Row="2" Grid.Column="2" Opacity="0.7" Text="Versione" />
+                                <TextBlock Grid.Row="2" Grid.Column="3" Text="{Binding Meta.VersionDetails}" />
+
+                                <TextBlock Grid.Row="3" Opacity="0.7" Text="Firma digitale" />
+                                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SignatureText}" />
+                                <TextBlock Grid.Row="3" Grid.Column="2" Opacity="0.7" Text="Architettura" />
+                                <TextBlock Grid.Row="3" Grid.Column="3" Text="{Binding ArchitectureText}" />
+
+                                <TextBlock Grid.Row="4" Opacity="0.7" Text="Tipo di installer" />
+                                <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Meta.InstallerType}" />
+                                <TextBlock Grid.Row="4" Grid.Column="2" Opacity="0.7" Text="Nome originale" />
+                                <TextBlock Grid.Row="4" Grid.Column="3" Text="{Binding Meta.OriginalFilename}" />
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </TabItem>
+
+                <!-- Scheda Prodotti -->
+                <TabItem Header="Prodotti e versioni">
+                    <Grid Margin="0,8,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <DockPanel Margin="0,0,0,8">
+                            <CheckBox DockPanel.Dock="Right" Content="Solo prodotti con più file" VerticalAlignment="Center"
+                                      IsChecked="{Binding OnlyMultipleVersions}" />
+                            <TextBlock Text="{Binding ProductsSummary}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                        </DockPanel>
+
+                        <DataGrid Grid.Row="1" ItemsSource="{Binding ProductsView}" SelectedItem="{Binding SelectedProduct}"
+                                  AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single"
+                                  HeadersVisibility="Column" GridLinesVisibility="None"
+                                  EnableRowVirtualization="True" VirtualizingPanel.VirtualizationMode="Recycling">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Prodotto" Binding="{Binding Name}" Width="2*" />
+                                <DataGridTextColumn Header="Produttore" Binding="{Binding Company}" Width="*" />
+                                <DataGridTextColumn Header="Ultima versione" Binding="{Binding LatestVersion}" Width="110" />
+                                <DataGridTextColumn Header="Versioni" Binding="{Binding VersionCount}" Width="70" />
+                                <DataGridTextColumn Header="File" Binding="{Binding Files.Count}" Width="50" />
+                                <DataGridTextColumn Header="Spazio" Binding="{Binding TotalSize, Converter={StaticResource FileSize}}"
+                                                    SortMemberPath="TotalSize" Width="85" />
+                                <DataGridTextColumn Header="Versioni vecchie" Binding="{Binding OldVersionsSize, Converter={StaticResource FileSize}}"
+                                                    SortMemberPath="OldVersionsSize" Width="110" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <WrapPanel Grid.Row="2" Margin="0,10,0,8">
+                            <TextBlock Text="File del prodotto selezionato" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,12,0" />
+                            <Button Content="Seleziona le versioni vecchie" Click="SelectOldVersions_Click" Margin="0,0,6,0" />
+                            <Button Content="Sposta in…" Command="{Binding MoveSelectedCommand}" Margin="0,0,6,0" FontWeight="SemiBold" />
+                            <Button Content="Apri cartella" Command="{Binding OpenFolderCommand}" Margin="0,0,6,0" />
+                        </WrapPanel>
+
+                        <DataGrid x:Name="ProductFilesGrid" Grid.Row="3" ItemsSource="{Binding ProductFiles}"
+                                  AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Extended"
+                                  HeadersVisibility="Column" GridLinesVisibility="None"
+                                  SelectionChanged="ProductFilesGrid_SelectionChanged" MouseDoubleClick="FileGrid_MouseDoubleClick">
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsOld}" Value="True">
+                                            <Setter Property="Opacity" Value="0.65" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.RowStyle>
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Versione" Binding="{Binding File.Version}" Width="110" />
+                                <DataGridTextColumn Header="Stato" Binding="{Binding State}" Width="120" />
+                                <DataGridTextColumn Header="Nome" Binding="{Binding File.Name}" Width="2*" />
+                                <DataGridTextColumn Header="Architettura" Binding="{Binding File.ArchitectureText}" Width="110" />
+                                <DataGridTextColumn Header="Firma" Binding="{Binding File.SignatureText}" Width="*" />
+                                <DataGridTextColumn Header="Dimensione" Binding="{Binding File.Size, Converter={StaticResource FileSize}}" Width="90" />
+                                <DataGridTextColumn Header="Cartella" Binding="{Binding File.Folder}" Width="2*" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
+            </TabControl>
         </Grid>
 
         <!-- Barra di stato -->

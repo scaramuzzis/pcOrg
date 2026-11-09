@@ -1,5 +1,6 @@
 using PcOrg.Core.Classification;
 using PcOrg.Core.Indexing;
+using PcOrg.Core.Metadata;
 using PcOrg.Core.Storage;
 
 namespace PcOrg.Core.Tests;
@@ -99,5 +100,89 @@ public class FileIndexTests
     public void Query_fts(string input, string expected)
     {
         Assert.Equal(expected, FileIndex.BuildTextFilter(input).Match);
+    }
+}
+
+public class FileIndexMetadataTests
+{
+    [Fact]
+    public void Salva_i_metadati_cerca_per_produttore_e_affina_la_categoria()
+    {
+        using var dir = new TempDir();
+        var index = FileIndex.Open(System.IO.Path.Combine(dir.Path, "index.db"));
+        var root = index.AddRoot(dir.Dir("Download"));
+        dir.File("Download/x123.exe");
+        dir.File("Download/nota.txt");
+        index.SyncRoot(root.Id, FolderScanner.Enumerate(root.Path));
+
+        var pending = Assert.Single(index.GetFilesNeedingMetadata());
+        Assert.Equal(1, index.CountFilesNeedingMetadata());
+        var meta = new FileMeta { ProductName = "Realtek Audio", CompanyName = "Realtek Semiconductor", FileDescription = "Realtek audio driver", ProductVersion = "6.0.9", ProductKey = "realtek audio|realtek" };
+        index.SaveMetadata([(pending, meta)]);
+
+        Assert.Empty(index.GetFilesNeedingMetadata());
+        var found = Assert.Single(index.Search(new SearchQuery("semiconductor")));
+        Assert.Equal(FileCategory.Driver, found.Category);
+        Assert.Equal("6.0.9", found.Version);
+        Assert.Single(index.GetProductFiles());
+
+        // Una nuova scansione del file invariato non perde la categoria affinata
+        index.SyncRoot(root.Id, FolderScanner.Enumerate(root.Path));
+        Assert.Equal(FileCategory.Driver, Assert.Single(index.Search(new SearchQuery("x123"))).Category);
+    }
+
+    [Fact]
+    public void Un_file_modificato_viene_riletto()
+    {
+        using var dir = new TempDir();
+        var index = FileIndex.Open(System.IO.Path.Combine(dir.Path, "index.db"));
+        var root = index.AddRoot(dir.Dir("Download"));
+        var path = dir.File("Download/a.exe", "uno");
+        index.SyncRoot(root.Id, FolderScanner.Enumerate(root.Path));
+        index.SaveMetadata([(index.GetFilesNeedingMetadata()[0], null)]);
+        Assert.Empty(index.GetFilesNeedingMetadata());
+
+        File.WriteAllText(path, "contenuto più lungo");
+        index.SyncRoot(root.Id, FolderScanner.Enumerate(root.Path));
+        Assert.Single(index.GetFilesNeedingMetadata());
+    }
+
+    [Fact]
+    public void Aggiornamento_da_un_database_della_versione_0_1()
+    {
+        using var dir = new TempDir();
+        var dbPath = System.IO.Path.Combine(dir.Path, "vecchio.db");
+        using (var conn = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={dbPath}"))
+        {
+            conn.Open();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = """
+                CREATE TABLE roots (id INTEGER PRIMARY KEY, path TEXT NOT NULL UNIQUE COLLATE NOCASE, last_scan_utc TEXT);
+                CREATE TABLE files (id INTEGER PRIMARY KEY, root_id INTEGER NOT NULL REFERENCES roots(id) ON DELETE CASCADE,
+                    path TEXT NOT NULL UNIQUE COLLATE NOCASE, name TEXT NOT NULL, ext TEXT NOT NULL, folder TEXT NOT NULL,
+                    size INTEGER NOT NULL, modified_utc INTEGER NOT NULL, category INTEGER NOT NULL, seen INTEGER NOT NULL DEFAULT 0);
+                CREATE VIRTUAL TABLE files_fts USING fts5(name, folder, content='files', content_rowid='id', tokenize='trigram');
+                CREATE TRIGGER files_ai AFTER INSERT ON files BEGIN
+                    INSERT INTO files_fts(rowid, name, folder) VALUES (new.id, new.name, new.folder); END;
+                CREATE TRIGGER files_ad AFTER DELETE ON files BEGIN
+                    INSERT INTO files_fts(files_fts, rowid, name, folder) VALUES ('delete', old.id, old.name, old.folder); END;
+                CREATE TRIGGER files_au AFTER UPDATE OF name, folder ON files BEGIN
+                    INSERT INTO files_fts(files_fts, rowid, name, folder) VALUES ('delete', old.id, old.name, old.folder);
+                    INSERT INTO files_fts(rowid, name, folder) VALUES (new.id, new.name, new.folder); END;
+                CREATE TABLE move_batches (id INTEGER PRIMARY KEY, created_utc TEXT NOT NULL, description TEXT NOT NULL, undone INTEGER NOT NULL DEFAULT 0);
+                CREATE TABLE move_log (id INTEGER PRIMARY KEY, batch_id INTEGER NOT NULL REFERENCES move_batches(id) ON DELETE CASCADE,
+                    from_path TEXT NOT NULL, to_path TEXT NOT NULL);
+                INSERT INTO roots(id, path) VALUES (1, 'C:\Download');
+                INSERT INTO files(root_id, path, name, ext, folder, size, modified_utc, category)
+                    VALUES (1, 'C:\Download\nvidia-setup.exe', 'nvidia-setup.exe', '.exe', 'C:\Download', 10, 0, 1);
+                PRAGMA user_version = 1;
+                """;
+            cmd.ExecuteNonQuery();
+        }
+
+        var index = FileIndex.Open(dbPath);
+
+        Assert.Single(index.Search(new SearchQuery("nvidia")));
+        Assert.Single(index.GetFilesNeedingMetadata());
     }
 }

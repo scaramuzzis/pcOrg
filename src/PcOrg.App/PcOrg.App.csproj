@@ -11,14 +11,15 @@
     <AssemblyName>PcOrg</AssemblyName>
     <RootNamespace>PcOrg.App</RootNamespace>
     <Product>pcOrg</Product>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
     <NeutralLanguage>it-IT</NeutralLanguage>
     <!-- ThemeMode (tema Fluent) è ancora marcato come sperimentale -->
     <NoWarn>$(NoWarn);WPF0001</NoWarn>
   </PropertyGroup>
 
-  <!-- Eseguibile unico da copiare: dotnet publish -c Release -->
-  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+  <!-- Eseguibile unico da copiare: dotnet publish -c Release (solo in pubblicazione,
+       così i test possono referenziare il progetto) -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release' And '$(_IsPublishing)' == 'true'">
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <SelfContained>true</SelfContained>
     <PublishSingleFile>true</PublishSingleFile>
