@@ -27,7 +27,9 @@ I dati (indice e cronologia) sono in `%LOCALAPPDATA%\pcOrg`. Per la **modalità 
 
 ### Dove trovare l'eseguibile
 - Ogni push genera `PcOrg-win-x64` nella scheda **Actions** del repository (artifact della build).
-- Creando un tag `v0.1.0` la build pubblica `PcOrg.exe` come **Release**.
+- Le versioni pubblicate sono nella pagina **Releases** del repository (`PcOrg-win-x64.zip`).
+  Una nuova Release si crea spingendo un tag `v*` oppure con un commit il cui messaggio
+  contiene `[release]` (la versione è quella in `src/PcOrg.App/PcOrg.App.csproj`).
 
 ## Sviluppo
 Requisiti: [.NET SDK 10](https://dotnet.microsoft.com/download).
