@@ -16,8 +16,15 @@ using PcOrg.Core.Storage;
 
 namespace PcOrg.App.ViewModels;
 
-/// <summary>Voce del pannello categorie ("Tutti" ha Category = null).</summary>
-public sealed record CategoryItem(FileCategory? Category, string Name, long Count, long TotalSize);
+/// <summary>
+/// Voce del pannello categorie ("Tutti" ha Category = null). Le sottocategorie (es. Ghost sotto
+/// Immagini disco) hanno l'elenco delle estensioni e vengono mostrate rientrate.
+/// </summary>
+public sealed record CategoryItem(FileCategory? Category, string Name, long Count, long TotalSize,
+    IReadOnlyList<string>? Extensions = null)
+{
+    public bool IsSubcategory => Extensions is not null;
+}
 
 /// <summary>Riga dell'elenco dei file di un prodotto.</summary>
 public sealed record ProductFileItem(FileRecord File, string State, bool IsOld);
@@ -262,7 +269,7 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task RefreshAsync()
     {
         var stats = await Task.Run(_index.GetCategoryStats);
-        var selected = SelectedCategory?.Category;
+        var selected = SelectedCategory;
         await RefreshProductsAsync();
 
         Categories.Clear();
@@ -270,14 +277,28 @@ public sealed partial class MainViewModel : ObservableObject
         foreach (var category in Enum.GetValues<FileCategory>().OrderBy(c => c.DisplayName()))
         {
             var stat = stats.FirstOrDefault(s => s.Category == category);
-            if (stat is not null)
-                Categories.Add(new CategoryItem(category, category.DisplayName(), stat.Count, stat.TotalSize));
+            if (stat is null)
+                continue;
+            Categories.Add(new CategoryItem(category, category.DisplayName(), stat.Count, stat.TotalSize));
+
+            var subcategories = Subcategories.For(category).ToList();
+            if (subcategories.Count == 0)
+                continue;
+            var byExtension = await Task.Run(() => _index.GetExtensionStats(category));
+            foreach (var sub in subcategories)
+            {
+                var matching = byExtension.Where(e => sub.Extensions.Contains(e.Extension, StringComparer.OrdinalIgnoreCase)).ToList();
+                if (matching.Count > 0)
+                    Categories.Add(new CategoryItem(category, sub.Name, matching.Sum(e => e.Count), matching.Sum(e => e.TotalSize), sub.Extensions));
+            }
         }
         // Reimpostare la selezione rilancia la ricerca (anche se la voce selezionata è identica).
 #pragma warning disable MVVMTK0034
         _selectedCategory = null;
 #pragma warning restore MVVMTK0034
-        SelectedCategory = Categories.FirstOrDefault(c => c.Category == selected) ?? Categories[0];
+        SelectedCategory = Categories.FirstOrDefault(c => c.Category == selected?.Category && c.Name == selected?.Name)
+            ?? Categories.FirstOrDefault(c => c.Category == selected?.Category && !c.IsSubcategory)
+            ?? Categories[0];
     }
 
     private async Task RefreshProductsAsync()
@@ -303,7 +324,7 @@ public sealed partial class MainViewModel : ObservableObject
         {
             if (debounce)
                 await Task.Delay(150, cts.Token);
-            var query = new SearchQuery(SearchText, SelectedCategory?.Category);
+            var query = new SearchQuery(SearchText, SelectedCategory?.Category) { Extensions = SelectedCategory?.Extensions };
             var stopwatch = Stopwatch.StartNew();
             var results = await Task.Run(() => _index.Search(query), cts.Token);
             if (cts.IsCancellationRequested)

@@ -43,6 +43,8 @@ public class FileIndexTests
         var (index, _) = Indexed(dir);
 
         Assert.Equal(2, index.Search(new SearchQuery(null, FileCategory.ImmagineDisco)).Count);
+        Assert.Single(index.Search(new SearchQuery(null) { Extensions = [".msi"] }));
+        Assert.Equal(new ExtensionStat(".iso", 2, 6), Assert.Single(index.GetExtensionStats(FileCategory.ImmagineDisco)));
         var iso = index.GetCategoryStats().Single(s => s.Category == FileCategory.ImmagineDisco);
         Assert.Equal(2, iso.Count);
         Assert.Equal(6, iso.TotalSize);
@@ -179,6 +181,8 @@ public class FileIndexMetadataTests
                     VALUES (1, 'C:\Download\manuale.pdf', 'manuale.pdf', '.pdf', 'C:\Download', 10, 0, 6);
                 INSERT INTO files(root_id, path, name, ext, folder, size, modified_utc, category)
                     VALUES (1, 'C:\Download\note.txt', 'note.txt', '.txt', 'C:\Download', 10, 0, 6);
+                INSERT INTO files(root_id, path, name, ext, folder, size, modified_utc, category)
+                    VALUES (1, 'C:\Download\pc.gho', 'pc.gho', '.gho', 'C:\Download', 10, 0, 0);
                 PRAGMA user_version = 1;
                 """;
             cmd.ExecuteNonQuery();
@@ -192,5 +196,7 @@ public class FileIndexMetadataTests
         Assert.Equal(FileCategory.Pdf, Assert.Single(index.Search(new SearchQuery("manuale"))).Category);
         Assert.Equal(FileCategory.Testo, Assert.Single(index.Search(new SearchQuery("note.txt"))).Category);
         Assert.Empty(index.Search(new SearchQuery(null, FileCategory.Documento)));
+        // v4: le immagini Ghost (prima "Altro") passano a Immagini disco
+        Assert.Equal(FileCategory.ImmagineDisco, Assert.Single(index.Search(new SearchQuery("pc.gho"))).Category);
     }
 }

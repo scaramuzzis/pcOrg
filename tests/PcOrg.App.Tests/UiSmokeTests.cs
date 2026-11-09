@@ -53,12 +53,17 @@ public class UiSmokeTests
 
     private static void Run()
     {
+        // Nell'app vera il contesto è impostato da Application.Run: senza, i task asincroni
+        // della finestra tornerebbero su un altro thread.
+        SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext(Dispatcher.CurrentDispatcher));
+
         var temp = Path.Combine(Path.GetTempPath(), "pcorg-ui-" + Guid.NewGuid().ToString("N"));
         var folder = Directory.CreateDirectory(Path.Combine(temp, "Download")).FullName;
         // Alcuni eseguibili veri, così le colonne di versione/firma e i prodotti hanno dati.
         File.Copy(Environment.ProcessPath!, Path.Combine(folder, "host-1.exe"));
         File.Copy(Environment.ProcessPath!, Path.Combine(folder, "host-2.exe"));
         File.WriteAllText(Path.Combine(folder, "nota.txt"), "x");
+        File.WriteAllText(Path.Combine(folder, "backup.gho"), "x");
 
         var index = FileIndex.Open(Path.Combine(temp, "indice.db"));
         var root = index.AddRoot(folder);
@@ -73,7 +78,13 @@ public class UiSmokeTests
         Pump(TimeSpan.FromSeconds(3));
 
         var vm = (MainViewModel)window.DataContext;
-        Assert.Equal(3, vm.Results.Count);
+        Assert.Equal(4, vm.Results.Count);
+        var ghost = Assert.Single(vm.Categories, c => c.IsSubcategory && c.Name.StartsWith("Ghost"));
+        vm.SelectedCategory = ghost;
+        Pump(TimeSpan.FromMilliseconds(500));
+        Assert.Equal("backup.gho", Assert.Single(vm.Results).Name);
+        vm.SelectedCategory = vm.Categories[0];
+        Pump(TimeSpan.FromMilliseconds(500));
         Assert.Contains(vm.Products, p => p.Files.Count == 2);
 
         // Seleziona un file (pannello dettagli) e passa alla scheda prodotti.

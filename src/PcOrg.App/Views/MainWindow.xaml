@@ -64,7 +64,18 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="{Binding Name}" />
+                            <Grid.Style>
+                                <Style TargetType="Grid">
+                                    <Style.Triggers>
+                                        <!-- Le sottocategorie sono rientrate sotto la categoria principale -->
+                                        <DataTrigger Binding="{Binding IsSubcategory}" Value="True">
+                                            <Setter Property="Margin" Value="18,0,0,0" />
+                                            <Setter Property="TextElement.FontSize" Value="12" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Grid.Style>
+                            <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
                             <TextBlock Grid.Column="1" Opacity="0.7" Margin="8,0,0,0">
                                 <Run Text="{Binding Count, StringFormat=N0, Mode=OneWay}" />
                                 <Run Text="·" />

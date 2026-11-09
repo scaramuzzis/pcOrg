@@ -13,7 +13,7 @@ namespace PcOrg.Core.Storage;
 /// </summary>
 public sealed class FileIndex
 {
-    private const int SchemaVersion = 3;
+    private const int SchemaVersion = 4;
     private readonly string _connectionString;
 
     private FileIndex(string databasePath)
@@ -59,7 +59,9 @@ public sealed class FileIndex
         if (version < 2)
             MigrateToV2(conn, tx);
         if (version < 3)
-            ReclassifyDocuments(conn, tx);
+            Reclassify(conn, tx, FileCategory.Documento);
+        if (version < 4)
+            Reclassify(conn, tx, FileCategory.Altro); // nuovi formati: Ghost, Acronis, Macrium, dischi virtuali...
         Exec(conn, $"PRAGMA user_version = {SchemaVersion};", tx);
         tx.Commit();
     }
@@ -115,11 +117,14 @@ public sealed class FileIndex
             """, tx);
     }
 
-    /// <summary>v3: i "Documenti" sono divisi in PDF, Word, Testo, Fogli di calcolo e Presentazioni.</summary>
-    private static void ReclassifyDocuments(SqliteConnection conn, SqliteTransaction tx)
+    /// <summary>
+    /// Ricalcola la categoria dei file di una categoria quando cambiano le regole
+    /// (v3: Documenti divisi in PDF, Word, Testo...; v4: nuovi formati di immagini disco).
+    /// </summary>
+    private static void Reclassify(SqliteConnection conn, SqliteTransaction tx, FileCategory from)
     {
         var changes = new List<(long Id, FileCategory Category)>();
-        using (var select = Command(conn, $"SELECT id, path FROM files WHERE category = {(int)FileCategory.Documento};", tx))
+        using (var select = Command(conn, $"SELECT id, path FROM files WHERE category = {(int)from};", tx))
         using (var r = select.ExecuteReader())
             while (r.Read())
                 changes.Add((r.GetInt64(0), FileClassifier.Classify(r.GetString(1))));
@@ -127,7 +132,7 @@ public sealed class FileIndex
         using var update = Command(conn, "UPDATE files SET category = $cat WHERE id = $id;", tx);
         var pCat = update.Parameters.Add("$cat", SqliteType.Integer);
         var pId = update.Parameters.Add("$id", SqliteType.Integer);
-        foreach (var (id, category) in changes.Where(c => c.Category != FileCategory.Documento))
+        foreach (var (id, category) in changes.Where(c => c.Category != from))
         {
             pCat.Value = (int)category;
             pId.Value = id;
@@ -343,6 +348,16 @@ public sealed class FileIndex
             where.Add($"(f.name LIKE $like{i} ESCAPE '\\' OR f.folder LIKE $like{i} ESCAPE '\\' OR m.product_name LIKE $like{i} ESCAPE '\\')");
             cmd.Parameters.AddWithValue($"$like{i}", "%" + EscapeLike(likeTerms[i]) + "%");
         }
+        if (query.Extensions is { Count: > 0 } extensions)
+        {
+            var names = new List<string>();
+            foreach (var (ext, i) in extensions.Select((e, i) => (e, i)))
+            {
+                names.Add($"$ext{i}");
+                cmd.Parameters.AddWithValue($"$ext{i}", ext.ToLowerInvariant());
+            }
+            where.Add($"f.ext IN ({string.Join(", ", names)})");
+        }
         if (query.Category is { } category)
         {
             where.Add("f.category = $cat");
@@ -395,6 +410,19 @@ public sealed class FileIndex
         var list = new List<CategoryStat>();
         while (r.Read())
             list.Add(new CategoryStat((FileCategory)r.GetInt32(0), r.GetInt64(1), r.GetInt64(2)));
+        return list;
+    }
+
+    /// <summary>Numero di file e spazio per estensione all'interno di una categoria.</summary>
+    public IReadOnlyList<ExtensionStat> GetExtensionStats(FileCategory category)
+    {
+        using var conn = Connect();
+        using var cmd = Command(conn, "SELECT ext, COUNT(*), COALESCE(SUM(size), 0) FROM files WHERE category = $cat GROUP BY ext;");
+        cmd.Parameters.AddWithValue("$cat", (int)category);
+        using var r = cmd.ExecuteReader();
+        var list = new List<ExtensionStat>();
+        while (r.Read())
+            list.Add(new ExtensionStat(r.GetString(0), r.GetInt64(1), r.GetInt64(2)));
         return list;
     }
 

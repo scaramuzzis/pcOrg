@@ -15,6 +15,11 @@ public class FileClassifierTests
     [InlineData(@"C:\Download\putty.exe", FileCategory.Programma)]
     [InlineData(@"C:\Download\backup.7z", FileCategory.Archivio)]
     [InlineData(@"C:\Download\Win11_24H2_Italian_x64.iso", FileCategory.ImmagineDisco)]
+    [InlineData(@"D:\Backup\pc-ufficio.GHO", FileCategory.ImmagineDisco)]
+    [InlineData(@"D:\Backup\pc-ufficio001.ghs", FileCategory.ImmagineDisco)]
+    [InlineData(@"D:\Backup\sistema.tibx", FileCategory.ImmagineDisco)]
+    [InlineData(@"D:\Backup\sistema.mrimg", FileCategory.ImmagineDisco)]
+    [InlineData(@"D:\VM\disco.vdi", FileCategory.ImmagineDisco)]
     [InlineData(@"C:\Download\manuale.PDF", FileCategory.Pdf)]
     [InlineData(@"C:\Download\lettera.docx", FileCategory.Word)]
     [InlineData(@"C:\Download\vecchio.doc", FileCategory.Word)]
@@ -41,5 +46,23 @@ public class FileClassifierTests
     public void Tokenize_divide_su_separatori_e_camel_case()
     {
         Assert.Equal(["Chrome", "Setup", "x"], FileClassifier.Tokenize("ChromeSetup_x64"));
+    }
+
+    [Theory]
+    [InlineData(".gho", "Ghost (.gho, .ghs)")]
+    [InlineData(".GHS", "Ghost (.gho, .ghs)")]
+    [InlineData(".iso", "ISO (CD/DVD)")]
+    [InlineData(".vhdx", "Dischi virtuali (VHD, VMDK...)")]
+    [InlineData(".pdf", null)]
+    public void Sottocategorie_delle_immagini_disco(string ext, string? expected)
+    {
+        Assert.Equal(expected, Subcategories.Find(ext)?.Name);
+    }
+
+    [Fact]
+    public void Ogni_estensione_ha_una_sola_sottocategoria()
+    {
+        var all = Subcategories.All.SelectMany(s => s.Extensions).ToList();
+        Assert.Equal(all.Count, all.Distinct(StringComparer.OrdinalIgnoreCase).Count());
     }
 }

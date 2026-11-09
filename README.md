@@ -9,7 +9,10 @@ vedi un'anteprima, e ogni spostamento si può annullare.
 - **Cartelle monitorate**: aggiungi/rimuovi cartelle; rimuoverne una non tocca i file su disco.
 - **Categorie automatiche**: Installer, Driver, Programmi, Archivi, Immagini disco, PDF, Word
   (doc/docx/odt/rtf), Testo (txt/md/log), Fogli di calcolo, Presentazioni, Altri documenti, Immagini,
-  Audio, Video, Script, Altro, con numero di file e spazio occupato. Per exe e msi la
+  Audio, Video, Script, Altro, con numero di file e spazio occupato.
+- **Immagini disco suddivise per tipo**: Ghost (.gho/.ghs), ISO, altri formati CD/DVD (nrg, mdf,
+  cue...), dischi virtuali (VHD, VMDK, VDI), immagini Windows (WIM, ESD), backup Acronis e Macrium,
+  immagini raw (IMG, DD). Per exe e msi la
   categoria viene affinata leggendo il contenuto (es. un exe che si descrive come driver → Driver).
 - **Versione, produttore, architettura e firma digitale** di `.exe`, `.msi` e `.sys`, letti dal
   file stesso. La firma è verificata come fa Windows (senza collegarsi a internet). Riconosce anche il

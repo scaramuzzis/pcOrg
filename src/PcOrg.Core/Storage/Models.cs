@@ -31,7 +31,14 @@ public sealed record FileRecord(
 public sealed record CategoryStat(FileCategory Category, long Count, long TotalSize);
 
 /// <summary>Parametri di ricerca: testo libero (anche vuoto) e categoria opzionale.</summary>
-public sealed record SearchQuery(string? Text, FileCategory? Category = null, int Limit = 2000);
+public sealed record SearchQuery(string? Text, FileCategory? Category = null, int Limit = 2000)
+{
+    /// <summary>Se valorizzato, limita la ricerca a queste estensioni (es. una sottocategoria).</summary>
+    public IReadOnlyCollection<string>? Extensions { get; init; }
+}
+
+/// <summary>Numero di file e spazio occupato per estensione.</summary>
+public sealed record ExtensionStat(string Extension, long Count, long TotalSize);
 
 /// <summary>Un gruppo di spostamenti eseguiti insieme, annullabile in blocco.</summary>
 public sealed record MoveBatch(long Id, DateTime CreatedUtc, string Description, int ItemCount, bool Undone);

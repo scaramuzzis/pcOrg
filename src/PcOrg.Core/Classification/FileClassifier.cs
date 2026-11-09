@@ -14,7 +14,7 @@ public static class FileClassifier
         (FileCategory.Driver, [".inf", ".sys", ".cat"]),
         (FileCategory.Programma, [".exe", ".com"]),
         (FileCategory.Archivio, [".zip", ".7z", ".rar", ".tar", ".gz", ".tgz", ".bz2", ".xz", ".cab", ".zst"]),
-        (FileCategory.ImmagineDisco, [".iso", ".img", ".vhd", ".vhdx", ".vmdk", ".wim", ".esd"]),
+        (FileCategory.ImmagineDisco, Subcategories.For(FileCategory.ImmagineDisco).SelectMany(s => s.Extensions).ToArray()),
         (FileCategory.Pdf, [".pdf"]),
         (FileCategory.Word, [".doc", ".docx", ".docm", ".dot", ".dotx", ".odt", ".rtf"]),
         (FileCategory.Testo, [".txt", ".md", ".log", ".nfo"]),
