@@ -33,11 +33,11 @@
         <DataGrid x:Name="BatchGrid" Grid.Row="1" Margin="24,0" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" RowHeight="32"
                   HeadersVisibility="Column" GridLinesVisibility="None" SelectionChanged="BatchGrid_SelectionChanged">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Data" Width="150"
+                <DataGridTextColumn Header="Data" Width="150" MinWidth="150"
                                     Binding="{Binding CreatedUtc, StringFormat=g, Converter={x:Static vm:UtcToLocalConverter.Instance}}" ElementStyle="{StaticResource CellText}" />
                 <DataGridTextColumn Header="Descrizione" Binding="{Binding Description}" Width="*" ElementStyle="{StaticResource CellText}" />
-                <DataGridTextColumn Header="File" Binding="{Binding ItemCount}" Width="60" ElementStyle="{StaticResource CellText}" />
-                <DataGridTemplateColumn Header="Stato" Width="130">
+                <DataGridTextColumn Header="File" Binding="{Binding ItemCount}" Width="60" MinWidth="60" ElementStyle="{StaticResource CellText}" />
+                <DataGridTemplateColumn Header="Stato" Width="130" MinWidth="130">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <TextBlock x:Name="State" Text="Eseguito" VerticalAlignment="Center" Foreground="#16A34A" />

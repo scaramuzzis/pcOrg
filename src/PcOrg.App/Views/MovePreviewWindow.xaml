@@ -30,7 +30,7 @@
         <DataGrid x:Name="PlanGrid" Grid.Row="1" Margin="24,0" AutoGenerateColumns="False" IsReadOnly="True" RowHeight="32"
                   HeadersVisibility="Column" GridLinesVisibility="None">
             <DataGrid.Columns>
-                <DataGridTemplateColumn Header="Stato" Width="200" SortMemberPath="Status">
+                <DataGridTemplateColumn Header="Stato" Width="200" MinWidth="200" SortMemberPath="Status">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">

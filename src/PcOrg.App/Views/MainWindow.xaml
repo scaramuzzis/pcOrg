@@ -251,10 +251,10 @@
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
-                                    <DataGridTextColumn Header="Categoria" Binding="{Binding CategoryName}" SortMemberPath="Category" Width="115" ElementStyle="{StaticResource CellText}" />
-                                    <DataGridTextColumn Header="Versione" Binding="{Binding Version}" Width="100" ElementStyle="{StaticResource CellText}" />
+                                    <DataGridTextColumn Header="Categoria" Binding="{Binding CategoryName}" SortMemberPath="Category" Width="115" MinWidth="115" ElementStyle="{StaticResource CellText}" />
+                                    <DataGridTextColumn Header="Versione" Binding="{Binding Version}" Width="100" MinWidth="100" ElementStyle="{StaticResource CellText}" />
                                     <DataGridTextColumn Header="Produttore" Binding="{Binding Company}" Width="*" MinWidth="110" ElementStyle="{StaticResource CellText}" />
-                                    <DataGridTextColumn Header="Dimensione" Binding="{Binding Size, Converter={StaticResource FileSize}}" Width="95"
+                                    <DataGridTextColumn Header="Dimensione" Binding="{Binding Size, Converter={StaticResource FileSize}}" Width="95" MinWidth="95"
                                                         SortMemberPath="Size">
                                         <DataGridTextColumn.ElementStyle>
                                             <Style TargetType="TextBlock">
@@ -265,7 +265,7 @@
                                         </DataGridTextColumn.ElementStyle>
                                     </DataGridTextColumn>
                                     <DataGridTextColumn Header="Modificato" Binding="{Binding ModifiedUtc, StringFormat=g, Converter={x:Static vm:UtcToLocalConverter.Instance}}"
-                                                        Width="130" SortMemberPath="ModifiedUtc" ElementStyle="{StaticResource CellText}" />
+                                                        Width="130" MinWidth="130" SortMemberPath="ModifiedUtc" ElementStyle="{StaticResource CellText}" />
                                     <DataGridTextColumn Header="Cartella" Binding="{Binding Folder}" Width="2*" MinWidth="160" ElementStyle="{StaticResource CellText}" />
                                 </DataGrid.Columns>
                             </DataGrid>
@@ -393,13 +393,13 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                                 <DataGridTextColumn Header="Produttore" Binding="{Binding Company}" Width="*" MinWidth="110" ElementStyle="{StaticResource CellText}" />
-                                <DataGridTextColumn Header="Ultima versione" Binding="{Binding LatestVersion}" Width="115" ElementStyle="{StaticResource CellText}" />
-                                <DataGridTextColumn Header="Versioni" Binding="{Binding VersionCount}" Width="75" ElementStyle="{StaticResource CellText}" />
-                                <DataGridTextColumn Header="File" Binding="{Binding Files.Count}" Width="55" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Ultima versione" Binding="{Binding LatestVersion}" Width="115" MinWidth="115" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Versioni" Binding="{Binding VersionCount}" Width="75" MinWidth="75" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="File" Binding="{Binding Files.Count}" Width="55" MinWidth="55" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="Spazio" Binding="{Binding TotalSize, Converter={StaticResource FileSize}}"
-                                                    SortMemberPath="TotalSize" Width="90" ElementStyle="{StaticResource CellText}" />
+                                                    SortMemberPath="TotalSize" Width="90" MinWidth="90" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="Versioni vecchie" Binding="{Binding OldVersionsSize, Converter={StaticResource FileSize}}"
-                                                    SortMemberPath="OldVersionsSize" Width="120" ElementStyle="{StaticResource CellText}" />
+                                                    SortMemberPath="OldVersionsSize" Width="120" MinWidth="120" ElementStyle="{StaticResource CellText}" />
                             </DataGrid.Columns>
                         </DataGrid>
 
@@ -426,8 +426,8 @@
                                 </Style>
                             </DataGrid.RowStyle>
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Versione" Binding="{Binding File.Version}" Width="110" ElementStyle="{StaticResource CellText}" />
-                                <DataGridTemplateColumn Header="Stato" Width="140" SortMemberPath="State">
+                                <DataGridTextColumn Header="Versione" Binding="{Binding File.Version}" Width="110" MinWidth="110" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTemplateColumn Header="Stato" Width="140" MinWidth="140" SortMemberPath="State">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <Border CornerRadius="10" Padding="8,2" HorizontalAlignment="Left" VerticalAlignment="Center"
@@ -448,9 +448,9 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                                 <DataGridTextColumn Header="Nome" Binding="{Binding File.Name}" Width="2*" ElementStyle="{StaticResource CellText}" />
-                                <DataGridTextColumn Header="Architettura" Binding="{Binding File.ArchitectureText}" Width="115" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Architettura" Binding="{Binding File.ArchitectureText}" Width="115" MinWidth="115" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="Firma" Binding="{Binding File.SignatureText}" Width="*" ElementStyle="{StaticResource CellText}" />
-                                <DataGridTextColumn Header="Dimensione" Binding="{Binding File.Size, Converter={StaticResource FileSize}}" Width="95" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Dimensione" Binding="{Binding File.Size, Converter={StaticResource FileSize}}" Width="95" MinWidth="95" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="Cartella" Binding="{Binding File.Folder}" Width="2*" ElementStyle="{StaticResource CellText}" />
                             </DataGrid.Columns>
                         </DataGrid>
