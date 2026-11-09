@@ -9,6 +9,13 @@ public class IconButton : Button
 {
     public static readonly FontFamily IconFont = new("Segoe Fluent Icons, Segoe MDL2 Assets");
 
+    static IconButton()
+    {
+        // Senza questo WPF cercherebbe uno stile per "IconButton" e userebbe quello classico:
+        // così invece eredita lo stile Fluent dei normali pulsanti.
+        DefaultStyleKeyProperty.OverrideMetadata(typeof(IconButton), new FrameworkPropertyMetadata(typeof(Button)));
+    }
+
     public static readonly DependencyProperty GlyphProperty = DependencyProperty.Register(
         nameof(Glyph), typeof(string), typeof(IconButton), new PropertyMetadata(null, (d, _) => ((IconButton)d).Rebuild()));
 

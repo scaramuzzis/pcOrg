@@ -46,5 +46,19 @@
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="Transparent" />
         </Style>
+
+        <!-- Testo delle celle: centrato in verticale e con puntini se troppo lungo -->
+        <Style x:Key="CellText" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+            <Setter Property="Margin" Value="4,0" />
+        </Style>
+
+        <!-- Voci compatte per gli elenchi del pannello laterale -->
+        <Style x:Key="CompactItem" TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="Margin" Value="0,1" />
+        </Style>
     </Application.Resources>
 </Application>

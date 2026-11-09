@@ -34,9 +34,9 @@
                   HeadersVisibility="Column" GridLinesVisibility="None" SelectionChanged="BatchGrid_SelectionChanged">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Data" Width="150"
-                                    Binding="{Binding CreatedUtc, StringFormat=g, Converter={x:Static vm:UtcToLocalConverter.Instance}}" />
-                <DataGridTextColumn Header="Descrizione" Binding="{Binding Description}" Width="*" />
-                <DataGridTextColumn Header="File" Binding="{Binding ItemCount}" Width="60" />
+                                    Binding="{Binding CreatedUtc, StringFormat=g, Converter={x:Static vm:UtcToLocalConverter.Instance}}" ElementStyle="{StaticResource CellText}" />
+                <DataGridTextColumn Header="Descrizione" Binding="{Binding Description}" Width="*" ElementStyle="{StaticResource CellText}" />
+                <DataGridTextColumn Header="File" Binding="{Binding ItemCount}" Width="60" ElementStyle="{StaticResource CellText}" />
                 <DataGridTemplateColumn Header="Stato" Width="130">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
@@ -58,8 +58,8 @@
         <DataGrid x:Name="EntryGrid" Grid.Row="3" Margin="24,0" AutoGenerateColumns="False" IsReadOnly="True" RowHeight="30"
                   HeadersVisibility="Column" GridLinesVisibility="None">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Da" Binding="{Binding FromPath}" Width="*" />
-                <DataGridTextColumn Header="A" Binding="{Binding ToPath}" Width="*" />
+                <DataGridTextColumn Header="Da" Binding="{Binding FromPath}" Width="*" ElementStyle="{StaticResource CellText}" />
+                <DataGridTextColumn Header="A" Binding="{Binding ToPath}" Width="*" ElementStyle="{StaticResource CellText}" />
             </DataGrid.Columns>
         </DataGrid>
 

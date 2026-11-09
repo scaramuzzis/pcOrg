@@ -55,8 +55,8 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTextColumn Header="Da" Binding="{Binding Source}" Width="*" />
-                <DataGridTextColumn Header="A" Binding="{Binding Destination}" Width="*" />
+                <DataGridTextColumn Header="Da" Binding="{Binding Source}" Width="*" ElementStyle="{StaticResource CellText}" />
+                <DataGridTextColumn Header="A" Binding="{Binding Destination}" Width="*" ElementStyle="{StaticResource CellText}" />
             </DataGrid.Columns>
         </DataGrid>
 
