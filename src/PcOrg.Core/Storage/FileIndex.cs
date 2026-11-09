@@ -13,7 +13,7 @@ namespace PcOrg.Core.Storage;
 /// </summary>
 public sealed class FileIndex
 {
-    private const int SchemaVersion = 2;
+    private const int SchemaVersion = 3;
     private readonly string _connectionString;
 
     private FileIndex(string databasePath)
@@ -58,6 +58,8 @@ public sealed class FileIndex
             CreateSchemaV1(conn, tx);
         if (version < 2)
             MigrateToV2(conn, tx);
+        if (version < 3)
+            ReclassifyDocuments(conn, tx);
         Exec(conn, $"PRAGMA user_version = {SchemaVersion};", tx);
         tx.Commit();
     }
@@ -111,6 +113,26 @@ public sealed class FileIndex
                 to_path   TEXT NOT NULL
             );
             """, tx);
+    }
+
+    /// <summary>v3: i "Documenti" sono divisi in PDF, Word, Testo, Fogli di calcolo e Presentazioni.</summary>
+    private static void ReclassifyDocuments(SqliteConnection conn, SqliteTransaction tx)
+    {
+        var changes = new List<(long Id, FileCategory Category)>();
+        using (var select = Command(conn, $"SELECT id, path FROM files WHERE category = {(int)FileCategory.Documento};", tx))
+        using (var r = select.ExecuteReader())
+            while (r.Read())
+                changes.Add((r.GetInt64(0), FileClassifier.Classify(r.GetString(1))));
+
+        using var update = Command(conn, "UPDATE files SET category = $cat WHERE id = $id;", tx);
+        var pCat = update.Parameters.Add("$cat", SqliteType.Integer);
+        var pId = update.Parameters.Add("$id", SqliteType.Integer);
+        foreach (var (id, category) in changes.Where(c => c.Category != FileCategory.Documento))
+        {
+            pCat.Value = (int)category;
+            pId.Value = id;
+            update.ExecuteNonQuery();
+        }
     }
 
     /// <summary>

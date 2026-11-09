@@ -175,6 +175,10 @@ public class FileIndexMetadataTests
                 INSERT INTO roots(id, path) VALUES (1, 'C:\Download');
                 INSERT INTO files(root_id, path, name, ext, folder, size, modified_utc, category)
                     VALUES (1, 'C:\Download\nvidia-setup.exe', 'nvidia-setup.exe', '.exe', 'C:\Download', 10, 0, 1);
+                INSERT INTO files(root_id, path, name, ext, folder, size, modified_utc, category)
+                    VALUES (1, 'C:\Download\manuale.pdf', 'manuale.pdf', '.pdf', 'C:\Download', 10, 0, 6);
+                INSERT INTO files(root_id, path, name, ext, folder, size, modified_utc, category)
+                    VALUES (1, 'C:\Download\note.txt', 'note.txt', '.txt', 'C:\Download', 10, 0, 6);
                 PRAGMA user_version = 1;
                 """;
             cmd.ExecuteNonQuery();
@@ -184,5 +188,9 @@ public class FileIndexMetadataTests
 
         Assert.Single(index.Search(new SearchQuery("nvidia")));
         Assert.Single(index.GetFilesNeedingMetadata());
+        // v3: i documenti esistenti passano alle nuove categorie
+        Assert.Equal(FileCategory.Pdf, Assert.Single(index.Search(new SearchQuery("manuale"))).Category);
+        Assert.Equal(FileCategory.Testo, Assert.Single(index.Search(new SearchQuery("note.txt"))).Category);
+        Assert.Empty(index.Search(new SearchQuery(null, FileCategory.Documento)));
     }
 }

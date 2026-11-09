@@ -7,8 +7,9 @@ vedi un'anteprima, e ogni spostamento si può annullare.
 
 ## Cosa fa oggi (v0.2)
 - **Cartelle monitorate**: aggiungi/rimuovi cartelle; rimuoverne una non tocca i file su disco.
-- **Categorie automatiche**: Installer, Driver, Programmi, Archivi, Immagini disco, Documenti,
-  Immagini, Audio, Video, Script, Altro, con numero di file e spazio occupato. Per exe e msi la
+- **Categorie automatiche**: Installer, Driver, Programmi, Archivi, Immagini disco, PDF, Word
+  (doc/docx/odt/rtf), Testo (txt/md/log), Fogli di calcolo, Presentazioni, Altri documenti, Immagini,
+  Audio, Video, Script, Altro, con numero di file e spazio occupato. Per exe e msi la
   categoria viene affinata leggendo il contenuto (es. un exe che si descrive come driver → Driver).
 - **Versione, produttore, architettura e firma digitale** di `.exe`, `.msi` e `.sys`, letti dal
   file stesso. La firma è verificata come fa Windows (senza collegarsi a internet). Riconosce anche il

@@ -15,6 +15,11 @@ public enum FileCategory
     Audio = 8,
     Video = 9,
     Script = 10,
+    Pdf = 11,
+    Word = 12,
+    Testo = 13,
+    FoglioDiCalcolo = 14,
+    Presentazione = 15,
 }
 
 public static class FileCategoryExtensions
@@ -27,11 +32,16 @@ public static class FileCategoryExtensions
         FileCategory.Programma => "Programmi",
         FileCategory.Archivio => "Archivi",
         FileCategory.ImmagineDisco => "Immagini disco",
-        FileCategory.Documento => "Documenti",
+        FileCategory.Documento => "Altri documenti",
         FileCategory.Immagine => "Immagini",
         FileCategory.Audio => "Audio",
         FileCategory.Video => "Video",
         FileCategory.Script => "Script",
+        FileCategory.Pdf => "PDF",
+        FileCategory.Word => "Word",
+        FileCategory.Testo => "Testo",
+        FileCategory.FoglioDiCalcolo => "Fogli di calcolo",
+        FileCategory.Presentazione => "Presentazioni",
         _ => "Altro",
     };
 }
