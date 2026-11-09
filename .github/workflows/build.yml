@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: ["**"]
+    branches: ["**", "!screenshots"]
     tags: ["v*"]
   pull_request:
 
@@ -21,6 +21,34 @@ jobs:
 
       - name: Test
         run: dotnet test PcOrg.sln -c Release
+
+      # Screenshot dell'app con dati di esempio, pubblicati sul ramo "screenshots".
+      - name: Screenshot
+        id: shots
+        if: github.event_name == 'push'
+        continue-on-error: true
+        env:
+          PCORG_SCREENSHOTS: ${{ github.workspace }}\screenshots
+        run: dotnet test tests/PcOrg.App.Tests -c Release --no-build --filter "FullyQualifiedName~Screenshots"
+
+      - name: Pubblica gli screenshot
+        if: github.event_name == 'push' && steps.shots.outcome == 'success'
+        continue-on-error: true
+        run: |
+          cd screenshots
+          git init -q -b screenshots
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Screenshot della build ${{ github.sha }}"
+          git push -f -q "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" screenshots
+
+      - name: Carica gli screenshot
+        if: github.event_name == 'push' && steps.shots.outcome == 'success'
+        uses: actions/upload-artifact@v5
+        with:
+          name: screenshot
+          path: screenshots/*.png
 
       - name: Pubblica eseguibile unico
         run: dotnet publish src/PcOrg.App -c Release -o publish
