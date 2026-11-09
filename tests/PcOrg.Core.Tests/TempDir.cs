@@ -9,7 +9,7 @@ public sealed class TempDir : IDisposable
 
     public string File(string relative, string content = "x")
     {
-        var full = System.IO.Path.Combine(Path, relative);
+        var full = System.IO.Path.GetFullPath(System.IO.Path.Combine(Path, relative));
         Directory.CreateDirectory(System.IO.Path.GetDirectoryName(full)!);
         System.IO.File.WriteAllText(full, content);
         return full;

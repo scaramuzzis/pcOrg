@@ -13,9 +13,9 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
           global-json-file: global.json
 
@@ -26,7 +26,7 @@ jobs:
         run: dotnet publish src/PcOrg.App -c Release -o publish
 
       - name: Carica PcOrg.exe
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: PcOrg-win-x64
           path: publish/PcOrg.exe
