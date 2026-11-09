@@ -116,6 +116,12 @@
             <TabControl x:Name="Tabs" x:FieldModifier="public" Grid.Row="1" Margin="0,8,0,0">
                 <!-- Scheda File -->
                 <TabItem Header="File">
+                    <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" MinWidth="300" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
                     <Grid Margin="0,8,0,0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -213,6 +219,22 @@
                                 <TextBlock Grid.Row="4" Grid.Column="3" Text="{Binding Meta.OriginalFilename}" />
                             </Grid>
                         </Border>
+                    </Grid>
+
+                    <!-- Anteprima dell'immagine selezionata -->
+                    <DockPanel Grid.Column="2" Width="340" Margin="12,8,0,0"
+                               Visibility="{Binding IsPreviewVisible, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock DockPanel.Dock="Top" Text="Anteprima" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,6" />
+                        <TextBlock DockPanel.Dock="Top" Text="{Binding SelectedFile.Name}" TextTrimming="CharacterEllipsis"
+                                   ToolTip="{Binding SelectedFile.Path}" />
+                        <TextBlock DockPanel.Dock="Bottom" Text="{Binding PreviewInfo}" TextWrapping="Wrap" Opacity="0.75" Margin="0,6,0,0" />
+                        <Border BorderThickness="1" CornerRadius="4" Margin="0,6,0,0" Padding="4"
+                                BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}">
+                            <Image Source="{Binding PreviewImage}" Stretch="Uniform" StretchDirection="DownOnly"
+                                   RenderOptions.BitmapScalingMode="HighQuality"
+                                   ToolTip="Doppio clic sul file per aprirlo con il visualizzatore di Windows" />
+                        </Border>
+                    </DockPanel>
                     </Grid>
                 </TabItem>
 

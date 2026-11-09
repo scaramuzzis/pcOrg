@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Data;
+using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PcOrg.App.Infrastructure;
@@ -79,6 +80,46 @@ public sealed partial class MainViewModel : ObservableObject
     /// <summary>File mostrato nel pannello dei dettagli.</summary>
     [ObservableProperty]
     private FileRecord? _selectedFile;
+
+    /// <summary>Vero quando il file selezionato è un'immagine: mostra il pannello anteprima a destra.</summary>
+    [ObservableProperty]
+    private bool _isPreviewVisible;
+
+    [ObservableProperty]
+    private ImageSource? _previewImage;
+
+    [ObservableProperty]
+    private string? _previewInfo;
+
+    private CancellationTokenSource? _previewCts;
+
+    partial void OnSelectedFileChanged(FileRecord? value) => _ = LoadPreviewAsync(value);
+
+    private async Task LoadPreviewAsync(FileRecord? file)
+    {
+        _previewCts?.Cancel();
+        var visible = file is not null && (file.Category == FileCategory.Immagine || ImagePreview.CanPreview(file.Path));
+        IsPreviewVisible = visible;
+        PreviewImage = null;
+        if (!visible)
+            return;
+
+        PreviewInfo = "Caricamento anteprima…";
+        var cts = _previewCts = new CancellationTokenSource();
+        try
+        {
+            var result = await ImagePreview.LoadAsync(file!.Path, cts.Token);
+            if (cts.IsCancellationRequested)
+                return;
+            PreviewImage = result.Image;
+            PreviewInfo = result.Message
+                ?? $"{result.PixelWidth} × {result.PixelHeight} pixel · {FileSizeConverter.Format(file.Size)}";
+        }
+        catch (OperationCanceledException)
+        {
+            // è stato selezionato un altro file
+        }
+    }
 
     [ObservableProperty]
     private ProductGroup? _selectedProduct;

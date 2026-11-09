@@ -5,7 +5,7 @@ sparsi nel PC. Scegli le cartelle da tenere sotto controllo; pcOrg le indicizza,
 per categoria e li trova all'istante mentre scrivi. Sei tu a decidere se e dove spostarli: prima
 vedi un'anteprima, e ogni spostamento si può annullare.
 
-## Cosa fa oggi (v0.2)
+## Cosa fa oggi (v0.2.3)
 - **Cartelle monitorate**: aggiungi/rimuovi cartelle; rimuoverne una non tocca i file su disco.
 - **Categorie automatiche**: Installer, Driver, Programmi, Archivi, Immagini disco, PDF, Word
   (doc/docx/odt/rtf), Testo (txt/md/log), Fogli di calcolo, Presentazioni, Altri documenti, Immagini,
@@ -19,6 +19,9 @@ vedi un'anteprima, e ogni spostamento si può annullare.
   tipo di installer: Inno Setup, NSIS, InstallShield, WiX, MSI, autoestraenti 7-Zip/ZIP/RAR.
 - **Prodotti e versioni**: raggruppa le diverse versioni dello stesso programma o driver, indica la
   più recente e quanto spazio occupano le versioni vecchie; un clic le seleziona per spostarle.
+- **Anteprima delle immagini** nel pannello a destra quando selezioni una foto o un'immagine
+  (JPG, PNG, GIF, BMP, TIFF, ICO; WebP e HEIC con le estensioni gratuite di Microsoft), con dimensioni
+  in pixel.
 - **Ricerca istantanea** per nome, cartella, prodotto o produttore (`nvidia 566`, `setup x64`, `realtek`).
 - **Azioni**: apri/esegui (con conferma per gli eseguibili), apri in Esplora risorse con il file
   selezionato, copia percorso; pannello con tutti i dettagli del file selezionato.

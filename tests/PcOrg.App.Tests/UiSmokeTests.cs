@@ -1,6 +1,8 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using PcOrg.App.Infrastructure;
 using PcOrg.App.ViewModels;
@@ -64,6 +66,7 @@ public class UiSmokeTests
         File.Copy(Environment.ProcessPath!, Path.Combine(folder, "host-2.exe"));
         File.WriteAllText(Path.Combine(folder, "nota.txt"), "x");
         File.WriteAllText(Path.Combine(folder, "backup.gho"), "x");
+        WritePng(Path.Combine(folder, "foto.png"), 1200, 800);
 
         var index = FileIndex.Open(Path.Combine(temp, "indice.db"));
         var root = index.AddRoot(folder);
@@ -78,7 +81,16 @@ public class UiSmokeTests
         Pump(TimeSpan.FromSeconds(3));
 
         var vm = (MainViewModel)window.DataContext;
-        Assert.Equal(4, vm.Results.Count);
+        Assert.Equal(5, vm.Results.Count);
+
+        // Anteprima: compare per le immagini, sparisce per gli altri file.
+        vm.SelectedFiles = [vm.Results.First(r => r.Name == "foto.png")];
+        Pump(TimeSpan.FromSeconds(1));
+        Assert.True(vm.IsPreviewVisible);
+        Assert.NotNull(vm.PreviewImage);
+        Assert.StartsWith("1200 × 800", vm.PreviewInfo);
+        vm.SelectedFiles = [vm.Results.First(r => r.Name == "nota.txt")];
+        Assert.False(vm.IsPreviewVisible);
         var ghost = Assert.Single(vm.Categories, c => c.IsSubcategory && c.Name.StartsWith("Ghost"));
         vm.SelectedCategory = ghost;
         Pump(TimeSpan.FromMilliseconds(500));
@@ -109,6 +121,20 @@ public class UiSmokeTests
         app.Shutdown();
         Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
         try { Directory.Delete(temp, recursive: true); } catch (IOException) { }
+    }
+
+    private static void WritePng(string path, int width, int height)
+    {
+        var pixels = new byte[width * height * 4];
+        for (var i = 0; i < pixels.Length; i += 4)
+        {
+            pixels[i] = 200; pixels[i + 1] = 120; pixels[i + 2] = 40; pixels[i + 3] = 255;
+        }
+        var bitmap = BitmapSource.Create(width, height, 96, 96, PixelFormats.Bgra32, null, pixels, width * 4);
+        var encoder = new PngBitmapEncoder();
+        encoder.Frames.Add(BitmapFrame.Create(bitmap));
+        using var stream = File.Create(path);
+        encoder.Save(stream);
     }
 
     /// <summary>Elabora i messaggi della finestra per il tempo indicato (binding, rendering, task asincroni).</summary>
