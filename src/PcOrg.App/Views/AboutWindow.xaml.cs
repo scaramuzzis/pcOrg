@@ -12,6 +12,7 @@ public partial class AboutWindow : Window
     {
         InitializeComponent();
         VersionText.Text = $"Versione {AppVersion}";
+        CopyrightText.Text = $"© {DateTime.Now.Year} Scaramus. Tutti i diritti riservati.";
         DataFolderText.Text = AppPaths.DataFolder;
         DataFolderText.ToolTip = AppPaths.DataFolder;
         RuntimeText.Text = $"{RuntimeInformation.FrameworkDescription}, WPF";

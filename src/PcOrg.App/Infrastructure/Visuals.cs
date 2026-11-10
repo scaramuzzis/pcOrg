@@ -36,6 +36,8 @@ public static class Glyphs
     public const string Exit = "\uE7E8";
     public const string Help = "\uE897";
     public const string Theme = "\uE790";
+    public const string Keyboard = "\uE765";
+    public const string Lightbulb = "\uEA80";
 
     public static string ForCategory(FileCategory? category) => category switch
     {

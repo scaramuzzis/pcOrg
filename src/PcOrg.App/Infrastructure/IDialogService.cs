@@ -10,6 +10,9 @@ public interface IDialogService
     /// <summary>Chiede dove salvare un file. Null se l'utente annulla.</summary>
     string? PickSaveFile(string title, string defaultName, string filter);
 
+    /// <summary>Apre la guida, eventualmente al capitolo indicato.</summary>
+    void ShowHelp(string? chapter = null);
+
     /// <summary>Finestra "Informazioni su pcOrg".</summary>
     void ShowAbout();
 

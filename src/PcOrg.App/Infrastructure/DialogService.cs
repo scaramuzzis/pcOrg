@@ -22,6 +22,24 @@ public sealed class DialogService : IDialogService
         return dialog.ShowDialog(Owner) == true ? dialog.FileName : null;
     }
 
+    private HelpWindow? _help;
+
+    /// <summary>La guida resta aperta accanto all'applicazione; una sola finestra alla volta.</summary>
+    public void ShowHelp(string? chapter = null)
+    {
+        if (_help is { IsLoaded: true })
+        {
+            _help.ShowChapter(chapter);
+            _help.Activate();
+            return;
+        }
+        _help = new HelpWindow(chapter);
+        if (Owner is { IsVisible: true })
+            _help.Owner = Owner;
+        _help.Closed += (_, _) => _help = null;
+        _help.Show();
+    }
+
     public void ShowAbout()
     {
         var window = new AboutWindow();

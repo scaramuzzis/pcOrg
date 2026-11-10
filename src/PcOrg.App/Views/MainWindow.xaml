@@ -113,9 +113,19 @@
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="_?">
-                <MenuItem Header="_Guida rapida" Command="{Binding ShowHelpCommand}" InputGestureText="F1">
+                <MenuItem Header="_Guida di pcOrg" Command="{Binding ShowHelpCommand}" InputGestureText="F1">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Help}" /></MenuItem.Icon>
                 </MenuItem>
+                <MenuItem Header="_Scorciatoie da tastiera" Command="{Binding ShowHelpCommand}" CommandParameter="scorciatoie">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Keyboard}" /></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Consigli per organizzare al meglio" Command="{Binding ShowHelpCommand}" CommandParameter="Consigli">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Lightbulb}" /></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Domande frequenti" Command="{Binding ShowHelpCommand}" CommandParameter="Domande">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Question}" /></MenuItem.Icon>
+                </MenuItem>
+                <Separator />
                 <MenuItem Header="_Informazioni su pcOrg" Command="{Binding ShowAboutCommand}">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Info}" /></MenuItem.Icon>
                 </MenuItem>
@@ -584,7 +594,9 @@
                     <TextBlock TextWrapping="Wrap" TextAlignment="Center" Foreground="{DynamicResource TextFillColorSecondaryBrush}" FontSize="14"
                                Text="Scegli le cartelle da mettere in ordine — Download, Desktop, un disco esterno con installer e driver. pcOrg le analizza e divide i file per categoria, versione e produttore." />
                     <c:IconButton Glyph="{x:Static inf:Glyphs.Add}" Label="Aggiungi la prima cartella" Command="{Binding AddRootCommand}"
-                                  Style="{DynamicResource AccentButtonStyle}" HorizontalAlignment="Center" Margin="0,24,0,28" Padding="18,10" FontSize="14" />
+                                  Style="{DynamicResource AccentButtonStyle}" HorizontalAlignment="Center" Margin="0,24,0,8" Padding="18,10" FontSize="14" />
+                    <c:IconButton Glyph="{x:Static inf:Glyphs.Help}" Label="Leggi la guida" Command="{Binding ShowHelpCommand}"
+                                  Style="{StaticResource SubtleIconButton}" HorizontalAlignment="Center" Margin="0,0,0,24" />
                     <UniformGrid Columns="3">
                         <StackPanel Margin="8">
                             <TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Search}" FontSize="24" Foreground="#2563EB" HorizontalAlignment="Center" />

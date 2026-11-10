@@ -4,7 +4,9 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors Condition="'$(CI)' == 'true'">true</TreatWarningsAsErrors>
-    <Authors>scaramuzzis</Authors>
+    <Authors>Scaramus</Authors>
+    <Company>Scaramus</Company>
+    <Copyright>© 2026 Scaramus</Copyright>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <DebugType>embedded</DebugType>

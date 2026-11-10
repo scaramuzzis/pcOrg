@@ -28,6 +28,7 @@ public class Screenshots
         public string? AskNetworkFolder() => null;
         public string? PickSaveFile(string title, string defaultName, string filter) => SavePath;
         public void ShowAbout() { }
+        public void ShowHelp(string? chapter = null) { }
         public string? SavePath { get; set; }
         public bool Confirm(string message, string title, string confirmText = "Conferma") => false;
         public void Info(string message, string title) { }
@@ -194,6 +195,15 @@ public class Screenshots
         CaptureScreen(window, output, "14-menu-visualizza.png");
         viewMenu.IsSubmenuOpen = false;
         Pump(300);
+
+        // 16-17. Guida
+        var help = new HelpWindow { Owner = window };
+        Show(help);
+        Capture(help, output, "16-guida.png");
+        help.ShowChapter("Spostare i file");
+        Pump(800);
+        Capture(help, output, "17-guida-spostare-i-file.png");
+        help.Close();
 
         // 15. Informazioni su pcOrg
         var about = new AboutWindow { Owner = window };

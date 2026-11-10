@@ -1,0 +1,59 @@
+<Window x:Class="PcOrg.App.Views.HelpWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:inf="clr-namespace:PcOrg.App.Infrastructure"
+        Title="Guida di pcOrg" Icon="pack://application:,,,/PcOrg;component/Assets/pcorg.ico"
+        Width="1100" Height="760" MinWidth="700" MinHeight="420" WindowStartupLocation="CenterOwner">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="280" MinWidth="200" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Indice dei capitoli con ricerca -->
+        <Border BorderThickness="0,0,1,0" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                Background="{DynamicResource LayerFillColorDefaultBrush}" Padding="12">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="4,4,0,14">
+                    <Image Source="pack://application:,,,/PcOrg;component/Assets/pcorg.png" Width="32" Height="32"
+                           RenderOptions.BitmapScalingMode="HighQuality" />
+                    <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="Guida di pcOrg" FontWeight="SemiBold" FontSize="16" />
+                        <TextBlock Text="Come funziona e come usarlo al meglio" Style="{StaticResource Secondary}" />
+                    </StackPanel>
+                </StackPanel>
+
+                <Grid DockPanel.Dock="Top" Margin="0,0,0,10">
+                    <TextBox x:Name="SearchBox" Padding="32,6,8,6" TextChanged="SearchBox_TextChanged"
+                             ToolTip="Cerca nella guida: mostra solo i capitoli che contengono il testo" />
+                    <TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Search}" FontSize="14" Margin="10,0,0,0"
+                               HorizontalAlignment="Left" IsHitTestVisible="False" Opacity="0.7" />
+                    <TextBlock IsHitTestVisible="False" Margin="33,0,0,0" VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}" Text="Cerca nella guida…">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Text, ElementName=SearchBox}" Value="">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+
+                <TextBlock DockPanel.Dock="Top" Text="CAPITOLI" Style="{StaticResource SectionHeader}" Margin="4,4,0,6" />
+                <TextBlock x:Name="NoResults" DockPanel.Dock="Top" Text="Nessun capitolo contiene il testo cercato."
+                           Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="4,0" Visibility="Collapsed" />
+                <ListBox x:Name="ChapterList" BorderThickness="0" Background="Transparent" DisplayMemberPath="Title"
+                         ItemContainerStyle="{StaticResource CompactItem}" SelectionChanged="ChapterList_SelectionChanged"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+            </DockPanel>
+        </Border>
+
+        <!-- Testo della guida -->
+        <FlowDocumentScrollViewer x:Name="Viewer" Grid.Column="1" VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled" IsToolBarVisible="False" />
+    </Grid>
+</Window>

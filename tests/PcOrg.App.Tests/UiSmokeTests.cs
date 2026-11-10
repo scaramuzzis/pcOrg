@@ -24,6 +24,7 @@ public class UiSmokeTests
         public string? AskNetworkFolder() => null;
         public string? PickSaveFile(string title, string defaultName, string filter) => SavePath;
         public void ShowAbout() { }
+        public void ShowHelp(string? chapter = null) { }
         public string? SavePath { get; set; }
         public bool Confirm(string message, string title, string confirmText = "Conferma") => false;
         public void Info(string message, string title) { }
@@ -133,6 +134,15 @@ public class UiSmokeTests
         about.Show();
         Pump(TimeSpan.FromMilliseconds(300));
         about.Close();
+
+        // Guida: testo incorporato, capitoli e salto a un capitolo
+        var help = new HelpWindow("Consigli") { Owner = window };
+        help.Show();
+        Pump(TimeSpan.FromMilliseconds(600));
+        Assert.True(help.Chapters.Count >= 15, $"Capitoli trovati: {help.Chapters.Count}");
+        Assert.Contains(help.Chapters, c => c.Title.StartsWith("Cartelle di rete"));
+        Assert.Equal("Consigli per organizzare al meglio", ((PcOrg.App.Infrastructure.HelpChapter)help.ChapterList.SelectedItem).Title);
+        help.Close();
 
         var plan = MovePlanner.Plan([Path.Combine(folder, "nota.txt")], temp);
         var preview = new MovePreviewWindow(plan, temp, destinationMonitored: false) { Owner = window };

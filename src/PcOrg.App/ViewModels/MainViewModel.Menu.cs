@@ -128,29 +128,7 @@ public sealed partial class MainViewModel
     [RelayCommand]
     private void ShowAbout() => _dialogs.ShowAbout();
 
+    /// <summary>Apre la guida; il parametro è (parte del) titolo del capitolo da mostrare.</summary>
     [RelayCommand]
-    private void ShowHelp() => _dialogs.Info(HelpText, "Guida rapida");
-
-    public const string HelpText = """
-        COME SI USA
-        1. Aggiungi le cartelle da tenere in ordine (File → Aggiungi cartella, anche di rete).
-        2. pcOrg divide i file per categoria e legge versione, produttore e firma di programmi e installer.
-        3. Cerca scrivendo parte del nome, della cartella, del prodotto o del produttore.
-        4. Seleziona i file e usa "Sposta in…": vedrai un'anteprima, e potrai sempre annullare.
-
-        SCORCIATOIE DA TASTIERA
-        Ctrl+F    Cerca                       Esc        Cancella la ricerca
-        Ctrl+O    Aggiungi cartella           Ctrl+Maiusc+O   Aggiungi cartella di rete
-        F5        Aggiorna l'indice           Ctrl+E     Esporta l'elenco in Excel (CSV)
-        Invio     Apri il file                Ctrl+Maiusc+E   Mostra nella cartella
-        Ctrl+Maiusc+C   Copia percorso        Ctrl+M     Sposta in…
-        Ctrl+A    Seleziona tutto             Ctrl+H     Cronologia spostamenti
-        Ctrl+1    Scheda File                 Ctrl+2     Scheda Prodotti e versioni
-        F1        Questa guida
-
-        SUGGERIMENTI
-        • Nella scheda "Prodotti e versioni" il pulsante "Seleziona le versioni vecchie" trova i doppioni da archiviare.
-        • Le cartelle di rete non raggiungibili restano cercabili con i dati dell'ultimo aggiornamento.
-        • Per usare pcOrg da chiavetta crea una cartella "pcOrg-dati" accanto a PcOrg.exe.
-        """;
+    private void ShowHelp(string? chapter) => _dialogs.ShowHelp(chapter);
 }

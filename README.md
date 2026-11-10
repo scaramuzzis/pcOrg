@@ -5,7 +5,9 @@ sparsi nel PC. Scegli le cartelle da tenere sotto controllo; pcOrg le indicizza,
 per categoria e li trova all'istante mentre scrivi. Sei tu a decidere se e dove spostarli: prima
 vedi un'anteprima, e ogni spostamento si può annullare.
 
-## Cosa fa oggi (v0.5)
+## Cosa fa oggi (v0.6)
+- **Guida completa** dentro l'app (**F1** o menu **?**), con indice dei capitoli e ricerca. Lo stesso
+  testo è leggibile qui: [docs/GUIDA.md](docs/GUIDA.md).
 - **Barra dei menu** (File, Modifica, Visualizza, Strumenti, ?) con icone e scorciatoie da tastiera:
   aggiungi cartelle, **esporta l'elenco in Excel (CSV)**, scegli il **tema** (come Windows, chiaro,
   scuro), mostra o nascondi i pannelli anteprima e dettagli, guida rapida (F1) e Informazioni.
@@ -67,7 +69,10 @@ dotnet run --project src/PcOrg.App            # avvia l'app (solo Windows)
 dotnet publish src/PcOrg.App -c Release -o publish   # crea publish\PcOrg.exe
 ```
 
+Documentazione funzionale (come si usa): [docs/GUIDA.md](docs/GUIDA.md).
 Struttura, scelte tecniche e piano di sviluppo: [docs/ANALISI.md](docs/ANALISI.md).
+
+Sviluppato da **Scaramus**.
 
 ## Prossimi passi
 1. Cloni (hash) e vista "Pulizia" con spostamento nel Cestino.

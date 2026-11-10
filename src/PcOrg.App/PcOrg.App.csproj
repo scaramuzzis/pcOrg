@@ -11,7 +11,7 @@
     <AssemblyName>PcOrg</AssemblyName>
     <RootNamespace>PcOrg.App</RootNamespace>
     <Product>pcOrg</Product>
-    <Version>0.5.0</Version>
+    <Version>0.6.0</Version>
     <NeutralLanguage>it-IT</NeutralLanguage>
     <!-- ThemeMode (tema Fluent) è ancora marcato come sperimentale -->
     <NoWarn>$(NoWarn);WPF0001</NoWarn>
@@ -33,6 +33,8 @@
   <ItemGroup>
     <Resource Include="Assets\pcorg.ico" />
     <Resource Include="Assets\pcorg.png" />
+    <!-- La guida (docs/GUIDA.md) viene incorporata nell'eseguibile -->
+    <EmbeddedResource Include="..\..\docs\GUIDA.md" LogicalName="PcOrg.App.GUIDA.md" Link="GUIDA.md" />
   </ItemGroup>
 
   <ItemGroup>
