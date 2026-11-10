@@ -71,7 +71,7 @@ public class UiSmokeTests
         File.Copy(Environment.ProcessPath!, Path.Combine(folder, "host-1.exe"));
         File.Copy(Environment.ProcessPath!, Path.Combine(folder, "host-2.exe"));
         File.WriteAllText(Path.Combine(folder, "nota.txt"), "x");
-        File.WriteAllText(Path.Combine(folder, "backup.gho"), "x");
+        File.WriteAllText(Path.Combine(folder, "backup.gho"), "immagine ghost di prova"); // contenuto diverso da nota.txt: non sono cloni
         WritePng(Path.Combine(folder, "foto.png"), 1200, 800);
 
         var index = FileIndex.Open(Path.Combine(temp, "indice.db"));
