@@ -12,7 +12,7 @@ pcOrg è un unico file, **PcOrg.exe**, che non richiede installazione: copialo d
 
 **Schermata di benvenuto.** Finché non aggiungi una cartella vedi una schermata di benvenuto con il pulsante **Aggiungi la prima cartella**. Da lì in poi la finestra principale mostra le tue cartelle, le categorie e l'elenco dei file.
 
-**Dove vengono salvati i dati.** L'elenco dei file (l'"indice"), la cronologia degli spostamenti e le preferenze sono salvati in `%LOCALAPPDATA%\pcOrg`. Per aprire questa cartella usa **Strumenti → Apri la cartella dei dati**.
+**Dove vengono salvati i dati.** L'elenco dei file (chiamato indice), la cronologia degli spostamenti e le preferenze sono salvati in `%LOCALAPPDATA%\pcOrg`. Per aprire questa cartella usa **Strumenti → Apri la cartella dei dati**.
 
 > **Modalità portatile.** Per usare pcOrg da una chiavetta USB crea una cartella chiamata `pcOrg-dati` accanto a `PcOrg.exe`: i dati verranno salvati lì e viaggeranno con la chiavetta.
 

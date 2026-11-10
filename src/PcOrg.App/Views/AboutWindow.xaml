@@ -42,11 +42,11 @@
                             <Setter Property="TextTrimming" Value="CharacterEllipsis" />
                         </Style>
                     </Grid.Resources>
-                    <TextBlock Style="{StaticResource Secondary}" Text="Dati e impostazioni" />
+                    <TextBlock Style="{StaticResource Secondary}" Text="Dati e impostazioni" Margin="0,2,16,2" />
                     <TextBlock Grid.Column="1" x:Name="DataFolderText" />
-                    <TextBlock Grid.Row="1" Style="{StaticResource Secondary}" Text="Tecnologia" />
+                    <TextBlock Grid.Row="1" Style="{StaticResource Secondary}" Text="Tecnologia" Margin="0,2,16,2" />
                     <TextBlock Grid.Row="1" Grid.Column="1" x:Name="RuntimeText" />
-                    <TextBlock Grid.Row="2" Style="{StaticResource Secondary}" Text="Progetto" />
+                    <TextBlock Grid.Row="2" Style="{StaticResource Secondary}" Text="Progetto" Margin="0,2,16,2" />
                     <TextBlock Grid.Row="2" Grid.Column="1" Text="github.com/scaramuzzis/pcOrg" />
                 </Grid>
             </Border>
