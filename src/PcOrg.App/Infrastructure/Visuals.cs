@@ -43,6 +43,7 @@ public static class Glyphs
     public const string Up = "\uE70E";
     public const string Down = "\uE70D";
     public const string Database = "\uE7F1";
+    public const string Duplicate = "\uE8F1";
     public const string Lightbulb = "\uEA80";
 
     public static string ForCategory(FileCategory? category) => category switch

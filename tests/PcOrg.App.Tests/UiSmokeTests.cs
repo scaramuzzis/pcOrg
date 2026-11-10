@@ -26,7 +26,8 @@ public class UiSmokeTests
         public void ShowAbout() { }
         public void ShowHelp(string? chapter = null) { }
         public string? SavePath { get; set; }
-        public bool Confirm(string message, string title, string confirmText = "Conferma") => false;
+        public bool Confirm(string message, string title, string confirmText = "Conferma") => ConfirmResult;
+        public bool ConfirmResult { get; set; }
         public void Info(string message, string title) { }
         public void Error(string message, string title) => throw new InvalidOperationException(message);
         public MovePreviewResult? PreviewMove(IReadOnlyList<MoveItem> plan, string destination, bool destinationMonitored) => null;
@@ -171,6 +172,29 @@ public class UiSmokeTests
         Pump(TimeSpan.FromMilliseconds(300));
         history.Close();
 
+        // Cloni: host-1.exe e host-2.exe sono copie identiche
+        window.Tabs.SelectedIndex = 2;
+        vm.SelectedSizeOption = vm.SizeOptions[0];
+        await_(vm.FindDuplicatesCommand.ExecuteAsync(null));
+        Assert.Single(vm.DuplicateGroups);
+        vm.MarkDoublesCommand.Execute(null);
+        Assert.Equal(1, vm.MarkedCount);
+        var originalRecycle = PcOrg.Core.Moving.RecycleBin.SendToRecycleBin;
+        PcOrg.Core.Moving.RecycleBin.SendToRecycleBin = path => { File.Delete(path); return true; };
+        try
+        {
+            dialogs.ConfirmResult = true;
+            await_(vm.RecycleMarkedCommand.ExecuteAsync(null));
+            dialogs.ConfirmResult = false;
+            Assert.Empty(vm.DuplicateGroups);
+            Assert.Single(Directory.GetFiles(folder, "host-*.exe"));
+        }
+        finally
+        {
+            PcOrg.Core.Moving.RecycleBin.SendToRecycleBin = originalRecycle;
+        }
+        window.Tabs.SelectedIndex = 0;
+
         // Impostazioni e colonne: si nasconde "Versione", si sposta "Cartella" in seconda posizione,
         // si chiude e si riapre la finestra con le stesse preferenze.
         var settingsPath = Path.Combine(temp, "settings.json");
@@ -232,6 +256,15 @@ public class UiSmokeTests
         encoder.Frames.Add(BitmapFrame.Create(bitmap));
         using var stream = File.Create(path);
         encoder.Save(stream);
+    }
+
+    /// <summary>Attende un'operazione asincrona continuando a elaborare i messaggi della finestra.</summary>
+    private static void await_(Task task)
+    {
+        var frame = new DispatcherFrame();
+        task.ContinueWith(_ => frame.Continue = false, TaskScheduler.FromCurrentSynchronizationContext());
+        Dispatcher.PushFrame(frame);
+        task.GetAwaiter().GetResult();
     }
 
     /// <summary>Elabora i messaggi della finestra per il tempo indicato (binding, rendering, task asincroni).</summary>

@@ -27,6 +27,7 @@
         <KeyBinding Key="H" Modifiers="Control" Command="{Binding ShowHistoryCommand}" />
         <KeyBinding Key="D1" Modifiers="Control" Command="{Binding ShowTabCommand}" CommandParameter="0" />
         <KeyBinding Key="D2" Modifiers="Control" Command="{Binding ShowTabCommand}" CommandParameter="1" />
+        <KeyBinding Key="D3" Modifiers="Control" Command="{Binding ShowTabCommand}" CommandParameter="2" />
         <KeyBinding Key="F1" Command="{Binding ShowHelpCommand}" />
         <KeyBinding Key="OemComma" Modifiers="Control" Command="{x:Static vm:FocusCommands.OpenSettings}" />
     </Window.InputBindings>
@@ -76,6 +77,9 @@
                 <MenuItem Header="_Sposta in…" Command="{Binding MoveSelectedCommand}" InputGestureText="Ctrl+M">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Move}" /></MenuItem.Icon>
                 </MenuItem>
+                <MenuItem Header="Sposta nel Ce_stino…" Command="{Binding RecycleSelectedCommand}" InputGestureText="Canc">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Delete}" /></MenuItem.Icon>
+                </MenuItem>
                 <Separator />
                 <MenuItem Header="_Cerca" Command="{x:Static vm:FocusCommands.FocusSearch}" InputGestureText="Ctrl+F">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Search}" /></MenuItem.Icon>
@@ -90,6 +94,9 @@
                 </MenuItem>
                 <MenuItem Header="_Prodotti e versioni" Command="{Binding ShowTabCommand}" CommandParameter="1" InputGestureText="Ctrl+2">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Package}" /></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="C_loni e pulizia" Command="{Binding ShowTabCommand}" CommandParameter="2" InputGestureText="Ctrl+3">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Duplicate}" /></MenuItem.Icon>
                 </MenuItem>
                 <Separator />
                 <MenuItem Header="_Colonne dell'elenco…" Click="ColumnsSettings_Click">
@@ -109,6 +116,9 @@
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="_Strumenti">
+                <MenuItem Header="Cerca i c_loni" Command="{Binding FindDuplicatesCommand}">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Duplicate}" /></MenuItem.Icon>
+                </MenuItem>
                 <MenuItem Header="_Cronologia spostamenti…" Command="{Binding ShowHistoryCommand}" InputGestureText="Ctrl+H">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.History}" /></MenuItem.Icon>
                 </MenuItem>
@@ -362,6 +372,7 @@
                             </WrapPanel>
 
                             <DataGrid x:Name="ResultsGrid" Grid.Row="1" ItemsSource="{Binding Results}"
+                                      inf:GridKeys.DeleteCommand="{Binding RecycleSelectedCommand}"
                                       AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Extended"
                                       HeadersVisibility="Column" GridLinesVisibility="None" RowHeight="34"
                                       EnableRowVirtualization="True" EnableColumnVirtualization="True"
@@ -382,6 +393,9 @@
                                         <Separator />
                                         <MenuItem Header="Sposta in…" Command="{Binding MoveSelectedCommand}">
                                             <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Move}" /></MenuItem.Icon>
+                                        </MenuItem>
+                                        <MenuItem Header="Sposta nel Cestino…" Command="{Binding RecycleSelectedCommand}" InputGestureText="Canc">
+                                            <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Delete}" /></MenuItem.Icon>
                                         </MenuItem>
                                     </ContextMenu>
                                 </DataGrid.ContextMenu>
@@ -565,9 +579,12 @@
                             <c:IconButton Glyph="{x:Static inf:Glyphs.Move}" Label="Sposta in…" Command="{Binding MoveSelectedCommand}" Margin="0,0,6,0"
                                           Style="{DynamicResource AccentButtonStyle}" ToolTip="Sposta i file selezionati (con anteprima e annullamento)" />
                             <c:IconButton Glyph="{x:Static inf:Glyphs.FolderOpen}" Label="Mostra nella cartella" Command="{Binding OpenFolderCommand}" Margin="0,0,6,0" />
+                            <c:IconButton Glyph="{x:Static inf:Glyphs.Delete}" Label="Sposta nel Cestino…" Command="{Binding RecycleSelectedCommand}" Margin="0,0,6,0"
+                                          ToolTip="Sposta nel Cestino di Windows i file selezionati (Canc). Potrai ripristinarli dal Cestino." />
                         </WrapPanel>
 
                         <DataGrid x:Name="ProductFilesGrid" Grid.Row="3" ItemsSource="{Binding ProductFiles}"
+                                  inf:GridKeys.DeleteCommand="{Binding RecycleSelectedCommand}"
                                   AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Extended" RowHeight="32"
                                   HeadersVisibility="Column" GridLinesVisibility="None"
                                   SelectionChanged="ProductFilesGrid_SelectionChanged" MouseDoubleClick="FileGrid_MouseDoubleClick">
@@ -607,6 +624,119 @@
                                 <DataGridTextColumn Header="Firma" Binding="{Binding File.SignatureText}" Width="*" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="Dimensione" Binding="{Binding File.Size, Converter={StaticResource FileSize}}" Width="95" MinWidth="71" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="Cartella" Binding="{Binding File.Folder}" Width="2*" ElementStyle="{StaticResource CellText}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
+
+                <!-- Scheda Cloni e pulizia -->
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Duplicate}" FontSize="14" Margin="0,0,8,0" />
+                            <TextBlock Text="Cloni e pulizia" />
+                        </StackPanel>
+                    </TabItem.Header>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Ricerca -->
+                        <Border Style="{StaticResource Card}" Margin="0,0,0,10" Padding="12,10">
+                            <DockPanel>
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <ComboBox ItemsSource="{Binding SizeOptions}" SelectedItem="{Binding SelectedSizeOption}" DisplayMemberPath="Label"
+                                              MinWidth="170" Margin="12,0,10,0" ToolTip="Ignora i file più piccoli: la ricerca è più veloce e mostra solo ciò che pesa davvero" />
+                                    <CheckBox Content="Anche cartelle di rete" IsChecked="{Binding IncludeNetworkInDuplicates}" Margin="0,0,12,0" VerticalAlignment="Center"
+                                              ToolTip="I file in rete vanno letti attraverso la rete: la ricerca può essere molto più lenta" />
+                                    <c:IconButton Glyph="{x:Static inf:Glyphs.Search}" Label="Cerca i cloni" Command="{Binding FindDuplicatesCommand}"
+                                                  Style="{DynamicResource AccentButtonStyle}"
+                                                  ToolTip="Trova i file con contenuto identico, anche se hanno nomi diversi o sono in cartelle diverse" />
+                                </StackPanel>
+                                <TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Duplicate}" Foreground="#7C3AED" Margin="0,0,10,0" />
+                                <TextBlock Text="{Binding DuplicatesSummary}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                            </DockPanel>
+                        </Border>
+
+                        <!-- Gruppi di file identici -->
+                        <DataGrid x:Name="DuplicateGroupsGrid" Grid.Row="1" ItemsSource="{Binding DuplicateGroups}" SelectedItem="{Binding SelectedDuplicateGroup}"
+                                  AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" RowHeight="32"
+                                  HeadersVisibility="Column" GridLinesVisibility="None"
+                                  EnableRowVirtualization="True" VirtualizingPanel.VirtualizationMode="Recycling">
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Header="File" Width="2*" MinWidth="200" SortMemberPath="Name">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Duplicate}" Foreground="#7C3AED" Margin="2,0,10,0" />
+                                                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="Copie" Binding="{Binding Files.Count}" Width="70" MinWidth="55" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Dimensione" Binding="{Binding Size, Converter={StaticResource FileSize}}" SortMemberPath="Size" Width="100" MinWidth="75" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Spazio recuperabile" Binding="{Binding WastedBytes, Converter={StaticResource FileSize}}" SortMemberPath="WastedBytes" Width="150" MinWidth="112" ElementStyle="{StaticResource CellText}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <!-- Azioni -->
+                        <WrapPanel Grid.Row="2" Margin="0,12,0,10">
+                            <TextBlock Text="COPIE DEL FILE SELEZIONATO" Style="{StaticResource SectionHeader}" Margin="2,0,14,0" />
+                            <ComboBox ItemsSource="{Binding KeepRules}" SelectedItem="{Binding SelectedKeepRule}" DisplayMemberPath="Label"
+                                      MinWidth="260" Margin="0,0,6,0" ToolTip="Quale copia tenere in ogni gruppo" />
+                            <c:IconButton Glyph="{x:Static inf:Glyphs.SelectAll}" Label="Segna i doppioni" Command="{Binding MarkDoublesCommand}" Margin="0,0,6,0"
+                                          ToolTip="In tutti i gruppi segna le copie da eliminare, tenendone una secondo la regola scelta" />
+                            <c:IconButton Glyph="{x:Static inf:Glyphs.Cancel}" Label="Togli i segni" Command="{Binding ClearMarksCommand}" Margin="0,0,12,0" />
+                            <TextBlock Text="{Binding MarkedSummary}" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,12,0" />
+                            <c:IconButton Glyph="{x:Static inf:Glyphs.Delete}" Label="Sposta nel Cestino" Command="{Binding RecycleMarkedCommand}" Margin="0,0,6,0"
+                                          Style="{DynamicResource AccentButtonStyle}"
+                                          ToolTip="Sposta nel Cestino di Windows le copie segnate. Resta sempre almeno una copia di ogni file." />
+                            <c:IconButton Glyph="{x:Static inf:Glyphs.Move}" Label="Sposta in…" Command="{Binding MoveMarkedCommand}" Margin="0,0,6,0"
+                                          ToolTip="Sposta le copie segnate in un'altra cartella (con anteprima e annullamento)" />
+                        </WrapPanel>
+
+                        <!-- Copie del gruppo selezionato -->
+                        <DataGrid x:Name="DuplicateFilesGrid" Grid.Row="3" ItemsSource="{Binding DuplicateFiles}"
+                                  AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Extended" RowHeight="32"
+                                  HeadersVisibility="Column" GridLinesVisibility="None"
+                                  SelectionChanged="DuplicateFilesGrid_SelectionChanged" MouseDoubleClick="FileGrid_MouseDoubleClick">
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Header="Da eliminare" Width="100" MinWidth="90" SortMemberPath="IsMarked">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <CheckBox IsChecked="{Binding IsMarked, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center"
+                                                      ToolTip="Segna questa copia da spostare nel Cestino" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="Stato" Width="110" MinWidth="90" SortMemberPath="State">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border CornerRadius="10" Padding="8,2" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Background" Value="#E5E7EB" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsKeeper}" Value="True">
+                                                                <Setter Property="Background" Value="#DCFCE7" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <TextBlock Text="{Binding State}" FontSize="12" Foreground="#1F2937" />
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="Nome" Binding="{Binding File.Name}" Width="*" MinWidth="160" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Modificato" Binding="{Binding File.ModifiedUtc, StringFormat=g, Converter={x:Static vm:UtcToLocalConverter.Instance}}"
+                                                    SortMemberPath="File.ModifiedUtc" Width="130" MinWidth="97" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Cartella" Binding="{Binding File.Folder}" Width="2*" MinWidth="160" ElementStyle="{StaticResource CellText}" />
                             </DataGrid.Columns>
                         </DataGrid>
                     </Grid>

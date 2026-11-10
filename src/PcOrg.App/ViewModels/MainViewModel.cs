@@ -60,6 +60,8 @@ public sealed partial class MainViewModel : ObservableObject
         _moves = new MoveService(index);
         ProductsView = CollectionViewSource.GetDefaultView(Products);
         ProductsView.Filter = FilterProduct;
+        SelectedSizeOption = SizeOptions[1];
+        SelectedKeepRule = KeepRules[0];
         ReloadRoots();
         Fire(StartupAsync(), "avvio");
     }
@@ -289,8 +291,9 @@ public sealed partial class MainViewModel : ObservableObject
     private string _searchText = "";
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(ScanCommand), nameof(AddRootCommand), nameof(RemoveRootCommand),
-        nameof(MoveSelectedCommand), nameof(CancelScanCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ScanCommand), nameof(FullScanCommand), nameof(AddRootCommand), nameof(RemoveRootCommand),
+        nameof(MoveSelectedCommand), nameof(CancelScanCommand), nameof(FindDuplicatesCommand),
+        nameof(RecycleMarkedCommand), nameof(MoveMarkedCommand), nameof(RecycleSelectedCommand))]
     private bool _isBusy;
 
     [ObservableProperty]

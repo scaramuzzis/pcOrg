@@ -37,6 +37,8 @@ public partial class MainWindow : Window
             ["file"] = ResultsGrid,
             ["prodotti"] = ProductsGrid,
             ["fileProdotto"] = ProductFilesGrid,
+            ["cloni"] = DuplicateGroupsGrid,
+            ["fileCloni"] = DuplicateFilesGrid,
         };
         _saveLayoutTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _saveLayoutTimer.Tick += (_, _) =>
@@ -65,6 +67,8 @@ public partial class MainWindow : Window
         ["file"] = "Elenco file",
         ["prodotti"] = "Prodotti",
         ["fileProdotto"] = "File del prodotto selezionato",
+        ["cloni"] = "Cloni: gruppi di file identici",
+        ["fileCloni"] = "Cloni: copie del file selezionato",
     };
 
     // ------------------------------------------------------------------ Disposizione salvata
@@ -249,6 +253,12 @@ public partial class MainWindow : Window
             vm.SelectedFiles = ProductFilesGrid.SelectedItems.OfType<ProductFileItem>().Select(i => i.File).ToList();
     }
 
+    private void DuplicateFilesGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (ViewModel is { } vm)
+            vm.SelectedFiles = DuplicateFilesGrid.SelectedItems.OfType<DuplicateFileItem>().Select(i => i.File).ToList();
+    }
+
     private void FileGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
         // Il doppio clic su un'intestazione di colonna non deve aprire il file selezionato.
@@ -258,6 +268,7 @@ public partial class MainWindow : Window
         {
             FileRecord f => f,
             ProductFileItem item => item.File,
+            DuplicateFileItem copy => copy.File,
             _ => null,
         };
         if (file is not null)
@@ -276,7 +287,7 @@ public partial class MainWindow : Window
 
     private void SelectAll_Click(object sender, RoutedEventArgs e)
     {
-        var grid = ViewModel?.SelectedTabIndex == 1 ? ProductFilesGrid : ResultsGrid;
+        var grid = ViewModel?.SelectedTabIndex switch { 1 => ProductFilesGrid, 2 => DuplicateFilesGrid, _ => ResultsGrid };
         grid.SelectAll();
         grid.Focus();
     }

@@ -163,6 +163,32 @@ Il pulsante **Seleziona le versioni vecchie** le seleziona tutte in un clic: poi
 
 > Il raggruppamento usa il nome del prodotto e il produttore letti dal file. Per i file senza queste informazioni viene usato il nome del file, quindi qualche raggruppamento può essere meno preciso.
 
+## Cloni e pulizia
+
+Spesso lo stesso file è presente più volte: lo stesso installer scaricato due volte (`setup.exe` e `setup (1).exe`), una foto copiata in un'altra cartella, un backup duplicato. La scheda **Cloni e pulizia** (**Ctrl+3**) trova i file con **contenuto identico**, anche se hanno nomi diversi o stanno in cartelle diverse, e ti aiuta a liberare spazio in sicurezza.
+
+**Cercare i cloni.** Scegli la dimensione minima (per esempio *Più grandi di 1 MB*, per concentrarti sui file che pesano davvero) e premi **Cerca i cloni**. Per essere veloce anche con milioni di file pcOrg confronta per gradi:
+
+1. considera solo i file che hanno un altro file della **stessa dimensione**;
+2. per questi calcola un'**impronta veloce** leggendo solo l'inizio e la fine del file;
+3. legge per intero solo i file che coincidono anche lì, per un **confronto completo**.
+
+Le impronte vengono ricordate: la ricerca successiva rilegge solo i file nuovi o cambiati ed è quasi istantanea. Le cartelle di rete sono escluse, a meno che tu non spunti **Anche cartelle di rete** (la ricerca diventa più lenta, perché i file vanno letti attraverso la rete).
+
+**I risultati.** In alto compaiono i gruppi di file identici, ordinati per **spazio recuperabile** (lo spazio che si libera tenendo una sola copia); il riepilogo indica il totale. Selezionando un gruppo, sotto ne vedi tutte le copie, con data e cartella.
+
+**Scegliere cosa eliminare.**
+
+- Scegli una regola: **tieni la copia più vecchia** (di solito l'originale), **la più recente**, **quella con il percorso più corto** o **più lungo**;
+- premi **Segna i doppioni**: in tutti i gruppi vengono segnate le copie da eliminare, tranne quella da tenere (indicata come **Da tenere**);
+- puoi correggere a mano spuntando o togliendo la casella **Da eliminare** di ogni copia.
+
+Poi usa **Sposta nel Cestino** oppure **Sposta in…** (per esempio in una cartella "Doppioni" da controllare con calma).
+
+> **Sicurezza.** pcOrg non permette di eliminare **tutte** le copie di un file: se in un gruppo le hai segnate tutte, te lo segnala e non procede. Prima di spostare nel Cestino controlla che ogni file esista ancora e non sia cambiato dall'ultimo aggiornamento. I file vanno nel **Cestino di Windows**, da cui puoi sempre ripristinarli.
+
+**Cestino anche dalle altre schede.** Nelle schede **File** e **Prodotti e versioni** puoi spostare nel Cestino i file selezionati con il tasto **Canc**, con il menu **Modifica → Sposta nel Cestino** o con il tasto destro. Utile, per esempio, dopo aver selezionato le **versioni vecchie** di un programma.
+
 ## Spostare i file
 
 Seleziona uno o più file (con **Ctrl** o **Maiusc** per selezionarne più di uno, **Ctrl+A** per tutti) e usa **Sposta in…**, il menu **Modifica → Sposta in…** oppure **Ctrl+M**.
@@ -210,8 +236,9 @@ Usi tipici: un inventario dei driver da conservare, l'elenco degli installer da 
 | Copia percorso | **Ctrl+Maiusc+C** |
 | Seleziona tutto | **Ctrl+A** |
 | Sposta in… | **Ctrl+M** |
+| Sposta nel Cestino | **Canc** |
 | Cronologia spostamenti | **Ctrl+H** |
-| Scheda File / Prodotti e versioni | **Ctrl+1** / **Ctrl+2** |
+| Scheda File / Prodotti e versioni / Cloni | **Ctrl+1** / **Ctrl+2** / **Ctrl+3** |
 | Impostazioni | **Ctrl+,** |
 | Guida | **F1** |
 
@@ -270,7 +297,7 @@ Mostra dove sono salvati i dati e quanti file contiene l'indice, e permette di:
 1. **Parti dalle cartelle più disordinate**: Download, Desktop e i dischi esterni con installer e driver accumulati negli anni.
 2. **Crea una cartella archivio** (per esempio `D:\Archivio`) con poche sottocartelle chiare: `Installer`, `Driver`, `Immagini disco`, `Documenti`. Aggiungila alle cartelle monitorate, così ritrovi tutto anche dopo lo spostamento.
 3. **Usa le categorie come lista di lavoro**: seleziona **Driver**, ordina per produttore e sposta tutto in `Archivio\Driver`; ripeti con **Installer** e **Immagini disco**.
-4. **Elimina i doppioni con "Prodotti e versioni"**: per ogni programma tieni l'ultima versione e sposta le vecchie in `Archivio\Versioni vecchie`. Se dopo qualche mese non ti sono servite, puoi cancellarle tu da Esplora risorse.
+4. **Elimina i doppioni**: nella scheda **Cloni e pulizia** cerca i file identici (parti da quelli più grandi di 10 MB) e sposta nel Cestino le copie in più; nella scheda **Prodotti e versioni** tieni l'ultima versione di ogni programma e archivia o cestina le vecchie.
 5. **Controlla la firma** prima di eseguire programmi scaricati tempo fa: preferisci quelli con firma valida ✔.
 6. **Tieni insieme i pezzi dei backup Ghost** (`.gho` e i relativi `.ghs`): spostali sempre tutti insieme nella stessa cartella.
 7. **Premi F5** dopo aver scaricato nuovi file o averli spostati con altri programmi.
@@ -299,6 +326,6 @@ Mostra dove sono salvati i dati e quanti file contiene l'indice, e permette di:
 ## Privacy e sicurezza
 
 - pcOrg **non si collega a internet**: tutte le analisi avvengono sul tuo PC, compresa la verifica delle firme digitali.
-- pcOrg **non cancella e non modifica** il contenuto dei file. Le uniche operazioni sui file sono gli spostamenti che confermi tu, sempre annullabili.
+- pcOrg **non cancella definitivamente e non modifica** il contenuto dei file. Le uniche operazioni sui file sono quelle che confermi tu: gli spostamenti, sempre annullabili, e lo spostamento nel **Cestino di Windows**, da cui puoi ripristinare i file.
 - Nessun file viene **sovrascritto**: in caso di nomi uguali viene aggiunto un numero, per esempio `setup (2).exe`.
 - I dati di pcOrg (indice, cronologia, preferenze, registro attività) restano nella cartella dei dati sul tuo PC.

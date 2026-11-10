@@ -30,7 +30,8 @@ public class Screenshots
         public void ShowAbout() { }
         public void ShowHelp(string? chapter = null) { }
         public string? SavePath { get; set; }
-        public bool Confirm(string message, string title, string confirmText = "Conferma") => false;
+        public bool Confirm(string message, string title, string confirmText = "Conferma") => ConfirmResult;
+        public bool ConfirmResult { get; set; }
         public void Info(string message, string title) { }
         public void Error(string message, string title) { }
         public MovePreviewResult? PreviewMove(IReadOnlyList<MoveItem> plan, string destination, bool destinationMonitored) => null;
@@ -152,6 +153,18 @@ public class Screenshots
         Capture(window, output, "05-ricerca.png");
         vm.SearchText = "";
         Pump(600);
+
+        // 6b. Cloni e pulizia
+        window.Tabs.SelectedIndex = 2;
+        vm.SelectedSizeOption = vm.SizeOptions[0];
+        var find = vm.FindDuplicatesCommand.ExecuteAsync(null);
+        while (!find.IsCompleted)
+            Pump(200);
+        vm.MarkDoublesCommand.Execute(null);
+        Pump(600);
+        Capture(window, output, "23-cloni-e-pulizia.png");
+        window.Tabs.SelectedIndex = 0;
+        Pump(300);
 
         // 6. Prodotti e versioni
         window.Tabs.SelectedIndex = 1;
@@ -485,6 +498,11 @@ internal static class SampleData
         Fake(Path.Combine(root, "Driver", "Realtek", "RTKVHD64.sys"), 6_200_000);
         Fake(Path.Combine(root, "intel-wifi-driver-23.80.zip"), 54_000_000);
 
+        // Cloni: lo stesso installer scaricato più volte e una foto copiata
+        CopyAs(@"C:\Program Files\Mozilla Firefox\firefox.exe", Path.Combine(root, "Vecchi download", "Firefox Setup 132.0 (1).exe"));
+        CopyAs(@"C:\Program Files\Mozilla Firefox\firefox.exe", Path.Combine(root, "Backup", "firefox-installer.exe"));
+        CopyAs(Environment.ProcessPath!, Path.Combine(root, "Vecchi download", "dotnet-runtime-10.0.0-win-x64 (2).exe"));
+
         // Connessioni remote
         File.WriteAllText(Path.Combine(root, "Connessioni", "Ufficio Mario.vnc").Also(p => Directory.CreateDirectory(Path.GetDirectoryName(p)!)),
             "[connection]\r\nhost=192.168.1.20\r\nport=5900\r\n");
@@ -526,6 +544,7 @@ internal static class SampleData
         var names = new[] { "Vacanze Sardegna 2024.jpg", "Tramonto al lago.jpg", "Montagna - Dolomiti.png", "Cena di Natale.jpg" };
         for (var i = 0; i < names.Length; i++)
             Picture(Path.Combine(photos, names[i]), 1600, 1067, palettes[i].Item1, palettes[i].Item2);
+        File.Copy(Path.Combine(photos, names[1]), Path.Combine(photos, "Copia di Tramonto al lago.jpg"));
     }
 
     private static IEnumerable<string> FindAll(string folder, string exe, int max)
