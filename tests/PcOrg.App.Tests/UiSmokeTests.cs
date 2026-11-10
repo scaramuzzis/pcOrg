@@ -74,6 +74,9 @@ public class UiSmokeTests
         File.WriteAllText(Path.Combine(folder, "nota.txt"), "x");
         File.WriteAllText(Path.Combine(folder, "backup.gho"), "immagine ghost di prova"); // contenuto diverso da nota.txt: non sono cloni
         WritePng(Path.Combine(folder, "foto.png"), 1200, 800);
+        Directory.CreateDirectory(Path.Combine(folder, "VecchiaStampante"));
+        File.WriteAllText(Path.Combine(folder, "VecchiaStampante", "stampante.inf"),
+            "[Version]\nClass=Printer\nProvider=Stampanti Spa\nDriverVer=01/02/2020,1.2.3.4\n[Manufacturer]\nX=Modelli\n[Modelli]\nStampante = Inst, USBPRINT\\VECCHIA_STAMPANTE_1234\n");
 
         var index = FileIndex.Open(Path.Combine(temp, "indice.db"));
         var root = index.AddRoot(folder);
@@ -90,7 +93,7 @@ public class UiSmokeTests
         Pump(TimeSpan.FromSeconds(3));
 
         var vm = (MainViewModel)window.DataContext;
-        Assert.Equal(5, vm.Results.Count);
+        Assert.Equal(6, vm.Results.Count);
 
         // Anteprima: compare per le immagini, sparisce per gli altri file.
         vm.SelectedFiles = [vm.Results.First(r => r.Name == "foto.png")];
@@ -212,6 +215,16 @@ public class UiSmokeTests
 
         // Colonna "Sul PC" e dettagli: il confronto con i programmi installati non deve fallire
         await_(vm.RefreshInstalledAsync());
+
+        // Driver e periferiche: il driver della stampante che non c'è va fra quelli che non servono
+        window.Tabs.SelectedIndex = 3;
+        Pump(TimeSpan.FromMilliseconds(400));
+        Assert.Contains("periferiche presenti", vm.DriversSummary);
+        vm.SelectUnneededDriversCommand.Execute(null);
+        Assert.Contains(vm.SelectedFiles, f => f.Name == "stampante.inf");
+        Assert.Contains(vm.DriverFiles, d => d.State == PcOrg.Core.Drivers.DriverState.NonServe);
+        vm.ShowUnneededDrivers = false;
+        window.Tabs.SelectedIndex = 0;
         window.ResultsGrid.Columns.First(c => (string)c.Header == "Sul PC").Visibility = Visibility.Visible;
         Pump(TimeSpan.FromMilliseconds(300));
 

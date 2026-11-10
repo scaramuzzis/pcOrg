@@ -16,7 +16,7 @@ Proposte ordinate per **valore per l'utente / costo**. Ogni voce indica il probl
 
 | # | Miglioria | Perché | Come | Stima |
 |---|---|---|---|---|
-| 6 | **Driver vs periferiche presenti** | Capire quali driver servono ancora a questo PC. | Lettura dei file `.inf` (Class, Provider, DriverVer, HardwareID) e confronto con le periferiche via SetupAPI/`pnputil /enum-devices`. | 3–4 |
+| 6 | ✅ **Driver vs periferiche presenti** (v0.11) | Capire quali driver servono ancora a questo PC. | Lettura dei file `.inf` (Class, Provider, DriverVer, HardwareID) e confronto con le periferiche via SetupAPI/`pnputil /enum-devices`. | 3–4 |
 | 7 | ✅ **Installato / non installato** (v0.10) | Sapere se un installer è già stato usato. | Incrocio con le chiavi `Uninstall` del registro (HKLM, WOW6432Node, HKCU) e le app MSIX. | 2 |
 | 8 | **Contenuto di ZIP/ISO** | Gli installer dentro gli archivi non vengono analizzati. | Indice delle voci di zip/7z/rar (SharpCompress) e delle ISO; ricerca anche dentro. | 3 |
 | 9 | **Etichette e note** | Ricordare perché si tiene un file ("driver stampante ufficio"). | Tabella `tags` nell'indice, ricerca per etichetta, colonna facoltativa. | 2 |

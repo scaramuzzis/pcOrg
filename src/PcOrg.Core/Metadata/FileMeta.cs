@@ -44,6 +44,12 @@ public sealed record FileMeta
     /// <summary>Chiave usata per raggruppare le versioni dello stesso prodotto.</summary>
     public string? ProductKey { get; init; }
 
+    /// <summary>
+    /// Solo per i file .inf: identificativi hardware delle periferiche supportate. Non sono salvati in
+    /// file_meta ma nella tabella driver_hwids, per poterli confrontare velocemente con le periferiche.
+    /// </summary>
+    public IReadOnlyList<Drivers.DriverHardwareId>? HardwareIds { get; init; }
+
     /// <summary>Versione da mostrare: quella del prodotto se presente, altrimenti quella del file.</summary>
     public string? DisplayVersion => VersionComparer.Clean(ProductVersion) ?? VersionComparer.Clean(FileVersion);
 

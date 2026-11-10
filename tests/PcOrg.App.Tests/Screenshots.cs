@@ -167,6 +167,18 @@ public class Screenshots
         window.Tabs.SelectedIndex = 0;
         Pump(300);
 
+        // 6c. Driver e periferiche (dopo la lettura di periferiche e programmi installati)
+        await_(vm.RefreshInstalledAsync());
+        window.Tabs.SelectedIndex = 3;
+        Pump(800);
+        Capture(window, output, "27-driver-e-periferiche.png");
+        vm.ShowUnneededDrivers = true;
+        Pump(500);
+        Capture(window, output, "28-driver-che-non-servono.png");
+        vm.ShowUnneededDrivers = false;
+        window.Tabs.SelectedIndex = 0;
+        Pump(300);
+
         // 6. Prodotti e versioni
         window.Tabs.SelectedIndex = 1;
         vm.SelectedProduct = vm.Products.OrderByDescending(p => p.Files.Count).FirstOrDefault();
@@ -532,6 +544,30 @@ internal static class SampleData
         CopyAs(@"C:\Program Files\Mozilla Firefox\firefox.exe", Path.Combine(root, "Vecchi download", "Firefox Setup 132.0 (1).exe"));
         CopyAs(@"C:\Program Files\Mozilla Firefox\firefox.exe", Path.Combine(root, "Backup", "firefox-installer.exe"));
         CopyAs(Environment.ProcessPath!, Path.Combine(root, "Vecchi download", "dotnet-runtime-10.0.0-win-x64 (2).exe"));
+
+        // Driver: pacchetti .inf costruiti sulle periferiche vere della macchina di build, così la scheda
+        // "Driver e periferiche" mostra un aggiornamento disponibile, un driver uguale e uno che non serve.
+        var devices = PcOrg.Core.Drivers.DeviceInventory.Read().Where(d => d.DriverVersion is not null).Take(2).ToList();
+        void Inf(string folder, string cls, string provider, string version, string description, string hwid)
+        {
+            var dir = Path.Combine(root, "Driver", folder);
+            Directory.CreateDirectory(dir);
+            File.WriteAllText(Path.Combine(dir, "driver.inf"),
+                $"[Version]\r\nClass={cls}\r\nProvider=%P%\r\nDriverVer=05/14/2025,{version}\r\n[Manufacturer]\r\n%P%=Models,NTamd64\r\n" +
+                $"[Models.NTamd64]\r\n%D%=Install,{hwid}\r\n[Strings]\r\nP=\"{provider}\"\r\nD=\"{description}\"\r\n",
+                System.Text.Encoding.Unicode);
+            Fake(Path.Combine(dir, "driver.sys"), 180_000);
+            Fake(Path.Combine(dir, "driver.cat"), 12_000);
+        }
+        if (devices.Count > 0)
+        {
+            var v = devices[0].DriverVersion!.Split('.').Select(p => int.TryParse(p, out var n) ? n : 0).ToArray();
+            var newer = string.Join('.', v.Take(v.Length - 1).Append(v[^1] + 10));
+            Inf("Aggiornamento", devices[0].Class ?? "System", devices[0].DriverProvider ?? "Produttore", newer, devices[0].Name, devices[0].HardwareIds[0]);
+        }
+        if (devices.Count > 1)
+            Inf("Uguale", devices[1].Class ?? "System", devices[1].DriverProvider ?? "Produttore", devices[1].DriverVersion!, devices[1].Name, devices[1].HardwareIds[0]);
+        Inf("Stampante HP LaserJet 1020", "Printer", "HP", "5.0.1.2", "HP LaserJet 1020", @"USBPRINT\Hewlett-PackardHP_LaFDE6");
 
         // Connessioni remote
         File.WriteAllText(Path.Combine(root, "Connessioni", "Ufficio Mario.vnc").Also(p => Directory.CreateDirectory(Path.GetDirectoryName(p)!)),

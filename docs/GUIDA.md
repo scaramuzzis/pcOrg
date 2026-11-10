@@ -130,7 +130,7 @@ Selezionando un file, sotto l'elenco compare la scheda con tutti i suoi dettagli
 | **Firma digitale** | Chi ha firmato il file e se la firma è valida (vedi sotto). |
 | **Architettura** | 32 bit (x86), 64 bit (x64), ARM64, oppure "Qualsiasi (.NET)". |
 | **Tipo di installer** | La tecnologia dell'installazione: Windows Installer (MSI), Inno Setup, NSIS, InstallShield, WiX, autoestraente 7-Zip/ZIP/RAR. |
-| **Sul PC** | Per installer e driver: se il programma è già installato su questo PC e in quale versione (vedi sotto). |
+| **Sul PC** | Per gli installer: se il programma è già installato su questo PC e in quale versione (vedi sotto). Per i driver: a quale periferica di questo PC servono e se sono più recenti di quello installato (vedi **Driver e periferiche**). |
 
 **La firma digitale** dice chi ha prodotto davvero un programma ed è un ottimo indizio di affidabilità:
 
@@ -172,6 +172,26 @@ Selezionando un prodotto, sotto compaiono i suoi file con lo stato:
 Il pulsante **Seleziona le versioni vecchie** le seleziona tutte in un clic: poi con **Sposta in…** puoi archiviarle in una cartella a parte. La casella **Solo prodotti con più file** mostra solo i prodotti di cui hai più copie o più versioni.
 
 > Il raggruppamento usa il nome del prodotto e il produttore letti dal file. Per i file senza queste informazioni viene usato il nome del file, quindi qualche raggruppamento può essere meno preciso.
+
+## Driver e periferiche
+
+Chi conserva i driver accumula negli anni pacchetti per schede, stampanti e periferiche che non ha più. La scheda **Driver e periferiche** (**Ctrl+4**) confronta i driver del tuo archivio con le **periferiche presenti su questo PC** e ti dice quali servono, quali sono **più recenti** di quelli installati e quali **non servono più**.
+
+**Come funziona.** Ogni pacchetto driver contiene un file `.inf` che elenca gli **identificativi hardware** delle periferiche supportate (per esempio `PCI\VEN_10DE&DEV_2484` per una scheda video NVIDIA). pcOrg legge questi identificativi, la versione e il fornitore del driver; poi legge le periferiche presenti, con i loro identificativi e la versione del driver installato, dalla stessa fonte di **Gestione dispositivi** di Windows, e li confronta.
+
+**Le periferiche.** In alto c'è l'elenco delle periferiche di questo PC con classe, driver installato, fornitore, quanti driver dell'archivio le riguardano e lo stato:
+
+- **Aggiornamento disponibile** — nell'archivio c'è un driver più recente di quello installato (l'icona è verde e la periferica compare in cima);
+- **Hai il driver installato** — nell'archivio c'è la stessa versione già installata;
+- **Solo versioni più vecchie** — i driver dell'archivio sono superati.
+
+Togli la spunta da **Solo periferiche con driver nell'archivio** per vedere tutte le periferiche.
+
+**I driver dell'archivio.** Selezionando una periferica, sotto compaiono i pacchetti driver che la supportano, con la versione e lo stato rispetto a quello installato (più recente, è quello installato, più vecchio). Spunta **Mostra quelli che non servono a questo PC** per vedere invece i pacchetti per periferiche che questo PC non ha: con **Seleziona quelli che non servono** li selezioni tutti e puoi archiviarli con **Sposta in…** o eliminarli con **Sposta nel Cestino**.
+
+Lo stato compare anche nella colonna **Sul PC** (scheda Prodotti e colonna facoltativa dell'elenco file) per i file `.inf` e per gli altri file dello stesso pacchetto (`.sys`, `.cat`, `.dll`).
+
+> I driver forniti solo come programma di installazione (per esempio un unico `.exe` di NVIDIA) non contengono un `.inf` leggibile finché non vengono estratti: per quelli pcOrg mostra versione e produttore, ma non può confrontarli con le periferiche. Per installare un driver usa sempre il programma del produttore o Gestione dispositivi.
 
 ## Regole di archiviazione
 
@@ -264,7 +284,7 @@ Usi tipici: un inventario dei driver da conservare, l'elenco degli installer da 
 | Sposta in… | **Ctrl+M** |
 | Sposta nel Cestino | **Canc** |
 | Cronologia spostamenti | **Ctrl+H** |
-| Scheda File / Prodotti e versioni / Cloni | **Ctrl+1** / **Ctrl+2** / **Ctrl+3** |
+| Schede File / Prodotti / Cloni / Driver | **Ctrl+1** / **Ctrl+2** / **Ctrl+3** / **Ctrl+4** |
 | Impostazioni | **Ctrl+,** |
 | Guida | **F1** |
 

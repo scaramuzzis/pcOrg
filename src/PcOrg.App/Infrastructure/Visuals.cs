@@ -45,6 +45,7 @@ public static class Glyphs
     public const string Database = "\uE7F1";
     public const string Duplicate = "\uE8F1";
     public const string Rules = "\uE71C";
+    public const string Device = "\uE772";
     public const string Edit = "\uE70F";
     public const string Lightbulb = "\uEA80";
 

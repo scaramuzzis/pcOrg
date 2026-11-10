@@ -39,6 +39,8 @@ public partial class MainWindow : Window
             ["fileProdotto"] = ProductFilesGrid,
             ["cloni"] = DuplicateGroupsGrid,
             ["fileCloni"] = DuplicateFilesGrid,
+            ["periferiche"] = DevicesGrid,
+            ["driverPeriferica"] = DriverFilesGrid,
         };
         _saveLayoutTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _saveLayoutTimer.Tick += (_, _) =>
@@ -69,6 +71,8 @@ public partial class MainWindow : Window
         ["fileProdotto"] = "File del prodotto selezionato",
         ["cloni"] = "Cloni: gruppi di file identici",
         ["fileCloni"] = "Cloni: copie del file selezionato",
+        ["periferiche"] = "Periferiche presenti",
+        ["driverPeriferica"] = "Driver dell'archivio",
     };
 
     // ------------------------------------------------------------------ Disposizione salvata
@@ -262,6 +266,12 @@ public partial class MainWindow : Window
             vm.SelectedFiles = DuplicateFilesGrid.SelectedItems.OfType<DuplicateFileItem>().Select(i => i.File).ToList();
     }
 
+    private void DriverFilesGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (ViewModel is { } vm)
+            vm.SelectedFiles = DriverFilesGrid.SelectedItems.OfType<DriverFileRow>().Select(i => i.File).ToList();
+    }
+
     private void FileGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
         // Il doppio clic su un'intestazione di colonna non deve aprire il file selezionato.
@@ -272,6 +282,7 @@ public partial class MainWindow : Window
             FileRecord f => f,
             ProductFileItem item => item.File,
             DuplicateFileItem copy => copy.File,
+            DriverFileRow driver => driver.File,
             _ => null,
         };
         if (file is not null)
@@ -290,7 +301,7 @@ public partial class MainWindow : Window
 
     private void SelectAll_Click(object sender, RoutedEventArgs e)
     {
-        var grid = ViewModel?.SelectedTabIndex switch { 1 => ProductFilesGrid, 2 => DuplicateFilesGrid, _ => ResultsGrid };
+        var grid = ViewModel?.SelectedTabIndex switch { 1 => ProductFilesGrid, 2 => DuplicateFilesGrid, 3 => DriverFilesGrid, _ => ResultsGrid };
         grid.SelectAll();
         grid.Focus();
     }

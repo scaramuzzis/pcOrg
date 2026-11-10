@@ -118,11 +118,12 @@ public sealed partial class MainViewModel
 
     // ------------------------------------------------------------------ Programmi installati
 
-    /// <summary>Legge in background i programmi installati e aggiorna le colonne "Sul PC".</summary>
+    /// <summary>Legge in background programmi installati e periferiche, e aggiorna le colonne "Sul PC".</summary>
     public async Task RefreshInstalledAsync()
     {
         var programs = await Task.Run(InstalledPrograms.Read);
         InstalledCatalog.Current = new InstalledIndex(programs);
+        await RefreshDriversAsync();
         await RefreshAsync(); // ridisegna gli elenchi con lo stato aggiornato
     }
 }

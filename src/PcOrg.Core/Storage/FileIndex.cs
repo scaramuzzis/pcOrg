@@ -14,7 +14,7 @@ namespace PcOrg.Core.Storage;
 /// </summary>
 public sealed partial class FileIndex
 {
-    private const int SchemaVersion = 6;
+    private const int SchemaVersion = 7;
     private readonly string _connectionString;
 
     /// <summary>Percorso completo del file dell'indice (indice.db).</summary>
@@ -75,6 +75,8 @@ public sealed partial class FileIndex
         }
         if (version < 6)
             CreateHashTable(conn, tx);
+        if (version < 7)
+            CreateDriverTable(conn, tx);
         Exec(conn, $"PRAGMA user_version = {SchemaVersion};", tx);
         tx.Commit();
     }
@@ -602,6 +604,7 @@ public sealed partial class FileIndex
             upsert.Parameters.AddWithValue("$inst", (object?)meta?.InstallerType ?? DBNull.Value);
             upsert.Parameters.AddWithValue("$key", (object?)meta?.ProductKey ?? DBNull.Value);
             upsert.ExecuteNonQuery();
+            SaveHardwareIds(conn, tx, file.Id, meta?.HardwareIds);
 
             if (meta is null)
                 continue;

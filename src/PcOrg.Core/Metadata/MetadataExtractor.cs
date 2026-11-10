@@ -8,7 +8,7 @@ public static partial class MetadataExtractor
 {
     /// <summary>Estensioni di cui si leggono i metadati (programmi, installer, driver, connessioni remote).</summary>
     public static readonly IReadOnlySet<string> SupportedExtensions =
-        new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".exe", ".msi", ".sys", ".vnc", ".rdp" };
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".exe", ".msi", ".sys", ".vnc", ".rdp", ".inf" };
 
     public static bool IsSupported(string path) => SupportedExtensions.Contains(Path.GetExtension(path));
 
@@ -18,6 +18,8 @@ public static partial class MetadataExtractor
         var ext = Path.GetExtension(path);
         if (RemoteConnectionReader.SupportedExtensions.Contains(ext))
             return RemoteConnectionReader.Read(path);
+        if (ext.Equals(".inf", StringComparison.OrdinalIgnoreCase))
+            return ExtractInf(path);
         return ext.Equals(".msi", StringComparison.OrdinalIgnoreCase)
             ? ExtractMsi(path, verifySignature)
             : ExtractPe(path, verifySignature);
@@ -45,6 +47,28 @@ public static partial class MetadataExtractor
                 ? Signature.Verify(path, hasSignature)
                 : hasSignature ? SignatureStatus.NonVerificata : SignatureStatus.NonFirmato,
             InstallerType = DetectInstaller(path, pe),
+        };
+        return meta with { ProductKey = ProductKeys.For(meta, path) };
+    }
+
+    /// <summary>
+    /// Pacchetto driver: il fornitore diventa il produttore, la prima periferica supportata il prodotto
+    /// (così le versioni dello stesso driver si raggruppano nella scheda Prodotti) e la versione è DriverVer.
+    /// </summary>
+    private static FileMeta? ExtractInf(string path)
+    {
+        if (Drivers.InfReader.Read(path) is not { } inf)
+            return null;
+        var first = inf.HardwareIds.FirstOrDefault(i => !string.IsNullOrWhiteSpace(i.Description))?.Description;
+        var meta = new FileMeta
+        {
+            ProductName = first ?? (inf.Class is null ? null : $"Driver {inf.Class}"),
+            CompanyName = inf.Provider,
+            ProductVersion = inf.Version,
+            FileDescription = $"Driver {inf.Class ?? "di periferica"}: {inf.HardwareIds.Count} identificativi hardware supportati" +
+                              (inf.Date is { } d ? $", del {d:dd/MM/yyyy}" : ""),
+            InstallerType = "Pacchetto driver (INF)",
+            HardwareIds = inf.HardwareIds,
         };
         return meta with { ProductKey = ProductKeys.For(meta, path) };
     }
