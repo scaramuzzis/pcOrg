@@ -25,6 +25,7 @@ public class Screenshots
     private sealed class SilentDialogs : IDialogService
     {
         public string? PickFolder(string title) => null;
+        public string? AskNetworkFolder() => null;
         public bool Confirm(string message, string title, string confirmText = "Conferma") => false;
         public void Info(string message, string title) { }
         public void Error(string message, string title) { }
@@ -66,6 +67,32 @@ public class Screenshots
         var root = index.AddRoot(download);
         index.SyncRoot(root.Id, FolderScanner.Enumerate(root.Path));
         index.AddRoot(archive);
+
+        // Cartella di rete: la condivisione amministrativa \\localhost\C$ punta alla stessa macchina.
+        try
+        {
+            var shared = Path.Combine(temp, "NAS");
+            Directory.CreateDirectory(shared);
+            File.WriteAllText(Path.Combine(shared, "Listino prezzi 2025.pdf"), "x");
+            File.WriteAllText(Path.Combine(shared, "Driver stampante HP.zip"), "x");
+            var unc = @"\\localhost\" + shared[0] + "$" + shared[2..];
+            if (Directory.Exists(unc))
+            {
+                var nas = index.AddRoot(unc);
+                index.SyncRoot(nas.Id, FolderScanner.Enumerate(nas.Path));
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
+        {
+        }
+
+        // Cartella non più raggiungibile (es. chiavetta scollegata)
+        var usb = Directory.CreateDirectory(Path.Combine(temp, "Chiavetta USB")).FullName;
+        File.WriteAllText(Path.Combine(usb, "Foto matrimonio.zip"), "x");
+        var usbRoot = index.AddRoot(usb);
+        index.SyncRoot(usbRoot.Id, FolderScanner.Enumerate(usbRoot.Path));
+        Directory.Delete(usb, recursive: true);
+
         MetadataUpdater.Run(index);
 
         var app = new App();
@@ -142,6 +169,14 @@ public class Screenshots
         Show(dialog);
         Capture(dialog, output, "09-conferma.png");
         dialog.Close();
+
+        // 9b. Aggiunta di una cartella di rete
+        var network = new NetworkFolderDialog { Owner = window };
+        Show(network);
+        ((System.Windows.Controls.TextBox)network.FindName("PathBox")).Text = @"\\NAS\Condivisa\Download";
+        Pump(300);
+        Capture(network, output, "12-cartella-di-rete.png");
+        network.Close();
 
         // 10. Cronologia spostamenti
         var history = new MoveHistoryWindow(index, new SilentDialogs(), () => { }) { Owner = window };

@@ -220,7 +220,7 @@ public sealed class FileIndex
     /// </summary>
     public RootFolder AddRoot(string path)
     {
-        var normalized = PathUtil.Normalize(path);
+        var normalized = PathUtil.Normalize(NetworkPaths.ToUnc(path));
         if (!Directory.Exists(normalized))
             throw new DirectoryNotFoundException($"La cartella \"{normalized}\" non esiste.");
 
@@ -266,8 +266,12 @@ public sealed class FileIndex
     /// aggiunge i nuovi, aggiorna i modificati, rimuove quelli spariti.
     /// </summary>
     /// <returns>Numero di file presenti nella cartella.</returns>
+    /// <param name="isStillAvailable">
+    /// Controllato prima di eliminare i file non trovati: se la cartella (es. di rete) è sparita durante la
+    /// scansione, l'elenco potrebbe essere incompleto e l'indice resta com'era invece di perdere i file.
+    /// </param>
     public int SyncRoot(long rootId, IEnumerable<ScannedFile> files, IProgress<int>? progress = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, Func<bool>? isStillAvailable = null)
     {
         using var conn = Connect();
         using var tx = conn.BeginTransaction();
@@ -315,6 +319,8 @@ public sealed class FileIndex
         }
         progress?.Report(count);
 
+        if (isStillAvailable is not null && !isStillAvailable())
+            throw new IOException("La cartella non è più raggiungibile: scansione annullata, l'indice resta invariato.");
         Exec(conn, $"DELETE FROM files WHERE root_id = {rootId} AND seen <> {generation};", tx);
         using (var stamp = Command(conn, "UPDATE roots SET last_scan_utc = $t WHERE id = $id;", tx))
         {

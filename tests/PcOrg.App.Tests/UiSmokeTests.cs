@@ -21,6 +21,7 @@ public class UiSmokeTests
     private sealed class SilentDialogs : IDialogService
     {
         public string? PickFolder(string title) => null;
+        public string? AskNetworkFolder() => null;
         public bool Confirm(string message, string title, string confirmText = "Conferma") => false;
         public void Info(string message, string title) { }
         public void Error(string message, string title) => throw new InvalidOperationException(message);

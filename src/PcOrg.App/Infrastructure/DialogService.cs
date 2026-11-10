@@ -16,6 +16,14 @@ public sealed class DialogService : IDialogService
         return dialog.ShowDialog(Owner) == true ? dialog.FolderName : null;
     }
 
+    public string? AskNetworkFolder()
+    {
+        var dialog = new NetworkFolderDialog();
+        if (Owner is { IsVisible: true })
+            dialog.Owner = Owner;
+        return dialog.ShowDialog() == true ? dialog.FolderPath : null;
+    }
+
     public bool Confirm(string message, string title, string confirmText = "Conferma") =>
         ModernDialog.Show(Owner, title, message, DialogKind.Question, confirmText, "Annulla");
 

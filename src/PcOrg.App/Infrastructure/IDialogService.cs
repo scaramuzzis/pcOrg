@@ -7,6 +7,9 @@ public interface IDialogService
 {
     string? PickFolder(string title);
 
+    /// <summary>Chiede il percorso di una cartella di rete (es. \\NAS\Foto). Null se l'utente annulla.</summary>
+    string? AskNetworkFolder();
+
     /// <summary>Chiede conferma; <paramref name="confirmText"/> è il testo del pulsante principale.</summary>
     bool Confirm(string message, string title, string confirmText = "Conferma");
 

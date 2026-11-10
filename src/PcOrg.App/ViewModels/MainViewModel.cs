@@ -61,7 +61,7 @@ public sealed partial class MainViewModel : ObservableObject
             await UpdateMetadataAsync();
     }
 
-    public ObservableCollection<RootFolder> Roots { get; } = [];
+    public ObservableCollection<RootItem> Roots { get; } = [];
 
     /// <summary>Falso finché non c'è nessuna cartella: mostra la schermata di benvenuto.</summary>
     public bool HasRoots => Roots.Count > 0;
@@ -229,7 +229,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RemoveRootCommand))]
-    private RootFolder? _selectedRoot;
+    private RootItem? _selectedRoot;
 
     [ObservableProperty]
     private CategoryItem? _selectedCategory;
@@ -265,6 +265,8 @@ public sealed partial class MainViewModel : ObservableObject
         {
             var root = _index.AddRoot(folder);
             ReloadRoots();
+            if (!string.Equals(root.Path, PcOrg.Core.PathUtil.Normalize(folder), StringComparison.OrdinalIgnoreCase))
+                ShowToast($"Unità di rete salvata come {root.Path}: funzionerà anche se la lettera dell'unità cambia", ToastKind.Info);
             await ScanRootsAsync([root]);
         }
         catch (Exception ex) when (ex is InvalidOperationException or IOException)
@@ -273,10 +275,43 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
+    /// <summary>Aggiunge una cartella condivisa in rete (NAS, altro PC) scrivendone il percorso.</summary>
+    [RelayCommand(CanExecute = nameof(CanModify))]
+    private async Task AddNetworkRootAsync()
+    {
+        var path = _dialogs.AskNetworkFolder()?.Trim();
+        if (string.IsNullOrEmpty(path))
+            return;
+
+        Status = $"Verifica di {path}…";
+        if (!await NetworkPaths.IsReachableAsync(path, TimeSpan.FromSeconds(12)))
+        {
+            Status = "Pronto";
+            _dialogs.Error(
+                $"Non riesco a raggiungere \"{path}\".\n\n" +
+                "• Controlla che il computer o il NAS sia acceso e collegato alla rete.\n" +
+                "• Controlla il nome della condivisione (es. \\\\NAS\\Foto).\n" +
+                "• Se servono nome utente e password, apri prima la cartella da Esplora risorse e accedi: pcOrg userà lo stesso accesso.",
+                "Cartella di rete non raggiungibile");
+            return;
+        }
+        try
+        {
+            var root = _index.AddRoot(path);
+            ReloadRoots();
+            ShowToast($"Cartella di rete aggiunta: {root.Path}", ToastKind.Success);
+            await ScanRootsAsync([root]);
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or IOException or UnauthorizedAccessException)
+        {
+            _dialogs.Error(ex.Message, "Cartella non aggiunta");
+        }
+    }
+
     [RelayCommand(CanExecute = nameof(CanRemoveRoot))]
     private async Task RemoveRootAsync()
     {
-        if (SelectedRoot is not { } root)
+        if (SelectedRoot?.Root is not { } root)
             return;
         if (!_dialogs.Confirm(
                 $"pcOrg smetterà di tenere in ordine \"{root.Path}\".\n\nI file restano dove sono: vengono solo tolti dall'elenco.",
@@ -292,7 +327,7 @@ public sealed partial class MainViewModel : ObservableObject
     private bool CanRemoveRoot() => !IsBusy && SelectedRoot is not null;
 
     [RelayCommand(CanExecute = nameof(CanModify))]
-    private Task ScanAsync() => ScanRootsAsync(Roots.ToList());
+    private Task ScanAsync() => ScanRootsAsync(Roots.Select(r => r.Root).ToList());
 
     [RelayCommand(CanExecute = nameof(IsBusy))]
     private void CancelScan() => _scanCts?.Cancel();
@@ -309,22 +344,40 @@ public sealed partial class MainViewModel : ObservableObject
         _scanCts = new CancellationTokenSource();
         var token = _scanCts.Token;
         var total = 0;
+        var offline = new List<string>();
         var stopwatch = Stopwatch.StartNew();
         try
         {
             foreach (var root in roots)
             {
-                if (!Directory.Exists(root.Path))
+                Status = $"Verifica di {root.Path}…";
+                var timeout = root.IsNetwork ? TimeSpan.FromSeconds(10) : TimeSpan.FromSeconds(3);
+                if (!await NetworkPaths.IsReachableAsync(root.Path, timeout))
                 {
-                    Status = $"Cartella non raggiungibile, saltata: {root.Path}";
+                    offline.Add(root.Path);
                     continue;
                 }
                 var progress = new Progress<int>(n => Status = $"Scansione di {root.Path}: {n:N0} file…");
-                total += await Task.Run(
-                    () => _index.SyncRoot(root.Id, FolderScanner.Enumerate(root.Path, token), progress, token), token);
+                try
+                {
+                    total += await Task.Run(
+                        () => _index.SyncRoot(root.Id, FolderScanner.Enumerate(root.Path, token), progress, token,
+                            isStillAvailable: () => Directory.Exists(root.Path)), token);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    // Es. la rete è caduta durante la scansione: l'indice di questa cartella resta com'era.
+                    offline.Add(root.Path);
+                }
             }
             Status = $"Scansione completata: {total:N0} file in {stopwatch.Elapsed.TotalSeconds:N1} s";
-            ShowToast($"Indice aggiornato: {total:N0} file trovati");
+            if (offline.Count == 0)
+                ShowToast($"Indice aggiornato: {total:N0} file trovati");
+            else
+                ShowToast(offline.Count == 1
+                        ? $"{offline[0]} non è raggiungibile: i suoi file restano nell'elenco e verranno aggiornati quando torna disponibile"
+                        : $"{offline.Count} cartelle non raggiungibili: i loro file restano nell'elenco",
+                    ToastKind.Warning);
         }
         catch (OperationCanceledException)
         {
@@ -374,9 +427,20 @@ public sealed partial class MainViewModel : ObservableObject
         var selected = SelectedRoot?.Id;
         Roots.Clear();
         foreach (var root in _index.GetRoots())
-            Roots.Add(root);
+            Roots.Add(new RootItem(root));
         SelectedRoot = Roots.FirstOrDefault(r => r.Id == selected);
         OnPropertyChanged(nameof(HasRoots));
+        _ = CheckAvailabilityAsync(Roots.ToList());
+    }
+
+    /// <summary>Verifica in background quali cartelle (soprattutto di rete) sono raggiungibili.</summary>
+    private static async Task CheckAvailabilityAsync(IReadOnlyList<RootItem> items)
+    {
+        await Task.WhenAll(items.Select(async item =>
+        {
+            var timeout = item.IsNetwork ? TimeSpan.FromSeconds(10) : TimeSpan.FromSeconds(3);
+            item.IsAvailable = await NetworkPaths.IsReachableAsync(item.Path, timeout);
+        }));
     }
 
     // ------------------------------------------------------------------ Categorie e ricerca

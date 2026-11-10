@@ -107,6 +107,9 @@
                         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                             <c:IconButton Glyph="{x:Static inf:Glyphs.Add}" Style="{StaticResource SubtleIconButton}"
                                           Command="{Binding AddRootCommand}" ToolTip="Aggiungi una cartella da tenere in ordine" />
+                            <c:IconButton Glyph="{x:Static inf:Glyphs.NetworkFolder}" Style="{StaticResource SubtleIconButton}"
+                                          Command="{Binding AddNetworkRootCommand}"
+                                          ToolTip="Aggiungi una cartella di rete (NAS o altro computer), es. \\NAS\Foto" />
                             <c:IconButton Glyph="{x:Static inf:Glyphs.Delete}" Style="{StaticResource SubtleIconButton}"
                                           Command="{Binding RemoveRootCommand}"
                                           ToolTip="Smetti di monitorare la cartella selezionata (i file non vengono toccati)" />
@@ -123,7 +126,7 @@
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Folder}" FontSize="18"
+                                    <TextBlock x:Name="RootIcon" Style="{StaticResource Icon}" Text="{Binding Glyph}" FontSize="18"
                                                Foreground="#E3A008" Margin="0,0,10,0" />
                                     <StackPanel Grid.Column="1">
                                         <TextBlock Text="{Binding Path, Converter={x:Static inf:FolderNameConverter.Instance}}"
@@ -131,8 +134,18 @@
                                         <TextBlock Text="{Binding Path}" Style="{StaticResource Secondary}" />
                                         <TextBlock Style="{StaticResource Secondary}" FontSize="11"
                                                    Text="{Binding LastScanUtc, Converter={x:Static vm:UtcToLocalConverter.Instance}, StringFormat='Aggiornata {0:g}', TargetNullValue='Mai scansionata'}" />
+                                        <TextBlock FontSize="11" Foreground="#DC2626" Text="Non raggiungibile: file mostrati dall'ultimo aggiornamento"
+                                                   TextWrapping="Wrap" Visibility="{Binding IsOffline, Converter={StaticResource BoolToVisibility}}" />
                                     </StackPanel>
                                 </Grid>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding IsNetwork}" Value="True">
+                                        <Setter TargetName="RootIcon" Property="Foreground" Value="#0891B2" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsOffline}" Value="True">
+                                        <Setter TargetName="RootIcon" Property="Foreground" Value="#94A3B8" />
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>

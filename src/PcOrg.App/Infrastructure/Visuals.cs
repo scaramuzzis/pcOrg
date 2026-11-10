@@ -11,6 +11,7 @@ public static class Glyphs
 {
     public const string All = "\uE71D";
     public const string Folder = "\uE8B7";
+    public const string NetworkFolder = "\uE8CE";
     public const string FolderOpen = "\uE838";
     public const string Add = "\uE710";
     public const string Delete = "\uE74D";

@@ -5,11 +5,16 @@ sparsi nel PC. Scegli le cartelle da tenere sotto controllo; pcOrg le indicizza,
 per categoria e li trova all'istante mentre scrivi. Sei tu a decidere se e dove spostarli: prima
 vedi un'anteprima, e ogni spostamento si può annullare.
 
-## Cosa fa oggi (v0.3)
+## Cosa fa oggi (v0.4)
 - **Interfaccia moderna** con tema Fluent di Windows 11 (chiaro/scuro automatico), icone colorate
   per ogni categoria, schermata di benvenuto, suggerimenti su ogni pulsante, finestre di conferma
   chiare e notifiche a comparsa (dopo uno spostamento la notifica offre subito **Annulla**).
 - **Cartelle monitorate**: aggiungi/rimuovi cartelle; rimuoverne una non tocca i file su disco.
+- **Cartelle di rete**: NAS e cartelle condivise di altri computer (`\\NAS\Foto`); le unità di rete
+  mappate (es. `Z:`) vengono salvate con il percorso di rete. Se una cartella non è raggiungibile i suoi
+  file restano cercabili (dall'ultimo aggiornamento) e vengono aggiornati quando torna disponibile;
+  se la rete cade durante la scansione l'indice non perde nulla. Sui file in rete la firma digitale
+  viene letta ma non verificata, per non scaricare ogni file per intero.
 - **Categorie automatiche**: Installer, Driver, Programmi, Archivi, Immagini disco, PDF, Word
   (doc/docx/odt/rtf), Testo (txt/md/log), Fogli di calcolo, Presentazioni, Altri documenti, Immagini,
   Audio, Video, Script, Altro, con numero di file e spazio occupato.
