@@ -1,0 +1,58 @@
+<Window x:Class="PcOrg.App.Views.AboutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:inf="clr-namespace:PcOrg.App.Infrastructure"
+        xmlns:c="clr-namespace:PcOrg.App.Controls"
+        Title="Informazioni su pcOrg" Icon="pack://application:,,,/PcOrg;component/Assets/pcorg.ico"
+        Width="500" SizeToContent="Height" ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Margin="32,28,32,24">
+            <Image Source="pack://application:,,,/PcOrg;component/Assets/pcorg.png" Width="80" Height="80"
+                   RenderOptions.BitmapScalingMode="HighQuality" />
+            <TextBlock Text="pcOrg" FontSize="26" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,12,0,0" />
+            <TextBlock x:Name="VersionText" HorizontalAlignment="Center" Style="{StaticResource Secondary}" FontSize="13" />
+            <TextBlock TextWrapping="Wrap" TextAlignment="Center" Margin="0,16,0,0"
+                       Text="Mette in ordine installer, driver, programmi, documenti e immagini disco: li divide per categoria, versione e produttore e li trova all'istante. Sei tu a decidere cosa spostare, e ogni spostamento si può annullare." />
+
+            <Border Style="{StaticResource Card}" Margin="0,20,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.Resources>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Margin" Value="0,2,12,2" />
+                            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                        </Style>
+                    </Grid.Resources>
+                    <TextBlock Style="{StaticResource Secondary}" Text="Dati e impostazioni" />
+                    <TextBlock Grid.Column="1" x:Name="DataFolderText" />
+                    <TextBlock Grid.Row="1" Style="{StaticResource Secondary}" Text="Tecnologia" />
+                    <TextBlock Grid.Row="1" Grid.Column="1" x:Name="RuntimeText" />
+                    <TextBlock Grid.Row="2" Style="{StaticResource Secondary}" Text="Progetto" />
+                    <TextBlock Grid.Row="2" Grid.Column="1" Text="github.com/scaramuzzis/pcOrg" />
+                </Grid>
+            </Border>
+        </StackPanel>
+
+        <Border Grid.Row="1" Padding="24,14" Background="{DynamicResource LayerFillColorAltBrush}"
+                BorderThickness="0,1,0,0" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <c:IconButton Glyph="{x:Static inf:Glyphs.FolderOpen}" Label="Apri cartella dei dati" Margin="0,0,8,0" Click="OpenData_Click" />
+                <Button Content="Chiudi" MinWidth="110" IsDefault="True" IsCancel="True" Style="{DynamicResource AccentButtonStyle}" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

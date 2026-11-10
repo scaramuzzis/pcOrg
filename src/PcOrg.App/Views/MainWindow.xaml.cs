@@ -45,6 +45,25 @@ public partial class MainWindow : Window
             ViewModel?.OpenFileCommand.Execute(file);
     }
 
+    private void Exit_Click(object sender, RoutedEventArgs e) => Close();
+
+    private void SelectAll_Click(object sender, RoutedEventArgs e)
+    {
+        var grid = ViewModel?.SelectedTabIndex == 1 ? ProductFilesGrid : ResultsGrid;
+        grid.SelectAll();
+        grid.Focus();
+    }
+
+    /// <summary>Invio apre il file selezionato (invece di passare alla riga successiva).</summary>
+    private void FileGrid_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter && ResultsGrid.SelectedItem is FileRecord file)
+        {
+            ViewModel?.OpenFileCommand.Execute(file);
+            e.Handled = true;
+        }
+    }
+
     private void SelectOldVersions_Click(object sender, RoutedEventArgs e)
     {
         ProductFilesGrid.SelectedItems.Clear();

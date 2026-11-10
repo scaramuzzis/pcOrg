@@ -22,6 +22,9 @@ public class UiSmokeTests
     {
         public string? PickFolder(string title) => null;
         public string? AskNetworkFolder() => null;
+        public string? PickSaveFile(string title, string defaultName, string filter) => SavePath;
+        public void ShowAbout() { }
+        public string? SavePath { get; set; }
         public bool Confirm(string message, string title, string confirmText = "Conferma") => false;
         public void Info(string message, string title) { }
         public void Error(string message, string title) => throw new InvalidOperationException(message);
@@ -77,7 +80,8 @@ public class UiSmokeTests
         var app = new App();
         app.InitializeComponent(); // carica App.xaml: tema e risorse
         app.ShutdownMode = ShutdownMode.OnExplicitShutdown; // il test apre e chiude più finestre principali
-        var window = new MainWindow { DataContext = new MainViewModel(index, new SilentDialogs()) };
+        var dialogs = new SilentDialogs { SavePath = Path.Combine(temp, "elenco.csv") };
+        var window = new MainWindow { DataContext = new MainViewModel(index, dialogs) };
         app.MainWindow = window;
         window.Show();
         Pump(TimeSpan.FromSeconds(3));
@@ -107,6 +111,28 @@ public class UiSmokeTests
         vm.SelectedProduct = vm.Products.First(p => p.Files.Count == 2);
         Pump(TimeSpan.FromSeconds(1));
         Assert.Equal(2, vm.ProductFiles.Count);
+
+        // Menu: scheda, pannelli, tema, esportazione
+        vm.ShowTabCommand.Execute("0");
+        Pump(TimeSpan.FromMilliseconds(300));
+        Assert.Equal(0, window.Tabs.SelectedIndex);
+        vm.ShowPreviewPanel = false;
+        Assert.False(vm.PreviewPanelVisible);
+        vm.ShowPreviewPanel = true;
+        vm.SetThemeCommand.Execute("Scuro");
+        Pump(TimeSpan.FromMilliseconds(500));
+        Assert.True(vm.IsThemeDark);
+        vm.SetThemeCommand.Execute("Sistema");
+        Pump(TimeSpan.FromMilliseconds(300));
+        vm.ExportCsvCommand.Execute(null);
+        Pump(TimeSpan.FromSeconds(1));
+        Assert.True(File.Exists(dialogs.SavePath));
+        Assert.True(File.ReadAllLines(dialogs.SavePath!).Length > 1);
+
+        var about = new AboutWindow { Owner = window };
+        about.Show();
+        Pump(TimeSpan.FromMilliseconds(300));
+        about.Close();
 
         var plan = MovePlanner.Plan([Path.Combine(folder, "nota.txt")], temp);
         var preview = new MovePreviewWindow(plan, temp, destinationMonitored: false) { Owner = window };

@@ -16,6 +16,20 @@ public sealed class DialogService : IDialogService
         return dialog.ShowDialog(Owner) == true ? dialog.FolderName : null;
     }
 
+    public string? PickSaveFile(string title, string defaultName, string filter)
+    {
+        var dialog = new SaveFileDialog { Title = title, FileName = defaultName, Filter = filter, AddExtension = true };
+        return dialog.ShowDialog(Owner) == true ? dialog.FileName : null;
+    }
+
+    public void ShowAbout()
+    {
+        var window = new AboutWindow();
+        if (Owner is { IsVisible: true })
+            window.Owner = Owner;
+        window.ShowDialog();
+    }
+
     public string? AskNetworkFolder()
     {
         var dialog = new NetworkFolderDialog();

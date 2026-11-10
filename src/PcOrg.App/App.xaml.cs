@@ -37,7 +37,9 @@ public partial class App : Application
             return;
         }
 
-        var window = new MainWindow { DataContext = new MainViewModel(index, new DialogService()) };
+        var viewModel = new MainViewModel(index, new DialogService());
+        viewModel.UseSettings(AppSettings.Load());
+        var window = new MainWindow { DataContext = viewModel };
         MainWindow = window;
         window.Show();
     }

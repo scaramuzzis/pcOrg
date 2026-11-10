@@ -32,6 +32,10 @@ public static class Glyphs
     public const string Package = "\uE7B8";
     public const string Shield = "\uE83D";
     public const string Photo = "\uEB9F";
+    public const string Export = "\uEDE1";
+    public const string Exit = "\uE7E8";
+    public const string Help = "\uE897";
+    public const string Theme = "\uE790";
 
     public static string ForCategory(FileCategory? category) => category switch
     {

@@ -7,6 +7,12 @@ public interface IDialogService
 {
     string? PickFolder(string title);
 
+    /// <summary>Chiede dove salvare un file. Null se l'utente annulla.</summary>
+    string? PickSaveFile(string title, string defaultName, string filter);
+
+    /// <summary>Finestra "Informazioni su pcOrg".</summary>
+    void ShowAbout();
+
     /// <summary>Chiede il percorso di una cartella di rete (es. \\NAS\Foto). Null se l'utente annulla.</summary>
     string? AskNetworkFolder();
 

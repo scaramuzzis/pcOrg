@@ -17,7 +17,110 @@
         <KeyBinding Key="F5" Command="{Binding ScanCommand}" />
         <KeyBinding Key="F" Modifiers="Control" Command="{x:Static vm:FocusCommands.FocusSearch}" />
         <KeyBinding Key="Escape" Command="{Binding ClearSearchCommand}" />
+        <KeyBinding Key="O" Modifiers="Control" Command="{Binding AddRootCommand}" />
+        <KeyBinding Key="O" Modifiers="Control+Shift" Command="{Binding AddNetworkRootCommand}" />
+        <KeyBinding Key="E" Modifiers="Control" Command="{Binding ExportCsvCommand}" />
+        <KeyBinding Key="E" Modifiers="Control+Shift" Command="{Binding OpenFolderCommand}" />
+        <KeyBinding Key="C" Modifiers="Control+Shift" Command="{Binding CopyPathCommand}" />
+        <KeyBinding Key="M" Modifiers="Control" Command="{Binding MoveSelectedCommand}" />
+        <KeyBinding Key="H" Modifiers="Control" Command="{Binding ShowHistoryCommand}" />
+        <KeyBinding Key="D1" Modifiers="Control" Command="{Binding ShowTabCommand}" CommandParameter="0" />
+        <KeyBinding Key="D2" Modifiers="Control" Command="{Binding ShowTabCommand}" CommandParameter="1" />
+        <KeyBinding Key="F1" Command="{Binding ShowHelpCommand}" />
     </Window.InputBindings>
+
+    <DockPanel>
+        <!-- ============================================================ Barra dei menu -->
+        <Menu x:Name="MainMenu" x:FieldModifier="public" DockPanel.Dock="Top" Padding="8,2" Background="{DynamicResource LayerFillColorDefaultBrush}">
+            <MenuItem Header="_File">
+                <MenuItem Header="Aggiungi _cartella…" Command="{Binding AddRootCommand}" InputGestureText="Ctrl+O">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Add}" /></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Aggiungi cartella di _rete…" Command="{Binding AddNetworkRootCommand}" InputGestureText="Ctrl+Maiusc+O">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.NetworkFolder}" /></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Rimuovi la cartella selezionata" Command="{Binding RemoveRootCommand}">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Delete}" /></MenuItem.Icon>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="_Aggiorna l'indice" Command="{Binding ScanCommand}" InputGestureText="F5">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Refresh}" /></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Esporta l'elenco in Excel (CSV)…" Command="{Binding ExportCsvCommand}" InputGestureText="Ctrl+E">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Export}" /></MenuItem.Icon>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="_Esci" InputGestureText="Alt+F4" Click="Exit_Click">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Exit}" /></MenuItem.Icon>
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="_Modifica">
+                <MenuItem Header="_Apri" Command="{Binding OpenFileCommand}" InputGestureText="Invio">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Open}" /></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Mostra nella _cartella" Command="{Binding OpenFolderCommand}" InputGestureText="Ctrl+Maiusc+E">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.FolderOpen}" /></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Copia percorso" Command="{Binding CopyPathCommand}" InputGestureText="Ctrl+Maiusc+C">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Copy}" /></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Seleziona _tutto" InputGestureText="Ctrl+A" Click="SelectAll_Click">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.SelectAll}" /></MenuItem.Icon>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="_Sposta in…" Command="{Binding MoveSelectedCommand}" InputGestureText="Ctrl+M">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Move}" /></MenuItem.Icon>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="_Cerca" Command="{x:Static vm:FocusCommands.FocusSearch}" InputGestureText="Ctrl+F">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Search}" /></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Cancella la ricerca" Command="{Binding ClearSearchCommand}" InputGestureText="Esc">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Cancel}" /></MenuItem.Icon>
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="_Visualizza">
+                <MenuItem Header="_File" Command="{Binding ShowTabCommand}" CommandParameter="0" InputGestureText="Ctrl+1">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Folder}" /></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Prodotti e versioni" Command="{Binding ShowTabCommand}" CommandParameter="1" InputGestureText="Ctrl+2">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Package}" /></MenuItem.Icon>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="Pannello _anteprima immagini" IsCheckable="True" IsChecked="{Binding ShowPreviewPanel}" />
+                <MenuItem Header="Pannello _dettagli del file" IsCheckable="True" IsChecked="{Binding ShowDetailsPanel}" />
+                <Separator />
+                <MenuItem Header="_Tema">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Theme}" /></MenuItem.Icon>
+                    <MenuItem Header="Come _Windows" IsCheckable="True" IsChecked="{Binding IsThemeSystem, Mode=OneWay}"
+                              Command="{Binding SetThemeCommand}" CommandParameter="Sistema" />
+                    <MenuItem Header="_Chiaro" IsCheckable="True" IsChecked="{Binding IsThemeLight, Mode=OneWay}"
+                              Command="{Binding SetThemeCommand}" CommandParameter="Chiaro" />
+                    <MenuItem Header="_Scuro" IsCheckable="True" IsChecked="{Binding IsThemeDark, Mode=OneWay}"
+                              Command="{Binding SetThemeCommand}" CommandParameter="Scuro" />
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="_Strumenti">
+                <MenuItem Header="_Cronologia spostamenti…" Command="{Binding ShowHistoryCommand}" InputGestureText="Ctrl+H">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.History}" /></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Interrompi la scansione" Command="{Binding CancelScanCommand}">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Cancel}" /></MenuItem.Icon>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="Apri la cartella dei _dati" Command="{Binding OpenDataFolderCommand}">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.FolderOpen}" /></MenuItem.Icon>
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="_?">
+                <MenuItem Header="_Guida rapida" Command="{Binding ShowHelpCommand}" InputGestureText="F1">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Help}" /></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Informazioni su pcOrg" Command="{Binding ShowAboutCommand}">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Info}" /></MenuItem.Icon>
+                </MenuItem>
+            </MenuItem>
+        </Menu>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -192,7 +295,7 @@
             </Border>
 
             <!-- Pannello destro: schede File / Prodotti -->
-            <TabControl x:Name="Tabs" x:FieldModifier="public" Grid.Column="2"
+            <TabControl x:Name="Tabs" x:FieldModifier="public" Grid.Column="2" SelectedIndex="{Binding SelectedTabIndex}"
                         Visibility="{Binding HasRoots, Converter={StaticResource BoolToVisibility}}">
                 <!-- Scheda File -->
                 <TabItem>
@@ -233,7 +336,8 @@
                                       HeadersVisibility="Column" GridLinesVisibility="None" RowHeight="34"
                                       EnableRowVirtualization="True" EnableColumnVirtualization="True"
                                       VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
-                                      SelectionChanged="FileGrid_SelectionChanged" MouseDoubleClick="FileGrid_MouseDoubleClick">
+                                      SelectionChanged="FileGrid_SelectionChanged" MouseDoubleClick="FileGrid_MouseDoubleClick"
+                                      PreviewKeyDown="FileGrid_PreviewKeyDown">
                                 <DataGrid.ContextMenu>
                                     <ContextMenu>
                                         <MenuItem Header="Apri" Command="{Binding OpenFileCommand}">
@@ -285,7 +389,7 @@
 
                             <!-- Dettagli del file selezionato -->
                             <Border Grid.Row="2" Margin="0,10,0,0" Style="{StaticResource Card}"
-                                    Visibility="{Binding SelectedFile, Converter={x:Static vm:NullToCollapsedConverter.Instance}}">
+                                    Visibility="{Binding DetailsPanelVisible, Converter={StaticResource BoolToVisibility}}">
                                 <Grid DataContext="{Binding SelectedFile}">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
@@ -344,7 +448,7 @@
 
                         <!-- Anteprima dell'immagine selezionata -->
                         <Border Grid.Column="1" Width="300" Margin="12,10,0,0" Style="{StaticResource Card}"
-                                Visibility="{Binding IsPreviewVisible, Converter={StaticResource BoolToVisibility}}">
+                                Visibility="{Binding PreviewPanelVisible, Converter={StaticResource BoolToVisibility}}">
                             <DockPanel>
                                 <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
                                     <TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Photo}" Foreground="#DB2777" Margin="0,0,8,0" />
@@ -552,4 +656,5 @@
             </DockPanel>
         </Border>
     </Grid>
+    </DockPanel>
 </Window>

@@ -149,10 +149,12 @@ public sealed partial class MainViewModel : ObservableObject
 
     /// <summary>File mostrato nel pannello dei dettagli.</summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DetailsPanelVisible))]
     private FileRecord? _selectedFile;
 
     /// <summary>Vero quando il file selezionato è un'immagine: mostra il pannello anteprima a destra.</summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PreviewPanelVisible))]
     private bool _isPreviewVisible;
 
     [ObservableProperty]

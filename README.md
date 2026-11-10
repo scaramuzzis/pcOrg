@@ -5,7 +5,11 @@ sparsi nel PC. Scegli le cartelle da tenere sotto controllo; pcOrg le indicizza,
 per categoria e li trova all'istante mentre scrivi. Sei tu a decidere se e dove spostarli: prima
 vedi un'anteprima, e ogni spostamento si può annullare.
 
-## Cosa fa oggi (v0.4)
+## Cosa fa oggi (v0.5)
+- **Barra dei menu** (File, Modifica, Visualizza, Strumenti, ?) con icone e scorciatoie da tastiera:
+  aggiungi cartelle, **esporta l'elenco in Excel (CSV)**, scegli il **tema** (come Windows, chiaro,
+  scuro), mostra o nascondi i pannelli anteprima e dettagli, guida rapida (F1) e Informazioni.
+  Le preferenze vengono ricordate.
 - **Interfaccia moderna** con tema Fluent di Windows 11 (chiaro/scuro automatico), icone colorate
   per ogni categoria, schermata di benvenuto, suggerimenti su ogni pulsante, finestre di conferma
   chiare e notifiche a comparsa (dopo uno spostamento la notifica offre subito **Annulla**).
@@ -37,7 +41,8 @@ vedi un'anteprima, e ogni spostamento si può annullare.
   esistente usa `nome (2).ext`); propone di monitorare la cartella di destinazione.
 - **Cronologia spostamenti** con annullamento.
 
-Scorciatoie: `Ctrl+F` ricerca, `F5` aggiorna l'indice, doppio clic apre il file.
+Scorciatoie principali: `Ctrl+F` cerca, `Esc` cancella la ricerca, `F5` aggiorna, `Ctrl+O` aggiungi cartella,
+`Ctrl+E` esporta in Excel, `Ctrl+M` sposta, `Ctrl+H` cronologia, `Invio` o doppio clic apre il file, `F1` guida.
 
 ## Come si usa
 Scarica `PcOrg.exe` (vedi sotto), copialo dove vuoi e avvialo: non serve installare nulla,
