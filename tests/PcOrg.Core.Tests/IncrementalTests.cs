@@ -121,7 +121,7 @@ public class IncrementalTests
     }
 
     [Fact]
-    public void L_osservatore_segnala_un_file_nuovo()
+    public async Task L_osservatore_segnala_un_file_nuovo()
     {
         using var dir = new TempDir();
         var index = FileIndex.Open(System.IO.Path.Combine(dir.Path, "index.db"));
@@ -134,9 +134,11 @@ public class IncrementalTests
 
         var path = dir.File("Download/appena-scaricato.zip");
 
-        Assert.True(received.Task.Wait(TimeSpan.FromSeconds(10)), "Nessuna modifica segnalata");
-        Assert.Contains(received.Task.Result, c => c.Path == path && c.RootId == root.Id);
-        index.ApplyChanges(received.Task.Result);
+        var finished = await Task.WhenAny(received.Task, Task.Delay(TimeSpan.FromSeconds(10)));
+        Assert.True(finished == received.Task, "Nessuna modifica segnalata");
+        var changes = await received.Task;
+        Assert.Contains(changes, c => c.Path == path && c.RootId == root.Id);
+        index.ApplyChanges(changes);
         Assert.Single(index.Search(new SearchQuery("appena-scaricato")));
     }
 

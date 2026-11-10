@@ -14,7 +14,7 @@ namespace PcOrg.Core.Storage;
 /// </summary>
 public sealed partial class FileIndex
 {
-    private const int SchemaVersion = 5;
+    private const int SchemaVersion = 6;
     private readonly string _connectionString;
 
     /// <summary>Percorso completo del file dell'indice (indice.db).</summary>
@@ -73,6 +73,8 @@ public sealed partial class FileIndex
             CreateDirectoryTable(conn, tx);
             Reclassify(conn, tx, FileCategory.Altro); // nuova categoria Accesso remoto (.vnc, .rdp)
         }
+        if (version < 6)
+            CreateHashTable(conn, tx);
         Exec(conn, $"PRAGMA user_version = {SchemaVersion};", tx);
         tx.Commit();
     }
