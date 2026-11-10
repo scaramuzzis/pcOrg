@@ -5,7 +5,13 @@ sparsi nel PC. Scegli le cartelle da tenere sotto controllo; pcOrg le indicizza,
 per categoria e li trova all'istante mentre scrivi. Sei tu a decidere se e dove spostarli: prima
 vedi un'anteprima, e ogni spostamento si può annullare.
 
-## Cosa fa oggi (v0.6)
+## Cosa fa oggi (v0.7)
+- **Dati sempre salvati**: i file trovati vengono registrati man mano in `indice.db` e ricompaiono
+  subito alla riapertura, anche dopo una scansione interrotta; chiusura sicura durante gli aggiornamenti;
+  aggiornamento automatico all'avvio (disattivabile); **registro attività** in `log\pcorg.log`.
+- **Impostazioni** (Strumenti → Impostazioni, `Ctrl+,`): tema, opzioni di aggiornamento e firme,
+  **colonne visibili e loro ordine** per ogni elenco, informazioni e manutenzione dell'indice.
+  Posizione, larghezza e ordinamento delle colonne, pannello laterale e finestra vengono ricordati.
 - **Guida completa** dentro l'app (**F1** o menu **?**), con indice dei capitoli e ricerca. Lo stesso
   testo è leggibile qui: [docs/GUIDA.md](docs/GUIDA.md).
 - **Barra dei menu** (File, Modifica, Visualizza, Strumenti, ?) con icone e scorciatoie da tastiera:
@@ -50,7 +56,8 @@ Scorciatoie principali: `Ctrl+F` cerca, `Esc` cancella la ricerca, `F5` aggiorna
 Scarica `PcOrg.exe` (vedi sotto), copialo dove vuoi e avvialo: non serve installare nulla,
 neanche .NET.
 
-I dati (indice e cronologia) sono in `%LOCALAPPDATA%\pcOrg`. Per la **modalità portatile**
+I dati sono in `%LOCALAPPDATA%\pcOrg`: `indice.db` (cartelle, file, cronologia), `settings.json`
+(preferenze) e `log\pcorg.log` (registro attività). Per la **modalità portatile**
 (es. su chiavetta) crea una cartella `pcOrg-dati` accanto a `PcOrg.exe`: i dati verranno salvati lì.
 
 ### Dove trovare l'eseguibile
@@ -71,6 +78,7 @@ dotnet publish src/PcOrg.App -c Release -o publish   # crea publish\PcOrg.exe
 
 Documentazione funzionale (come si usa): [docs/GUIDA.md](docs/GUIDA.md).
 Struttura, scelte tecniche e piano di sviluppo: [docs/ANALISI.md](docs/ANALISI.md).
+Migliorie proposte: [docs/MIGLIORIE.md](docs/MIGLIORIE.md).
 
 Sviluppato da **Scaramus**.
 

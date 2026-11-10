@@ -27,6 +27,7 @@
         <KeyBinding Key="D1" Modifiers="Control" Command="{Binding ShowTabCommand}" CommandParameter="0" />
         <KeyBinding Key="D2" Modifiers="Control" Command="{Binding ShowTabCommand}" CommandParameter="1" />
         <KeyBinding Key="F1" Command="{Binding ShowHelpCommand}" />
+        <KeyBinding Key="OemComma" Modifiers="Control" Command="{x:Static vm:FocusCommands.OpenSettings}" />
     </Window.InputBindings>
 
     <DockPanel>
@@ -87,6 +88,9 @@
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Package}" /></MenuItem.Icon>
                 </MenuItem>
                 <Separator />
+                <MenuItem Header="_Colonne dell'elenco…" Click="ColumnsSettings_Click">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Columns}" /></MenuItem.Icon>
+                </MenuItem>
                 <MenuItem Header="Pannello _anteprima immagini" IsCheckable="True" IsChecked="{Binding ShowPreviewPanel}" />
                 <MenuItem Header="Pannello _dettagli del file" IsCheckable="True" IsChecked="{Binding ShowDetailsPanel}" />
                 <Separator />
@@ -110,6 +114,13 @@
                 <Separator />
                 <MenuItem Header="Apri la cartella dei _dati" Command="{Binding OpenDataFolderCommand}">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.FolderOpen}" /></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Apri il _registro attività" Command="{Binding OpenLogCommand}">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Log}" /></MenuItem.Icon>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="_Impostazioni…" Command="{x:Static vm:FocusCommands.OpenSettings}" InputGestureText="Ctrl+,">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Settings}" /></MenuItem.Icon>
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="_?">
@@ -199,9 +210,9 @@
                      Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}" />
 
         <!-- ============================================================ Contenuto -->
-        <Grid Grid.Row="2" Margin="14,12,14,8">
+        <Grid x:Name="ContentGrid" Grid.Row="2" Margin="14,12,14,8">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="300" MinWidth="230" />
+                <ColumnDefinition Width="300" MinWidth="230" MaxWidth="600" />
                 <ColumnDefinition Width="12" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
@@ -304,6 +315,11 @@
                 </Grid>
             </Border>
 
+            <!-- Divisore trascinabile: la larghezza del pannello sinistro viene ricordata -->
+            <GridSplitter Grid.Column="1" Width="6" HorizontalAlignment="Center" VerticalAlignment="Stretch"
+                          Background="Transparent" ResizeBehavior="PreviousAndNext" Cursor="SizeWE"
+                          ToolTip="Trascina per allargare o restringere il pannello" />
+
             <!-- Pannello destro: schede File / Prodotti -->
             <TabControl x:Name="Tabs" x:FieldModifier="public" Grid.Column="2" SelectedIndex="{Binding SelectedTabIndex}"
                         Visibility="{Binding HasRoots, Converter={StaticResource BoolToVisibility}}">
@@ -378,10 +394,10 @@
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
-                                    <DataGridTextColumn Header="Categoria" Binding="{Binding CategoryName}" SortMemberPath="Category" Width="115" MinWidth="115" ElementStyle="{StaticResource CellText}" />
-                                    <DataGridTextColumn Header="Versione" Binding="{Binding Version}" Width="100" MinWidth="100" ElementStyle="{StaticResource CellText}" />
+                                    <DataGridTextColumn Header="Categoria" Binding="{Binding CategoryName}" SortMemberPath="Category" Width="115" MinWidth="86" ElementStyle="{StaticResource CellText}" />
+                                    <DataGridTextColumn Header="Versione" Binding="{Binding Version}" Width="100" MinWidth="75" ElementStyle="{StaticResource CellText}" />
                                     <DataGridTextColumn Header="Produttore" Binding="{Binding Company}" Width="*" MinWidth="110" ElementStyle="{StaticResource CellText}" />
-                                    <DataGridTextColumn Header="Dimensione" Binding="{Binding Size, Converter={StaticResource FileSize}}" Width="95" MinWidth="95"
+                                    <DataGridTextColumn Header="Dimensione" Binding="{Binding Size, Converter={StaticResource FileSize}}" Width="95" MinWidth="71"
                                                         SortMemberPath="Size">
                                         <DataGridTextColumn.ElementStyle>
                                             <Style TargetType="TextBlock">
@@ -392,8 +408,16 @@
                                         </DataGridTextColumn.ElementStyle>
                                     </DataGridTextColumn>
                                     <DataGridTextColumn Header="Modificato" Binding="{Binding ModifiedUtc, StringFormat=g, Converter={x:Static vm:UtcToLocalConverter.Instance}}"
-                                                        Width="130" MinWidth="130" SortMemberPath="ModifiedUtc" ElementStyle="{StaticResource CellText}" />
+                                                        Width="130" MinWidth="97" SortMemberPath="ModifiedUtc" ElementStyle="{StaticResource CellText}" />
                                     <DataGridTextColumn Header="Cartella" Binding="{Binding Folder}" Width="2*" MinWidth="160" ElementStyle="{StaticResource CellText}" />
+                                    <!-- Colonne facoltative: si attivano da Impostazioni → Colonne o col tasto destro sulle intestazioni -->
+                                    <DataGridTextColumn Header="Prodotto" Binding="{Binding ProductName}" Width="150" MinWidth="80" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
+                                    <DataGridTextColumn Header="Descrizione" Binding="{Binding Meta.FileDescription}" Width="180" MinWidth="80" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
+                                    <DataGridTextColumn Header="Firma digitale" Binding="{Binding SignatureText}" Width="180" MinWidth="80" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
+                                    <DataGridTextColumn Header="Architettura" Binding="{Binding ArchitectureText}" Width="115" MinWidth="80" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
+                                    <DataGridTextColumn Header="Tipo di installer" Binding="{Binding Meta.InstallerType}" Width="150" MinWidth="80" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
+                                    <DataGridTextColumn Header="Estensione" Binding="{Binding Extension}" Width="85" MinWidth="60" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
+                                    <DataGridTextColumn Header="Percorso completo" Binding="{Binding Path}" Width="320" MinWidth="120" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
                                 </DataGrid.Columns>
                             </DataGrid>
 
@@ -504,7 +528,7 @@
                             </DockPanel>
                         </Border>
 
-                        <DataGrid Grid.Row="1" ItemsSource="{Binding ProductsView}" SelectedItem="{Binding SelectedProduct}"
+                        <DataGrid x:Name="ProductsGrid" Grid.Row="1" ItemsSource="{Binding ProductsView}" SelectedItem="{Binding SelectedProduct}"
                                   AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" RowHeight="34"
                                   HeadersVisibility="Column" GridLinesVisibility="None"
                                   EnableRowVirtualization="True" VirtualizingPanel.VirtualizationMode="Recycling">
@@ -520,13 +544,13 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                                 <DataGridTextColumn Header="Produttore" Binding="{Binding Company}" Width="*" MinWidth="110" ElementStyle="{StaticResource CellText}" />
-                                <DataGridTextColumn Header="Ultima versione" Binding="{Binding LatestVersion}" Width="115" MinWidth="115" ElementStyle="{StaticResource CellText}" />
-                                <DataGridTextColumn Header="Versioni" Binding="{Binding VersionCount}" Width="75" MinWidth="75" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Ultima versione" Binding="{Binding LatestVersion}" Width="115" MinWidth="86" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Versioni" Binding="{Binding VersionCount}" Width="75" MinWidth="56" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="File" Binding="{Binding Files.Count}" Width="55" MinWidth="55" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="Spazio" Binding="{Binding TotalSize, Converter={StaticResource FileSize}}"
-                                                    SortMemberPath="TotalSize" Width="90" MinWidth="90" ElementStyle="{StaticResource CellText}" />
+                                                    SortMemberPath="TotalSize" Width="90" MinWidth="67" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="Versioni vecchie" Binding="{Binding OldVersionsSize, Converter={StaticResource FileSize}}"
-                                                    SortMemberPath="OldVersionsSize" Width="120" MinWidth="120" ElementStyle="{StaticResource CellText}" />
+                                                    SortMemberPath="OldVersionsSize" Width="120" MinWidth="90" ElementStyle="{StaticResource CellText}" />
                             </DataGrid.Columns>
                         </DataGrid>
 
@@ -553,8 +577,8 @@
                                 </Style>
                             </DataGrid.RowStyle>
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Versione" Binding="{Binding File.Version}" Width="110" MinWidth="110" ElementStyle="{StaticResource CellText}" />
-                                <DataGridTemplateColumn Header="Stato" Width="140" MinWidth="140" SortMemberPath="State">
+                                <DataGridTextColumn Header="Versione" Binding="{Binding File.Version}" Width="110" MinWidth="82" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTemplateColumn Header="Stato" Width="140" MinWidth="105" SortMemberPath="State">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <Border CornerRadius="10" Padding="8,2" HorizontalAlignment="Left" VerticalAlignment="Center"
@@ -575,9 +599,9 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                                 <DataGridTextColumn Header="Nome" Binding="{Binding File.Name}" Width="2*" ElementStyle="{StaticResource CellText}" />
-                                <DataGridTextColumn Header="Architettura" Binding="{Binding File.ArchitectureText}" Width="115" MinWidth="115" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Architettura" Binding="{Binding File.ArchitectureText}" Width="115" MinWidth="86" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="Firma" Binding="{Binding File.SignatureText}" Width="*" ElementStyle="{StaticResource CellText}" />
-                                <DataGridTextColumn Header="Dimensione" Binding="{Binding File.Size, Converter={StaticResource FileSize}}" Width="95" MinWidth="95" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Dimensione" Binding="{Binding File.Size, Converter={StaticResource FileSize}}" Width="95" MinWidth="71" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="Cartella" Binding="{Binding File.Folder}" Width="2*" ElementStyle="{StaticResource CellText}" />
                             </DataGrid.Columns>
                         </DataGrid>

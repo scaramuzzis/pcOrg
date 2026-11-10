@@ -22,6 +22,7 @@ public enum FileCategory
     Presentazione = 15,
 }
 
+/// <summary>Testi da mostrare per le categorie.</summary>
 public static class FileCategoryExtensions
 {
     /// <summary>Nome da mostrare nell'interfaccia.</summary>

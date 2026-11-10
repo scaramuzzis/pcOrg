@@ -3,6 +3,7 @@ namespace PcOrg.Core.Classification;
 /// <summary>Suddivisione di una categoria per tipo di file (es. Immagini disco → Ghost, ISO, dischi virtuali...).</summary>
 public sealed record Subcategory(FileCategory Category, string Name, IReadOnlyList<string> Extensions);
 
+/// <summary>Elenco delle sottocategorie conosciute (oggi quelle delle immagini disco).</summary>
 public static class Subcategories
 {
     public static IReadOnlyList<Subcategory> All { get; } =

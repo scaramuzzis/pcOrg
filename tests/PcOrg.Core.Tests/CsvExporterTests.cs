@@ -4,6 +4,7 @@ using PcOrg.Core.Storage;
 
 namespace PcOrg.Core.Tests;
 
+/// <summary>Esportazione CSV per Excel.</summary>
 public class CsvExporterTests
 {
     [Fact]

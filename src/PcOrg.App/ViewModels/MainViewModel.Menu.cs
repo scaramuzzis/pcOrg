@@ -4,6 +4,7 @@ using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PcOrg.App.Infrastructure;
+using PcOrg.Core.Diagnostics;
 using PcOrg.Core.Storage;
 
 namespace PcOrg.App.ViewModels;
@@ -13,21 +14,88 @@ public sealed partial class MainViewModel
 {
     private AppSettings _settings = new();
     private bool _persistSettings;
+    private bool _scanOnStartup;
 
-    /// <summary>Applica le preferenze salvate (tema, pannelli). Le modifiche successive vengono salvate.</summary>
+    /// <summary>Preferenze in uso (colonne, finestra, opzioni). Salvate con <see cref="SaveSettings"/>.</summary>
+    public AppSettings Settings => _settings;
+
+    /// <summary>
+    /// Applica le preferenze salvate (tema, pannelli, opzioni). Le modifiche successive vengono salvate.
+    /// Va chiamato subito dopo il costruttore, prima che la finestra venga mostrata.
+    /// </summary>
     public void UseSettings(AppSettings settings)
     {
         _settings = settings;
-        _persistSettings = true;
+        _persistSettings = settings.FilePath is not null;
+        _scanOnStartup = settings.ScanOnStartup;
         ShowPreviewPanel = settings.ShowPreviewPanel;
         ShowDetailsPanel = settings.ShowDetailsPanel;
         ApplyTheme(settings.Theme, save: false);
     }
 
-    private void SaveSettings()
+    /// <summary>Salva le preferenze su disco (se l'app le ha caricate da file).</summary>
+    public void SaveSettings()
     {
         if (_persistSettings)
             _settings.Save();
+    }
+
+    /// <summary>Applica le opzioni scelte nella finestra Impostazioni.</summary>
+    public void ApplyOptions(string theme, bool scanOnStartup, bool verifySignatures, bool showPreview, bool showDetails)
+    {
+        _settings.ScanOnStartup = scanOnStartup;
+        _settings.VerifySignatures = verifySignatures;
+        ShowPreviewPanel = showPreview;
+        ShowDetailsPanel = showDetails;
+        ApplyTheme(theme, save: false);
+        SaveSettings();
+        Log.Info($"Impostazioni: tema {theme}, aggiorna all'avvio {scanOnStartup}, verifica firme {verifySignatures}.");
+    }
+
+    // ------------------------------------------------------------------ Manutenzione dell'indice
+
+    public IndexStats GetIndexStats() => _index.GetStats();
+
+    /// <summary>Compatta il file dell'indice.</summary>
+    public async Task CompactIndexAsync()
+    {
+        IsBusy = true;
+        try
+        {
+            Status = "Compattazione dell'indice…";
+            var before = _index.GetStats().DatabaseBytes;
+            await Task.Run(_index.Compact);
+            var after = _index.GetStats().DatabaseBytes;
+            Log.Info($"Indice compattato: da {FileSizeConverter.Format(before)} a {FileSizeConverter.Format(after)}.");
+            Status = "Pronto";
+            ShowToast($"Indice compattato: {FileSizeConverter.Format(before)} → {FileSizeConverter.Format(after)}", ToastKind.Info);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    /// <summary>Svuota l'elenco dei file e lo ricostruisce con una nuova scansione.</summary>
+    public async Task RebuildIndexAsync()
+    {
+        Log.Info("Ricostruzione dell'indice richiesta dall'utente.");
+        await Task.Run(_index.ClearFiles);
+        ReloadRoots();
+        await RefreshAsync();
+        await ScanRootsAsync(Roots.Select(r => r.Root).ToList());
+    }
+
+    [RelayCommand]
+    private void OpenLog()
+    {
+        var path = Log.FilePath;
+        if (path is null || !File.Exists(path))
+        {
+            ShowToast("Il registro attività è ancora vuoto", ToastKind.Info);
+            return;
+        }
+        Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
     }
 
     // ------------------------------------------------------------------ Visualizza

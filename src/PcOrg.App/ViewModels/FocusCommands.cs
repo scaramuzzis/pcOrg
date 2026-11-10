@@ -4,9 +4,13 @@ using System.Windows.Input;
 
 namespace PcOrg.App.ViewModels;
 
+/// <summary>Comandi gestiti direttamente dalla finestra principale (focus, impostazioni).</summary>
 public static class FocusCommands
 {
     public static readonly RoutedCommand FocusSearch = new(nameof(FocusSearch), typeof(FocusCommands));
+
+    /// <summary>Apre la finestra Impostazioni (gestita dalla finestra principale, che conosce le griglie).</summary>
+    public static readonly RoutedCommand OpenSettings = new(nameof(OpenSettings), typeof(FocusCommands));
 }
 
 /// <summary>Le date sono salvate in UTC: in interfaccia si mostrano in ora locale.</summary>

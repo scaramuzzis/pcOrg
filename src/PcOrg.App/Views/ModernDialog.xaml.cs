@@ -3,6 +3,7 @@ using PcOrg.App.Infrastructure;
 
 namespace PcOrg.App.Views;
 
+/// <summary>Tipo di finestra di dialogo: determina icona e colore.</summary>
 public enum DialogKind { Info, Success, Warning, Error, Question }
 
 /// <summary>Finestra di dialogo moderna (icona colorata, titolo, testo, pulsanti) al posto dei MessageBox.</summary>

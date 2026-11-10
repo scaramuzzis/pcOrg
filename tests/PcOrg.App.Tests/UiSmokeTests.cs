@@ -171,7 +171,41 @@ public class UiSmokeTests
         Pump(TimeSpan.FromMilliseconds(300));
         history.Close();
 
+        // Impostazioni e colonne: si nasconde "Versione", si sposta "Cartella" in seconda posizione,
+        // si chiude e si riapre la finestra con le stesse preferenze.
+        var settingsPath = Path.Combine(temp, "settings.json");
+        var settings = AppSettings.Load(settingsPath);
+        settings.ScanOnStartup = false;
+        vm.UseSettings(settings);
+        var version = window.ResultsGrid.Columns.First(c => (string)c.Header == "Versione");
+        var folder2 = window.ResultsGrid.Columns.First(c => (string)c.Header == "Cartella");
+        version.Visibility = Visibility.Collapsed;
+        folder2.DisplayIndex = 1;
+        window.ResultsGrid.Columns.First(c => (string)c.Header == "Percorso completo").Visibility = Visibility.Visible;
+        var settingsWindow = new SettingsWindow(vm, window, new Dictionary<string, DataGrid> { ["file"] = window.ResultsGrid }, SettingsWindow.ColumnsTab) { Owner = window };
+        settingsWindow.Show();
+        Pump(TimeSpan.FromMilliseconds(400));
+        settingsWindow.Close();
+        window.SaveLayout();
         window.Close();
+        Pump(TimeSpan.FromMilliseconds(200));
+
+        // "Riavvio": nuovo indice dallo stesso file, nuove preferenze dallo stesso file
+        Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
+        var reopenedIndex = FileIndex.Open(Path.Combine(temp, "indice.db"));
+        var vm2 = new MainViewModel(reopenedIndex, new SilentDialogs());
+        vm2.UseSettings(AppSettings.Load(settingsPath));
+        var window2 = new MainWindow { DataContext = vm2 };
+        window2.Show();
+        Pump(TimeSpan.FromSeconds(2));
+        Assert.Equal(vm.Results.Count, vm2.Results.Count);
+        Assert.True(vm2.Results.Count > 0, "Dopo il riavvio l'elenco dei file deve ricomparire");
+        var restoredVersion = window2.ResultsGrid.Columns.First(c => (string)c.Header == "Versione");
+        var restoredFolder = window2.ResultsGrid.Columns.First(c => (string)c.Header == "Cartella");
+        Assert.Equal(Visibility.Collapsed, restoredVersion.Visibility);
+        Assert.Equal(1, restoredFolder.DisplayIndex);
+        Assert.Equal(Visibility.Visible, window2.ResultsGrid.Columns.First(c => (string)c.Header == "Percorso completo").Visibility);
+        window2.Close();
 
         // Schermata di benvenuto con un indice vuoto
         var empty = FileIndex.Open(Path.Combine(temp, "vuoto.db"));

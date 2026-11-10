@@ -6,6 +6,7 @@ using PcOrg.Core.Storage;
 
 namespace PcOrg.App.Infrastructure;
 
+/// <summary>Implementazione reale delle finestre di dialogo (scelta cartelle, conferme, guida...).</summary>
 public sealed class DialogService : IDialogService
 {
     private static Window? Owner => Application.Current.MainWindow;

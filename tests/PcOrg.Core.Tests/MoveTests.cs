@@ -4,6 +4,7 @@ using PcOrg.Core.Storage;
 
 namespace PcOrg.Core.Tests;
 
+/// <summary>Piano di spostamento, esecuzione e annullamento.</summary>
 public class MoveTests
 {
     [Fact]

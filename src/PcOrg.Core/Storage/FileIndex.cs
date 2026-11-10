@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text;
 using Microsoft.Data.Sqlite;
 using PcOrg.Core.Classification;
+using PcOrg.Core.Diagnostics;
 using PcOrg.Core.Indexing;
 using PcOrg.Core.Metadata;
 
@@ -16,8 +17,12 @@ public sealed class FileIndex
     private const int SchemaVersion = 4;
     private readonly string _connectionString;
 
+    /// <summary>Percorso completo del file dell'indice (indice.db).</summary>
+    public string DatabasePath { get; }
+
     private FileIndex(string databasePath)
     {
+        DatabasePath = Path.GetFullPath(databasePath);
         _connectionString = new SqliteConnectionStringBuilder
         {
             DataSource = databasePath,
@@ -53,6 +58,7 @@ public sealed class FileIndex
         if (version >= SchemaVersion)
             return;
 
+        Log.Info($"Aggiornamento dell'indice dalla versione {version} alla {SchemaVersion} ({DatabasePath}).");
         using var tx = conn.BeginTransaction();
         if (version < 1)
             CreateSchemaV1(conn, tx);
@@ -261,24 +267,97 @@ public sealed class FileIndex
 
     // ------------------------------------------------------------------ Scansione
 
+    /// <summary>Numero di file salvati per volta durante una scansione.</summary>
+    public const int ScanBatchSize = 2000;
+
     /// <summary>
     /// Allinea l'indice di una cartella monitorata con i file trovati su disco:
     /// aggiunge i nuovi, aggiorna i modificati, rimuove quelli spariti.
     /// </summary>
-    /// <returns>Numero di file presenti nella cartella.</returns>
+    /// <remarks>
+    /// I file trovati vengono salvati a blocchi di <see cref="ScanBatchSize"/>: se la scansione viene
+    /// interrotta (pulsante Interrompi, chiusura dell'app, errore) quello che è già stato trovato resta
+    /// nell'indice e la scansione successiva riparte da lì. I file spariti vengono eliminati solo alla
+    /// fine di una scansione <b>completa</b>, così una scansione parziale non cancella mai nulla.
+    /// Ogni scansione usa un nuovo numero di "generazione" (colonna <c>seen</c>): alla fine si eliminano
+    /// i file della cartella che non sono stati visti in questa generazione.
+    /// </remarks>
     /// <param name="isStillAvailable">
     /// Controllato prima di eliminare i file non trovati: se la cartella (es. di rete) è sparita durante la
-    /// scansione, l'elenco potrebbe essere incompleto e l'indice resta com'era invece di perdere i file.
+    /// scansione, l'elenco potrebbe essere incompleto e i file non visti restano nell'indice.
     /// </param>
+    /// <returns>Numero di file presenti nella cartella.</returns>
     public int SyncRoot(long rootId, IEnumerable<ScannedFile> files, IProgress<int>? progress = null,
         CancellationToken cancellationToken = default, Func<bool>? isStillAvailable = null)
     {
         using var conn = Connect();
-        using var tx = conn.BeginTransaction();
         var generation = Convert.ToInt64(
-            Scalar(conn, "SELECT COALESCE(MAX(seen), 0) + 1 FROM files;", tx), CultureInfo.InvariantCulture);
+            Scalar(conn, "SELECT COALESCE(MAX(seen), 0) + 1 FROM files;"), CultureInfo.InvariantCulture);
 
-        using var upsert = Command(conn, """
+        var tx = conn.BeginTransaction();
+        var upsert = CreateUpsert(conn, tx, rootId, generation);
+        var count = 0;
+        try
+        {
+            foreach (var file in files)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                upsert.Parameters["$path"].Value = file.Path;
+                upsert.Parameters["$name"].Value = Path.GetFileName(file.Path);
+                upsert.Parameters["$ext"].Value = Path.GetExtension(file.Path).ToLowerInvariant();
+                upsert.Parameters["$folder"].Value = Path.GetDirectoryName(file.Path) ?? "";
+                upsert.Parameters["$size"].Value = file.Size;
+                upsert.Parameters["$mod"].Value = ToUnixSeconds(file.ModifiedUtc);
+                upsert.Parameters["$cat"].Value = (int)FileClassifier.Classify(file.Path);
+                upsert.ExecuteNonQuery();
+
+                if (++count % ScanBatchSize == 0)
+                {
+                    // Salvataggio intermedio: i file trovati finora sopravvivono a un'interruzione.
+                    tx.Commit();
+                    upsert.Dispose();
+                    tx.Dispose();
+                    tx = conn.BeginTransaction();
+                    upsert = CreateUpsert(conn, tx, rootId, generation);
+                }
+                if (count % 500 == 0)
+                    progress?.Report(count);
+            }
+            progress?.Report(count);
+
+            if (isStillAvailable is not null && !isStillAvailable())
+            {
+                tx.Commit(); // si tengono i file trovati, ma non si elimina nulla
+                throw new IOException("La cartella non è più raggiungibile: i file non trovati restano nell'indice.");
+            }
+
+            Exec(conn, $"DELETE FROM files WHERE root_id = {rootId} AND seen <> {generation};", tx);
+            using (var stamp = Command(conn, "UPDATE roots SET last_scan_utc = $t WHERE id = $id;", tx))
+            {
+                stamp.Parameters.AddWithValue("$t", DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture));
+                stamp.Parameters.AddWithValue("$id", rootId);
+                stamp.ExecuteNonQuery();
+            }
+            tx.Commit();
+            return count;
+        }
+        catch (OperationCanceledException)
+        {
+            // Interruzione richiesta: si salva il blocco in corso e si rilancia.
+            tx.Commit();
+            throw;
+        }
+        finally
+        {
+            upsert.Dispose();
+            tx.Dispose();
+        }
+    }
+
+    /// <summary>Comando preparato per inserire o aggiornare un file durante la scansione.</summary>
+    private static SqliteCommand CreateUpsert(SqliteConnection conn, SqliteTransaction tx, long rootId, long generation)
+    {
+        var upsert = Command(conn, """
             INSERT INTO files(root_id, path, name, ext, folder, size, modified_utc, category, seen)
             VALUES ($root, $path, $name, $ext, $folder, $size, $mod, $cat, $seen)
             ON CONFLICT(path) DO UPDATE SET
@@ -288,48 +367,49 @@ public sealed class FileIndex
                                 THEN files.category ELSE excluded.category END,
                 seen = excluded.seen;
             """, tx);
-        var pRoot = upsert.Parameters.Add("$root", SqliteType.Integer);
-        var pPath = upsert.Parameters.Add("$path", SqliteType.Text);
-        var pName = upsert.Parameters.Add("$name", SqliteType.Text);
-        var pExt = upsert.Parameters.Add("$ext", SqliteType.Text);
-        var pFolder = upsert.Parameters.Add("$folder", SqliteType.Text);
-        var pSize = upsert.Parameters.Add("$size", SqliteType.Integer);
-        var pMod = upsert.Parameters.Add("$mod", SqliteType.Integer);
-        var pCat = upsert.Parameters.Add("$cat", SqliteType.Integer);
-        var pSeen = upsert.Parameters.Add("$seen", SqliteType.Integer);
+        upsert.Parameters.Add("$root", SqliteType.Integer).Value = rootId;
+        upsert.Parameters.Add("$seen", SqliteType.Integer).Value = generation;
+        foreach (var name in new[] { "$path", "$name", "$ext", "$folder" })
+            upsert.Parameters.Add(name, SqliteType.Text);
+        foreach (var name in new[] { "$size", "$mod", "$cat" })
+            upsert.Parameters.Add(name, SqliteType.Integer);
         upsert.Prepare();
+        return upsert;
+    }
 
-        pRoot.Value = rootId;
-        pSeen.Value = generation;
-        var count = 0;
-        foreach (var file in files)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            pPath.Value = file.Path;
-            pName.Value = Path.GetFileName(file.Path);
-            pExt.Value = Path.GetExtension(file.Path).ToLowerInvariant();
-            pFolder.Value = Path.GetDirectoryName(file.Path) ?? "";
-            pSize.Value = file.Size;
-            pMod.Value = ToUnixSeconds(file.ModifiedUtc);
-            pCat.Value = (int)FileClassifier.Classify(file.Path);
-            upsert.ExecuteNonQuery();
+    // ------------------------------------------------------------------ Manutenzione
 
-            if (++count % 500 == 0)
-                progress?.Report(count);
-        }
-        progress?.Report(count);
+    /// <summary>Riepilogo dell'indice per la finestra Impostazioni e il registro.</summary>
+    public IndexStats GetStats()
+    {
+        using var conn = Connect();
+        long Count(string sql) => Convert.ToInt64(Scalar(conn, sql), CultureInfo.InvariantCulture);
+        var size = 0L;
+        foreach (var suffix in new[] { "", "-wal" })
+            if (File.Exists(DatabasePath + suffix))
+                size += new FileInfo(DatabasePath + suffix).Length;
+        return new IndexStats(Count("SELECT COUNT(*) FROM files;"), Count("SELECT COUNT(*) FROM roots;"),
+            Count("SELECT COUNT(*) FROM move_batches;"), DatabasePath, size);
+    }
 
-        if (isStillAvailable is not null && !isStillAvailable())
-            throw new IOException("La cartella non è più raggiungibile: scansione annullata, l'indice resta invariato.");
-        Exec(conn, $"DELETE FROM files WHERE root_id = {rootId} AND seen <> {generation};", tx);
-        using (var stamp = Command(conn, "UPDATE roots SET last_scan_utc = $t WHERE id = $id;", tx))
-        {
-            stamp.Parameters.AddWithValue("$t", DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture));
-            stamp.Parameters.AddWithValue("$id", rootId);
-            stamp.ExecuteNonQuery();
-        }
+    /// <summary>Riduce lo spazio occupato dal file dell'indice (utile dopo aver rimosso molte cartelle).</summary>
+    public void Compact()
+    {
+        using var conn = Connect();
+        Exec(conn, "PRAGMA wal_checkpoint(TRUNCATE);");
+        Exec(conn, "VACUUM;");
+    }
+
+    /// <summary>
+    /// Svuota l'elenco dei file (e i relativi metadati) mantenendo cartelle monitorate e cronologia:
+    /// alla scansione successiva l'indice viene ricostruito da zero. I file su disco non vengono toccati.
+    /// </summary>
+    public void ClearFiles()
+    {
+        using var conn = Connect();
+        using var tx = conn.BeginTransaction();
+        Exec(conn, "DELETE FROM files; UPDATE roots SET last_scan_utc = NULL;", tx);
         tx.Commit();
-        return count;
     }
 
     // ------------------------------------------------------------------ Ricerca

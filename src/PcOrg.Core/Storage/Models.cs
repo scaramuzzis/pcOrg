@@ -52,3 +52,6 @@ public sealed record MoveLogEntry(long Id, long BatchId, string FromPath, string
 
 /// <summary>File in attesa della lettura dei metadati.</summary>
 public sealed record PendingMetadata(long Id, string Path, long Size, long ModifiedUnix);
+
+/// <summary>Riepilogo dell'indice: numero di file, cartelle, spostamenti e spazio occupato dal database.</summary>
+public sealed record IndexStats(long Files, long Roots, long MoveBatches, string DatabasePath, long DatabaseBytes);

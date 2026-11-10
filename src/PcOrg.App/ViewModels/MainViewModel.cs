@@ -10,6 +10,7 @@ using CommunityToolkit.Mvvm.Input;
 using PcOrg.App.Infrastructure;
 using PcOrg.Core;
 using PcOrg.Core.Classification;
+using PcOrg.Core.Diagnostics;
 using PcOrg.Core.Indexing;
 using PcOrg.Core.Metadata;
 using PcOrg.Core.Moving;
@@ -29,11 +30,18 @@ public sealed record CategoryItem(FileCategory? Category, string Name, long Coun
     public Brush Accent => CategoryColors.For(Category);
 }
 
+/// <summary>Tipo di notifica a comparsa: determina icona e colore.</summary>
 public enum ToastKind { Success, Info, Warning }
 
 /// <summary>Riga dell'elenco dei file di un prodotto.</summary>
 public sealed record ProductFileItem(FileRecord File, string State, bool IsOld);
 
+/// <summary>
+/// ViewModel della finestra principale (schema MVVM con CommunityToolkit.Mvvm): cartelle monitorate,
+/// categorie, ricerca, prodotti, anteprima, spostamenti e notifiche. Tutto il lavoro pesante
+/// (scansioni, query, letture dei file) gira in background con Task.Run; l'interfaccia resta reattiva.
+/// I comandi della barra dei menu e le impostazioni sono in MainViewModel.Menu.cs.
+/// </summary>
 public sealed partial class MainViewModel : ObservableObject
 {
     private readonly FileIndex _index;
@@ -50,15 +58,53 @@ public sealed partial class MainViewModel : ObservableObject
         ProductsView = CollectionViewSource.GetDefaultView(Products);
         ProductsView.Filter = FilterProduct;
         ReloadRoots();
-        _ = StartupAsync();
+        Fire(StartupAsync(), "avvio");
     }
 
+    /// <summary>
+    /// Avvio: mostra subito l'elenco salvato nell'indice, poi (se abilitato nelle impostazioni)
+    /// aggiorna le cartelle in background, altrimenti legge solo i metadati mancanti.
+    /// </summary>
     private async Task StartupAsync()
     {
         await RefreshAsync();
-        // Es. indice creato con la versione 0.1: legge subito versioni e firme mancanti.
-        if (await Task.Run(_index.CountFilesNeedingMetadata) > 0)
-            await UpdateMetadataAsync();
+        var stats = await Task.Run(_index.GetStats);
+        Status = stats.Roots == 0
+            ? "Aggiungi una cartella per iniziare."
+            : $"Indice caricato: {stats.Files:N0} file in {stats.Roots:N0} cartelle";
+        Log.Info($"Indice caricato da {stats.DatabasePath}: {stats.Files:N0} file, {stats.Roots:N0} cartelle, " +
+                 $"{FileSizeConverter.Format(stats.DatabaseBytes)}.");
+
+        // Si aspetta il primo disegno della finestra, così l'utente vede subito i dati.
+        await Task.Delay(800);
+        if (_scanOnStartup && Roots.Count > 0)
+            await ScanRootsAsync(Roots.Select(r => r.Root).ToList());
+        else if (await Task.Run(_index.CountFilesNeedingMetadata) > 0)
+            await UpdateMetadataAsync(); // es. indice creato con una versione precedente
+    }
+
+    /// <summary>
+    /// Avvia un'operazione asincrona senza attenderla, registrando gli eventuali errori
+    /// (altrimenti un'eccezione in un task non atteso andrebbe persa in silenzio).
+    /// </summary>
+    private void Fire(Task task, string what)
+    {
+        task.ContinueWith(t =>
+        {
+            var error = t.Exception?.GetBaseException();
+            Log.Error($"Errore durante: {what}", error);
+            ShowToast($"Si è verificato un problema ({what}). Dettagli nel registro attività.", ToastKind.Warning);
+        }, CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted,
+           SynchronizationContext.Current is null ? TaskScheduler.Default : TaskScheduler.FromCurrentSynchronizationContext());
+    }
+
+    /// <summary>Attende che scansioni e spostamenti in corso finiscano (usato alla chiusura).</summary>
+    public async Task<bool> WaitUntilIdleAsync(TimeSpan timeout)
+    {
+        var stopwatch = Stopwatch.StartNew();
+        while (IsBusy && stopwatch.Elapsed < timeout)
+            await Task.Delay(100);
+        return !IsBusy;
     }
 
     public ObservableCollection<RootItem> Roots { get; } = [];
@@ -165,7 +211,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     private CancellationTokenSource? _previewCts;
 
-    partial void OnSelectedFileChanged(FileRecord? value) => _ = LoadPreviewAsync(value);
+    partial void OnSelectedFileChanged(FileRecord? value) => Fire(LoadPreviewAsync(value), "anteprima");
 
     private async Task LoadPreviewAsync(FileRecord? file)
     {
@@ -249,11 +295,11 @@ public sealed partial class MainViewModel : ObservableObject
 
     partial void OnSearchTextChanged(string value)
     {
-        _ = RefreshResultsAsync(debounce: true);
+        Fire(RefreshResultsAsync(debounce: true), "ricerca");
         ProductsView.Refresh();
     }
 
-    partial void OnSelectedCategoryChanged(CategoryItem? value) => _ = RefreshResultsAsync(debounce: false);
+    partial void OnSelectedCategoryChanged(CategoryItem? value) => Fire(RefreshResultsAsync(debounce: false), "ricerca");
 
     // ------------------------------------------------------------------ Cartelle monitorate
 
@@ -348,6 +394,7 @@ public sealed partial class MainViewModel : ObservableObject
         var total = 0;
         var offline = new List<string>();
         var stopwatch = Stopwatch.StartNew();
+        Log.Info($"Scansione avviata: {string.Join(", ", roots.Select(r => r.Path))}");
         try
         {
             foreach (var root in roots)
@@ -368,11 +415,15 @@ public sealed partial class MainViewModel : ObservableObject
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                 {
-                    // Es. la rete è caduta durante la scansione: l'indice di questa cartella resta com'era.
+                    // Es. la rete è caduta durante la scansione: i file già trovati sono salvati,
+                    // quelli non ancora visti restano com'erano.
+                    Log.Warn($"Scansione di {root.Path} non completata.", ex);
                     offline.Add(root.Path);
                 }
             }
             Status = $"Scansione completata: {total:N0} file in {stopwatch.Elapsed.TotalSeconds:N1} s";
+            Log.Info($"Scansione completata: {total:N0} file in {stopwatch.Elapsed.TotalSeconds:N1} s" +
+                     (offline.Count > 0 ? $"; non raggiungibili: {string.Join(", ", offline)}" : ""));
             if (offline.Count == 0)
                 ShowToast($"Indice aggiornato: {total:N0} file trovati");
             else
@@ -383,8 +434,9 @@ public sealed partial class MainViewModel : ObservableObject
         }
         catch (OperationCanceledException)
         {
-            Status = "Scansione interrotta.";
-            ShowToast("Scansione interrotta", ToastKind.Warning);
+            Status = "Scansione interrotta: i file trovati finora sono salvati.";
+            Log.Info("Scansione interrotta dall'utente.");
+            ShowToast("Scansione interrotta: i file trovati finora sono salvati e la prossima scansione riprenderà da lì", ToastKind.Warning);
             return;
         }
         finally
@@ -408,7 +460,7 @@ public sealed partial class MainViewModel : ObservableObject
         {
             var progress = new Progress<(int Done, int Total)>(p =>
                 Status = $"Lettura di versioni e firme: {p.Done:N0} di {p.Total:N0} file…");
-            var count = await Task.Run(() => MetadataUpdater.Run(_index, progress, token), token);
+            var count = await Task.Run(() => MetadataUpdater.Run(_index, progress, token, _settings.VerifySignatures), token);
             Status = count == 0 ? "Indice aggiornato." : $"Lette versioni e firme di {count:N0} file.";
         }
         catch (OperationCanceledException)
@@ -432,7 +484,7 @@ public sealed partial class MainViewModel : ObservableObject
             Roots.Add(new RootItem(root));
         SelectedRoot = Roots.FirstOrDefault(r => r.Id == selected);
         OnPropertyChanged(nameof(HasRoots));
-        _ = CheckAvailabilityAsync(Roots.ToList());
+        Fire(CheckAvailabilityAsync(Roots.ToList()), "verifica delle cartelle");
     }
 
     /// <summary>Verifica in background quali cartelle (soprattutto di rete) sono raggiungibili.</summary>
@@ -447,7 +499,24 @@ public sealed partial class MainViewModel : ObservableObject
 
     // ------------------------------------------------------------------ Categorie e ricerca
 
+    /// <summary>Impedisce che due aggiornamenti delle categorie si sovrappongano mescolando i risultati.</summary>
+    private readonly SemaphoreSlim _refreshGate = new(1, 1);
+
+    /// <summary>Ricarica categorie, prodotti e risultati dall'indice.</summary>
     private async Task RefreshAsync()
+    {
+        await _refreshGate.WaitAsync();
+        try
+        {
+            await RefreshCoreAsync();
+        }
+        finally
+        {
+            _refreshGate.Release();
+        }
+    }
+
+    private async Task RefreshCoreAsync()
     {
         var stats = await Task.Run(_index.GetCategoryStats);
         var selected = SelectedCategory;
@@ -610,6 +679,8 @@ public sealed partial class MainViewModel : ObservableObject
             var progress = new Progress<int>(n => Status = $"Spostamento {n:N0} di {count:N0}…");
             var description = $"{count} file in {destination}";
             var result = await Task.Run(() => _moves.Execute(plan, description, progress));
+            Log.Info($"Spostamento #{result.BatchId}: {result.Moved} file in {destination}, {result.Errors.Count} errori." +
+                     (result.Errors.Count > 0 ? Environment.NewLine + string.Join(Environment.NewLine, result.Errors) : ""));
 
             Status = $"Spostati {result.Moved:N0} file in {destination}";
             if (result.Moved > 0)
@@ -630,6 +701,7 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task UndoMoveAsync(long batchId)
     {
         var result = await Task.Run(() => _moves.Undo(batchId));
+        Log.Info($"Annullato lo spostamento #{batchId}: {result.Moved} file ripristinati, {result.Errors.Count} errori.");
         await RefreshAsync();
         if (result.Errors.Count == 0)
             ShowToast($"Spostamento annullato: {result.Moved:N0} file tornati al loro posto", ToastKind.Info);
@@ -639,5 +711,5 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void ShowHistory() => _dialogs.ShowMoveHistory(_index, () => _ = RefreshAsync());
+    private void ShowHistory() => _dialogs.ShowMoveHistory(_index, () => Fire(RefreshAsync(), "aggiornamento"));
 }

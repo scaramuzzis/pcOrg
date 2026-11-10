@@ -2,6 +2,7 @@ using PcOrg.Core.Classification;
 
 namespace PcOrg.Core.Tests;
 
+/// <summary>Classificazione dei file per categoria.</summary>
 public class FileClassifierTests
 {
     [Theory]

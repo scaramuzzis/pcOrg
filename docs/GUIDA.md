@@ -68,6 +68,10 @@ L'aggiornamento avviene in due fasi:
 
 Puoi continuare a usare pcOrg durante l'aggiornamento. Il pulsante **Interrompi** nella barra di stato ferma l'operazione: riprenderà dal punto in cui si era fermata al prossimo aggiornamento.
 
+**I dati restano salvati.** Tutto ciò che pcOrg trova viene registrato nel file dell'indice (`indice.db`) man mano, a blocchi di qualche migliaio di file: chiudendo e riaprendo l'applicazione l'elenco ricompare subito, anche se avevi interrotto una scansione a metà. Se chiudi la finestra mentre un aggiornamento è in corso, pcOrg te lo segnala, salva l'ultimo blocco e poi si chiude.
+
+**Aggiornamento all'avvio.** Per impostazione predefinita, a ogni avvio pcOrg mostra subito l'elenco salvato e poi aggiorna le cartelle in background. Puoi disattivarlo da **Strumenti → Impostazioni → Generale**.
+
 ## Le categorie
 
 Ogni file viene assegnato a una categoria in base al tipo. Il pannello di sinistra mostra le categorie presenti, ciascuna con un'icona colorata, il numero di file e lo spazio occupato. Fai clic su una categoria per vedere solo quei file; **Tutti** mostra l'intero elenco.
@@ -203,20 +207,56 @@ Usi tipici: un inventario dei driver da conservare, l'elenco degli installer da 
 | Sposta in… | **Ctrl+M** |
 | Cronologia spostamenti | **Ctrl+H** |
 | Scheda File / Prodotti e versioni | **Ctrl+1** / **Ctrl+2** |
+| Impostazioni | **Ctrl+,** |
 | Guida | **F1** |
 
 Anche i menu si usano da tastiera: premi **Alt** e la lettera sottolineata (per esempio **Alt+F** per il menu File). Con il tasto destro sull'elenco dei file compare un menu con le azioni più comuni.
 
 **Apri** esegue il file con il programma predefinito. Per programmi, installer, driver e script pcOrg chiede prima conferma, per evitare di avviarli per sbaglio.
 
-## Personalizzare pcOrg
+## Impostazioni e personalizzazione
 
-Dal menu **Visualizza**:
+Apri **Strumenti → Impostazioni** (o **Ctrl+,**). La finestra ha tre schede; le modifiche si applicano con **Salva** e vengono ricordate ai successivi avvii.
 
-- **Tema**: **Come Windows** (segue il tema chiaro o scuro del sistema), **Chiaro** oppure **Scuro**;
-- **Pannello anteprima immagini** e **Pannello dettagli del file**: mostrali o nascondili per avere più spazio per l'elenco.
+**Generale**
 
-Le scelte vengono ricordate ai successivi avvii.
+- **Tema**: come Windows (segue il tema chiaro o scuro del sistema), chiaro oppure scuro.
+- **Aggiorna le cartelle monitorate a ogni avvio**: l'elenco salvato compare subito e l'aggiornamento avviene in background.
+- **Verifica le firme digitali**: garantisce che i programmi non siano stati modificati, ma legge ogni programma per intero; disattivala se l'aggiornamento è lento.
+- **Pannelli**: mostra o nascondi l'anteprima delle immagini e i dettagli del file.
+
+**Colonne**
+
+Scegli l'elenco da configurare (Elenco file, Prodotti, File del prodotto selezionato), spunta le colonne da mostrare e usa **Su** e **Giù** per cambiarne l'ordine. **Predefinite** riporta l'elenco com'era in origine. La colonna del nome resta sempre visibile.
+
+Oltre alle colonne standard, l'elenco dei file offre colonne facoltative: **Prodotto**, **Descrizione**, **Firma digitale**, **Architettura**, **Tipo di installer**, **Estensione** e **Percorso completo**.
+
+Le colonne si possono gestire anche direttamente nell'elenco:
+
+- **trascina un'intestazione** per spostare la colonna;
+- **trascina il bordo** di un'intestazione per allargarla o restringerla;
+- **fai clic** su un'intestazione per ordinare l'elenco;
+- **tasto destro** su un'intestazione per mostrare o nascondere le colonne, ripristinare quelle predefinite o aprire la configurazione.
+
+pcOrg ricorda posizione, larghezza, visibilità e ordinamento delle colonne, la larghezza del pannello di sinistra (trascina il bordo tra il pannello e l'elenco) e la posizione e dimensione della finestra.
+
+**Dati e registro**
+
+Mostra dove sono salvati i dati e quanti file contiene l'indice, e permette di:
+
+- **aprire la cartella dei dati** e il **registro attività**;
+- **compattare l'indice**, per ridurre lo spazio occupato dopo aver rimosso molte cartelle;
+- **ricostruire l'indice**: svuota l'elenco dei file e analizza di nuovo tutte le cartelle (cartelle, cronologia e preferenze restano).
+
+**I file di pcOrg** (nella cartella dei dati):
+
+| File | Contenuto |
+|---|---|
+| `indice.db` | Cartelle monitorate, elenco dei file con versioni e firme, cronologia degli spostamenti. |
+| `settings.json` | Preferenze: tema, opzioni, colonne, pannelli, posizione della finestra. |
+| `log\pcorg.log` | Registro attività: avvii, scansioni, spostamenti ed eventuali errori, con data e ora. |
+
+> Se qualcosa non va come previsto, il **registro attività** (Strumenti → Apri il registro attività) indica cosa è successo e quando: è la prima cosa da controllare o da inviare a chi ti assiste.
 
 ## Consigli per organizzare al meglio
 
@@ -230,6 +270,8 @@ Le scelte vengono ricordate ai successivi avvii.
 8. **Esporta in Excel** un inventario dei driver dopo aver riordinato: è utile quando reinstalli Windows.
 
 ## Domande frequenti
+
+**Chiudendo e riaprendo pcOrg non vedo più i file.** Dalla versione 0.7 i file trovati vengono salvati man mano e l'elenco ricompare subito all'avvio; la barra di stato indica "Indice caricato: N file in M cartelle". Se non succede, apri **Strumenti → Impostazioni → Dati e registro** per controllare dove si trova l'indice e quanti file contiene, e apri il **registro attività** per vedere eventuali errori.
 
 **Non trovo un file che so di avere.** Controlla che la sua cartella sia tra quelle monitorate, premi **F5** per aggiornare l'indice e verifica che non sia selezionata una categoria diversa da **Tutti**.
 
@@ -250,4 +292,4 @@ Le scelte vengono ricordate ai successivi avvii.
 - pcOrg **non si collega a internet**: tutte le analisi avvengono sul tuo PC, compresa la verifica delle firme digitali.
 - pcOrg **non cancella e non modifica** il contenuto dei file. Le uniche operazioni sui file sono gli spostamenti che confermi tu, sempre annullabili.
 - Nessun file viene **sovrascritto**: in caso di nomi uguali viene aggiunto un numero, per esempio `setup (2).exe`.
-- I dati di pcOrg (indice, cronologia, preferenze) restano nella cartella dei dati sul tuo PC.
+- I dati di pcOrg (indice, cronologia, preferenze, registro attività) restano nella cartella dei dati sul tuo PC.

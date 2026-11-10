@@ -1,5 +1,6 @@
 namespace PcOrg.Core.Moving;
 
+/// <summary>Esito previsto per un file nell'anteprima di uno spostamento.</summary>
 public enum MoveItemStatus
 {
     /// <summary>Il file verrà spostato con lo stesso nome.</summary>

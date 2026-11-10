@@ -205,6 +205,31 @@ public class Screenshots
         Capture(help, output, "17-guida-spostare-i-file.png");
         help.Close();
 
+        // 18-20. Impostazioni (generale, colonne, dati)
+        var grids = new Dictionary<string, System.Windows.Controls.DataGrid>
+        {
+            ["file"] = window.ResultsGrid,
+        };
+        foreach (var (tab, file) in new[] { (SettingsWindow.GeneralTab, "18-impostazioni-generale.png"),
+                                           (SettingsWindow.ColumnsTab, "19-impostazioni-colonne.png"),
+                                           (SettingsWindow.DataTab, "20-impostazioni-dati.png") })
+        {
+            var settings = new SettingsWindow(vm, window, grids, tab) { Owner = window };
+            Show(settings);
+            Capture(settings, output, file);
+            settings.Close();
+        }
+
+        // 21. Elenco con colonne facoltative attivate (firma, architettura) e "Cartella" spostata
+        foreach (var header in new[] { "Firma digitale", "Architettura" })
+            window.ResultsGrid.Columns.First(c => (string)c.Header == header).Visibility = Visibility.Visible;
+        window.ResultsGrid.Columns.First(c => (string)c.Header == "Modificato").Visibility = Visibility.Collapsed;
+        window.ResultsGrid.Columns.First(c => (string)c.Header == "Firma digitale").DisplayIndex = 1;
+        Pump(500);
+        Capture(window, output, "21-colonne-personalizzate.png");
+        window.ResetColumns("file");
+        Pump(300);
+
         // 15. Informazioni su pcOrg
         var about = new AboutWindow { Owner = window };
         Show(about);

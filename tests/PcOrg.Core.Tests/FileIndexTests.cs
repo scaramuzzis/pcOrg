@@ -5,6 +5,7 @@ using PcOrg.Core.Storage;
 
 namespace PcOrg.Core.Tests;
 
+/// <summary>Indice: scansione, ricerca, categorie, cartelle annidate.</summary>
 public class FileIndexTests
 {
     private static (FileIndex Index, RootFolder Root) Indexed(TempDir dir, string folder = "Download")
@@ -105,6 +106,7 @@ public class FileIndexTests
     }
 }
 
+/// <summary>Indice: salvataggio dei metadati e aggiornamento da database di versioni precedenti.</summary>
 public class FileIndexMetadataTests
 {
     [Fact]
