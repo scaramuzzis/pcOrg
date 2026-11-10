@@ -1,0 +1,88 @@
+name: Build
+
+on:
+  push:
+    branches: ["**", "!screenshots"]
+    tags: ["v*"]
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Test
+        run: dotnet test PcOrg.sln -c Release
+
+      # Screenshot dell'app con dati di esempio, pubblicati sul ramo "screenshots".
+      - name: Screenshot
+        id: shots
+        if: github.event_name == 'push'
+        continue-on-error: true
+        env:
+          PCORG_SCREENSHOTS: ${{ github.workspace }}\screenshots
+        run: dotnet test tests/PcOrg.App.Tests -c Release --no-build --filter "FullyQualifiedName~Screenshots"
+
+      - name: Pubblica gli screenshot
+        if: github.event_name == 'push' && steps.shots.outcome == 'success'
+        continue-on-error: true
+        run: |
+          cd screenshots
+          git init -q -b screenshots
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Screenshot della build ${{ github.sha }}"
+          git push -f -q "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" screenshots
+
+      - name: Carica gli screenshot
+        if: github.event_name == 'push' && steps.shots.outcome == 'success'
+        uses: actions/upload-artifact@v5
+        with:
+          name: screenshot
+          path: screenshots/*.png
+
+      - name: Pubblica eseguibile unico
+        run: dotnet publish src/PcOrg.App -c Release -o publish
+
+      - name: Carica PcOrg.exe
+        uses: actions/upload-artifact@v5
+        with:
+          name: PcOrg-win-x64
+          path: publish/PcOrg.exe
+
+      # Si pubblica una Release quando si spinge un tag v* oppure quando il messaggio
+      # del commit contiene [release] (la versione viene letta da PcOrg.App.csproj).
+      - name: Versione
+        id: ver
+        if: startsWith(github.ref, 'refs/tags/v') || contains(github.event.head_commit.message, '[release]')
+        run: |
+          $v = ([xml](Get-Content src/PcOrg.App/PcOrg.App.csproj)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
+          $tag = if ('${{ github.ref }}'.StartsWith('refs/tags/')) { '${{ github.ref_name }}' } else { "v$v" }
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+
+      - name: Crea lo zip
+        if: steps.ver.outputs.tag != ''
+        run: Compress-Archive -Path publish/PcOrg.exe -DestinationPath PcOrg-win-x64.zip
+
+      - name: Release
+        if: steps.ver.outputs.tag != ''
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.ver.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: pcOrg ${{ steps.ver.outputs.tag }}
+          body: |
+            Scarica **PcOrg-win-x64.zip**, estrai `PcOrg.exe` e avvialo: non serve installare nulla.
+            Se compare "PC protetto da Windows": Ulteriori informazioni → Esegui comunque.
+          files: |
+            PcOrg-win-x64.zip
+            publish/PcOrg.exe
