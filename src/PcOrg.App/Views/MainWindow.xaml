@@ -116,6 +116,9 @@
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="_Strumenti">
+                <MenuItem Header="_Organizza con le regole…" Command="{Binding OrganizeWithRulesCommand}">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Rules}" /></MenuItem.Icon>
+                </MenuItem>
                 <MenuItem Header="Cerca i c_loni" Command="{Binding FindDuplicatesCommand}">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Duplicate}" /></MenuItem.Icon>
                 </MenuItem>
@@ -366,6 +369,8 @@
                                               ToolTip="Apri Esplora risorse con il file già selezionato" />
                                 <c:IconButton Glyph="{x:Static inf:Glyphs.Copy}" Label="Copia percorso" Command="{Binding CopyPathCommand}" Margin="0,0,6,0"
                                               ToolTip="Copia negli appunti il percorso dei file selezionati" />
+                                <c:IconButton Glyph="{x:Static inf:Glyphs.Rules}" Label="Organizza con le regole" Command="{Binding OrganizeWithRulesCommand}" Margin="0,0,6,0"
+                                              ToolTip="Applica le regole di archiviazione ai file selezionati (o a tutto l'elenco): prima vedrai l'anteprima" />
                                 <c:IconButton Glyph="{x:Static inf:Glyphs.Move}" Label="Sposta in…" Command="{Binding MoveSelectedCommand}" Margin="0,0,6,0"
                                               Style="{DynamicResource AccentButtonStyle}"
                                               ToolTip="Scegli dove spostare i file selezionati: prima vedrai un'anteprima, e potrai sempre annullare" />
@@ -434,6 +439,7 @@
                                     <DataGridTextColumn Header="Firma digitale" Binding="{Binding SignatureText}" Width="180" MinWidth="80" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
                                     <DataGridTextColumn Header="Architettura" Binding="{Binding ArchitectureText}" Width="115" MinWidth="80" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
                                     <DataGridTextColumn Header="Tipo di installer" Binding="{Binding Meta.InstallerType}" Width="150" MinWidth="80" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
+                                    <DataGridTextColumn Header="Sul PC" Binding="{Binding Converter={x:Static inf:InstallStateConverter.Instance}}" Width="230" MinWidth="100" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
                                     <DataGridTextColumn Header="Estensione" Binding="{Binding Extension}" Width="85" MinWidth="60" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
                                     <DataGridTextColumn Header="Percorso completo" Binding="{Binding Path}" Width="320" MinWidth="120" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
                                 </DataGrid.Columns>
@@ -456,6 +462,7 @@
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
                                     <Grid.Resources>
                                         <Style TargetType="TextBlock">
@@ -464,7 +471,7 @@
                                         </Style>
                                     </Grid.Resources>
 
-                                    <Border Grid.RowSpan="5" Width="48" Height="48" CornerRadius="10" VerticalAlignment="Top" Margin="0,0,14,0"
+                                    <Border Grid.RowSpan="6" Width="48" Height="48" CornerRadius="10" VerticalAlignment="Top" Margin="0,0,14,0"
                                             Background="{Binding Category, Converter={x:Static inf:CategoryBrushConverter.Instance}}">
                                         <TextBlock Style="{StaticResource Icon}" FontSize="22" Foreground="White" HorizontalAlignment="Center" Margin="0"
                                                    Text="{Binding Category, Converter={x:Static inf:CategoryGlyphConverter.Instance}}" />
@@ -492,8 +499,14 @@
 
                                     <TextBlock Grid.Row="4" Grid.Column="1" Style="{StaticResource Secondary}" Text="Tipo di installer" />
                                     <TextBlock Grid.Row="4" Grid.Column="2" Text="{Binding Meta.InstallerType, TargetNullValue='—'}" />
-                                    <TextBlock Grid.Row="4" Grid.Column="3" Style="{StaticResource Secondary}" Text="Dimensione" />
-                                    <TextBlock Grid.Row="4" Grid.Column="4" Text="{Binding Size, Converter={StaticResource FileSize}}" />
+                                    <TextBlock Grid.Row="4" Grid.Column="3" Style="{StaticResource Secondary}" Text="Sul PC" />
+                                    <TextBlock Grid.Row="4" Grid.Column="4" Text="{Binding Converter={x:Static inf:InstallStateConverter.Instance}, TargetNullValue='—'}"
+                                               ToolTip="Confronto con i programmi installati su questo PC" />
+
+                                    <TextBlock Grid.Row="5" Grid.Column="1" Style="{StaticResource Secondary}" Text="Dimensione" />
+                                    <TextBlock Grid.Row="5" Grid.Column="2" Text="{Binding Size, Converter={StaticResource FileSize}}" />
+                                    <TextBlock Grid.Row="5" Grid.Column="3" Style="{StaticResource Secondary}" Text="Modificato" />
+                                    <TextBlock Grid.Row="5" Grid.Column="4" Text="{Binding ModifiedUtc, StringFormat=g, Converter={x:Static vm:UtcToLocalConverter.Instance}}" />
                                 </Grid>
                             </Border>
                         </Grid>
@@ -562,6 +575,7 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                                 <DataGridTextColumn Header="Produttore" Binding="{Binding Company}" Width="*" MinWidth="110" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Sul PC" Binding="{Binding Converter={x:Static inf:InstallStateConverter.Instance}}" Width="230" MinWidth="120" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="Ultima versione" Binding="{Binding LatestVersion}" Width="115" MinWidth="86" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="Versioni" Binding="{Binding VersionCount}" Width="75" MinWidth="56" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="File" Binding="{Binding Files.Count}" Width="55" MinWidth="55" ElementStyle="{StaticResource CellText}" />

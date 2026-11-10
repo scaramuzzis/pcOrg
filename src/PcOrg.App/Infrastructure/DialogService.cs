@@ -66,9 +66,9 @@ public sealed class DialogService : IDialogService
     public void Error(string message, string title) =>
         ModernDialog.Show(Owner, title, message, DialogKind.Warning);
 
-    public MovePreviewResult? PreviewMove(IReadOnlyList<MoveItem> plan, string destination, bool destinationMonitored)
+    public MovePreviewResult? PreviewMove(IReadOnlyList<MoveItem> plan, string destination, bool destinationMonitored, string? summary = null)
     {
-        var window = new MovePreviewWindow(plan, destination, destinationMonitored) { Owner = Owner };
+        var window = new MovePreviewWindow(plan, destination, destinationMonitored, summary) { Owner = Owner };
         return window.ShowDialog() == true ? new MovePreviewResult(window.AddDestinationToMonitored) : null;
     }
 

@@ -5,7 +5,12 @@ sparsi nel PC. Scegli le cartelle da tenere sotto controllo; pcOrg le indicizza,
 per categoria e li trova all'istante mentre scrivi. Sei tu a decidere se e dove spostarli: prima
 vedi un'anteprima, e ogni spostamento si può annullare.
 
-## Cosa fa oggi (v0.9)
+## Cosa fa oggi (v0.10)
+- **Regole di archiviazione** (Impostazioni → Regole): condizioni su categoria, produttore e nome,
+  destinazione con segnaposto (`D:\Archivio\Driver\{Produttore}`), regole di esempio pronte;
+  **Organizza con le regole** prepara gli spostamenti con anteprima e annullamento.
+- **Installato sul PC?** Installer e driver confrontati con i programmi installati (registro di Windows):
+  non installato, stessa versione, aggiornamento disponibile, installer superato.
 - **Cloni e pulizia** (Ctrl+3): trova i file con contenuto identico anche con nomi diversi
   (dimensione → impronta veloce → confronto completo, impronte memorizzate), mostra lo spazio
   recuperabile, segna i doppioni con una regola (tieni il più vecchio, il più recente…) e li sposta

@@ -88,7 +88,10 @@ public partial class MainWindow : Window
             grid.ColumnHeaderStyle = CreateHeaderStyle(name, grid);
         }
         if (ViewModel is { } vm)
+        {
             ContentGrid.ColumnDefinitions[0].Width = new GridLength(Math.Clamp(vm.Settings.LeftPanelWidth, 230, 600));
+            vm.RequestOpenSettings += tab => OpenSettings(tab);
+        }
     }
 
     private void ScheduleSaveLayout()

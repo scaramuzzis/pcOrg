@@ -130,6 +130,7 @@ Selezionando un file, sotto l'elenco compare la scheda con tutti i suoi dettagli
 | **Firma digitale** | Chi ha firmato il file e se la firma è valida (vedi sotto). |
 | **Architettura** | 32 bit (x86), 64 bit (x64), ARM64, oppure "Qualsiasi (.NET)". |
 | **Tipo di installer** | La tecnologia dell'installazione: Windows Installer (MSI), Inno Setup, NSIS, InstallShield, WiX, autoestraente 7-Zip/ZIP/RAR. |
+| **Sul PC** | Per installer e driver: se il programma è già installato su questo PC e in quale versione (vedi sotto). |
 
 **La firma digitale** dice chi ha prodotto davvero un programma ed è un ottimo indizio di affidabilità:
 
@@ -137,6 +138,15 @@ Selezionando un file, sotto l'elenco compare la scheda con tutti i suoi dettagli
 - **✖ Non valida** — la firma c'è ma non è valida (file modificato o certificato non attendibile). Meglio non eseguire il file.
 - **? Nome editore** — firma presente ma non verificata (per esempio sui file in rete).
 - **Non firmato** — il file non ha firma: è normale per molti programmi gratuiti, ma conviene sapere da dove proviene.
+
+**Installato sul PC?** pcOrg legge l'elenco dei programmi installati (lo stesso di **Impostazioni di Windows → App installate**) e lo confronta con installer e driver:
+
+- **Non installato** — il programma non è presente su questo PC;
+- **Installato (versione)** — è installata proprio quella versione;
+- **Installata X: questo è più recente** — l'installer serve ad **aggiornare** il programma;
+- **Installata X: questo è superato** — sul PC c'è già una versione più nuova: l'installer si può archiviare o eliminare.
+
+Lo stato compare nei dettagli, nella colonna **Sul PC** della scheda **Prodotti e versioni** e, se la attivi, nella colonna facoltativa **Sul PC** dell'elenco dei file. L'elenco dei programmi installati viene riletto all'avvio e dopo ogni aggiornamento.
 
 Il pannello dettagli si può nascondere da **Visualizza → Pannello dettagli del file**.
 
@@ -162,6 +172,22 @@ Selezionando un prodotto, sotto compaiono i suoi file con lo stato:
 Il pulsante **Seleziona le versioni vecchie** le seleziona tutte in un clic: poi con **Sposta in…** puoi archiviarle in una cartella a parte. La casella **Solo prodotti con più file** mostra solo i prodotti di cui hai più copie o più versioni.
 
 > Il raggruppamento usa il nome del prodotto e il produttore letti dal file. Per i file senza queste informazioni viene usato il nome del file, quindi qualche raggruppamento può essere meno preciso.
+
+## Regole di archiviazione
+
+Le regole dicono a pcOrg **dove archiviare** i file, così non devi spostarli uno a uno. Una regola è fatta di **condizioni** (categoria, produttore, nome del file) e di una **cartella di destinazione**; per esempio:
+
+| Regola | Condizioni | Destinazione |
+|---|---|---|
+| Driver per produttore | categoria Driver | `D:\Archivio\Driver\{Produttore}` |
+| Installer | categoria Installer | `D:\Archivio\Installer\{Produttore}\{Prodotto}` |
+| Fatture | categoria PDF, nome contiene "fattura" | `D:\Archivio\Fatture\{Anno}` |
+
+**Creare le regole.** Apri **Strumenti → Impostazioni → Regole**. Con **Nuova…** scegli le condizioni (lasciale vuote per "qualsiasi") e la cartella di destinazione. Nella destinazione puoi usare dei **segnaposto**, che diventano i dati del file: `{Categoria}`, `{Produttore}`, `{Prodotto}`, `{Versione}`, `{Anno}`, `{Mese}`, `{Estensione}`. La finestra mostra subito un esempio di dove finirebbe un file. Il pulsante **Regole di esempio…** crea in un colpo una struttura di archivio completa (driver per produttore, installer, immagini disco, connessioni remote, documenti per anno) nella cartella che scegli.
+
+L'**ordine conta**: ogni file va nella cartella della **prima** regola che lo riguarda, dall'alto in basso (usa **Su** e **Giù**). Puoi disattivare una regola togliendo la spunta senza eliminarla.
+
+**Applicare le regole.** Seleziona i file e usa **Organizza con le regole** (scheda File o menu Strumenti); se non selezioni nulla, le regole si applicano a tutti i file dell'elenco attuale (categoria e ricerca comprese). Si apre l'anteprima dello spostamento con la destinazione di ogni file: non viene spostato nulla finché non confermi, non si sovrascrive mai nulla e tutto si può annullare con **Annulla** o dalla **Cronologia**. Se le cartelle di archivio non sono monitorate, l'anteprima propone di aggiungerle, così i file archiviati restano cercabili.
 
 ## Cloni e pulizia
 
@@ -248,7 +274,7 @@ Anche i menu si usano da tastiera: premi **Alt** e la lettera sottolineata (per 
 
 ## Impostazioni e personalizzazione
 
-Apri **Strumenti → Impostazioni** (o **Ctrl+,**). La finestra ha tre schede; le modifiche si applicano con **Salva** e vengono ricordate ai successivi avvii.
+Apri **Strumenti → Impostazioni** (o **Ctrl+,**). La finestra ha quattro schede (Generale, Colonne, Regole, Dati e registro); le modifiche si applicano con **Salva** e vengono ricordate ai successivi avvii.
 
 **Generale**
 
@@ -262,7 +288,7 @@ Apri **Strumenti → Impostazioni** (o **Ctrl+,**). La finestra ha tre schede; l
 
 Scegli l'elenco da configurare (Elenco file, Prodotti, File del prodotto selezionato), spunta le colonne da mostrare e usa **Su** e **Giù** per cambiarne l'ordine. **Predefinite** riporta l'elenco com'era in origine. La colonna del nome resta sempre visibile.
 
-Oltre alle colonne standard, l'elenco dei file offre colonne facoltative: **Prodotto**, **Descrizione**, **Firma digitale**, **Architettura**, **Tipo di installer**, **Estensione** e **Percorso completo**.
+Oltre alle colonne standard, l'elenco dei file offre colonne facoltative: **Prodotto**, **Descrizione**, **Firma digitale**, **Architettura**, **Tipo di installer**, **Sul PC**, **Estensione** e **Percorso completo**.
 
 Le colonne si possono gestire anche direttamente nell'elenco:
 

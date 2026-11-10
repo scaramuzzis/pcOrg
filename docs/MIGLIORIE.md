@@ -9,7 +9,7 @@ Proposte ordinate per **valore per l'utente / costo**. Ogni voce indica il probl
 | 1 | ✅ **Cloni esatti (hash)** e vista **Pulizia** (v0.9) | Oggi "Prodotti e versioni" trova versioni diverse, non le copie identiche (stesso file in due cartelle con nomi diversi). | Confronto a tre stadi: dimensione → hash dei primi/ultimi 64 KB → hash completo (xxHash3), solo sui candidati. Vista con gruppi di cloni, spazio recuperabile, "tieni il più recente". | 3–4 |
 | 2 | ✅ **Sposta nel Cestino** (v0.9) | Per liberare spazio oggi bisogna passare da Esplora risorse. | `Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(..., RecycleOption.SendToRecycleBin)`: mai eliminazione definitiva, sempre con conferma e registro. | 1 |
 | 3 | ✅ **Aggiornamento automatico** delle cartelle (v0.8) | Bisogna premere F5 dopo ogni download. | `FileSystemWatcher` per le cartelle locali (con raggruppamento degli eventi ogni 2 s); per le cartelle di rete controllo periodico leggero. | 2–3 |
-| 4 | **Regole di archiviazione** | Riordinare a mano Driver e Installer è ripetitivo. | Regole salvate ("Driver di NVIDIA → D:\Archivio\Driver\NVIDIA"), proposte nell'anteprima di spostamento; mai applicate senza conferma. | 3 |
+| 4 | ✅ **Regole di archiviazione** (v0.10) | Riordinare a mano Driver e Installer è ripetitivo. | Regole salvate ("Driver di NVIDIA → D:\Archivio\Driver\NVIDIA"), proposte nell'anteprima di spostamento; mai applicate senza conferma. | 3 |
 | 5 | **Firma del codice di PcOrg.exe** | L'avviso "PC protetto da Windows" spaventa chi riceve l'app. | Certificato di firma del codice (OV o EV) e firma nella build di GitHub; in alternativa Microsoft Store/MSIX. | 1 + costo del certificato |
 
 ## Priorità media
@@ -17,7 +17,7 @@ Proposte ordinate per **valore per l'utente / costo**. Ogni voce indica il probl
 | # | Miglioria | Perché | Come | Stima |
 |---|---|---|---|---|
 | 6 | **Driver vs periferiche presenti** | Capire quali driver servono ancora a questo PC. | Lettura dei file `.inf` (Class, Provider, DriverVer, HardwareID) e confronto con le periferiche via SetupAPI/`pnputil /enum-devices`. | 3–4 |
-| 7 | **Installato / non installato** | Sapere se un installer è già stato usato. | Incrocio con le chiavi `Uninstall` del registro (HKLM, WOW6432Node, HKCU) e le app MSIX. | 2 |
+| 7 | ✅ **Installato / non installato** (v0.10) | Sapere se un installer è già stato usato. | Incrocio con le chiavi `Uninstall` del registro (HKLM, WOW6432Node, HKCU) e le app MSIX. | 2 |
 | 8 | **Contenuto di ZIP/ISO** | Gli installer dentro gli archivi non vengono analizzati. | Indice delle voci di zip/7z/rar (SharpCompress) e delle ISO; ricerca anche dentro. | 3 |
 | 9 | **Etichette e note** | Ricordare perché si tiene un file ("driver stampante ufficio"). | Tabella `tags` nell'indice, ricerca per etichetta, colonna facoltativa. | 2 |
 | 10 | **Controllo aggiornamenti dei programmi** | Sapere se esiste una versione più nuova. | Confronto con i manifest pubblici di winget per i prodotti riconosciuti (opzionale, unica funzione con accesso a internet). | 3 |

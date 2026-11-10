@@ -94,6 +94,49 @@
                 </Grid>
             </TabItem>
 
+            <!-- ======================================================= Regole -->
+            <TabItem Header="Regole">
+                <Grid Margin="8,16,8,8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.ColumnSpan="2" Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="0,0,0,10"
+                               Text="Le regole dicono dove archiviare i file. Con &quot;Organizza con le regole&quot; (scheda File o menu Strumenti) ogni file va nella cartella della prima regola che lo riguarda, dall'alto in basso. Vedrai sempre l'anteprima e potrai annullare." />
+                    <ListBox x:Name="RuleList" Grid.Row="1" ItemContainerStyle="{StaticResource CompactItem}"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled" MouseDoubleClick="EditRule_Click">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel Margin="0,2">
+                                    <CheckBox DockPanel.Dock="Left" IsChecked="{Binding Enabled}" VerticalAlignment="Center" Margin="0,0,10,0"
+                                              ToolTip="Regola attiva" />
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                                        <TextBlock Style="{StaticResource Secondary}">
+                                            <Run Text="Se " /><Run Text="{Binding ConditionText, Mode=OneWay}" /><Run Text=" → " /><Run Text="{Binding Destination}" />
+                                        </TextBlock>
+                                    </StackPanel>
+                                </DockPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="12,0,0,0" MinWidth="150">
+                        <c:IconButton Glyph="{x:Static inf:Glyphs.Add}" Label="Nuova…" Click="NewRule_Click" HorizontalAlignment="Stretch" Margin="0,0,0,6" />
+                        <c:IconButton Glyph="{x:Static inf:Glyphs.Edit}" Label="Modifica…" Click="EditRule_Click" HorizontalAlignment="Stretch" Margin="0,0,0,6" />
+                        <c:IconButton Glyph="{x:Static inf:Glyphs.Delete}" Label="Elimina" Click="DeleteRule_Click" HorizontalAlignment="Stretch" Margin="0,0,0,18" />
+                        <c:IconButton Glyph="{x:Static inf:Glyphs.Up}" Label="Su" Click="RuleUp_Click" HorizontalAlignment="Stretch" Margin="0,0,0,6"
+                                      ToolTip="Le regole più in alto hanno la precedenza" />
+                        <c:IconButton Glyph="{x:Static inf:Glyphs.Down}" Label="Giù" Click="RuleDown_Click" HorizontalAlignment="Stretch" Margin="0,0,0,18" />
+                        <c:IconButton Glyph="{x:Static inf:Glyphs.Lightbulb}" Label="Regole di esempio…" Click="SampleRules_Click" HorizontalAlignment="Stretch"
+                                      ToolTip="Crea un insieme di regole pronte (driver per produttore, installer, immagini disco, documenti) in una cartella di archivio a tua scelta" />
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+
             <!-- ======================================================= Dati -->
             <TabItem Header="Dati e registro">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">

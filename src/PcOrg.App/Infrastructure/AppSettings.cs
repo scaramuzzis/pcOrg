@@ -2,6 +2,7 @@ using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using PcOrg.Core.Diagnostics;
+using PcOrg.Core.Rules;
 
 namespace PcOrg.App.Infrastructure;
 
@@ -66,6 +67,9 @@ public sealed class AppSettings
     public double LeftPanelWidth { get; set; } = 300;
 
     public WindowPlacement? Window { get; set; }
+
+    /// <summary>Regole di archiviazione, nell'ordine in cui vengono provate.</summary>
+    public List<ArchiveRule> Rules { get; set; } = [];
 
     /// <summary>Colonne di ogni griglia, per nome della griglia ("file", "prodotti", "fileProdotto").</summary>
     public Dictionary<string, List<ColumnSetting>> Columns { get; set; } = [];

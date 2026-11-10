@@ -30,7 +30,8 @@ public class UiSmokeTests
         public bool ConfirmResult { get; set; }
         public void Info(string message, string title) { }
         public void Error(string message, string title) => throw new InvalidOperationException(message);
-        public MovePreviewResult? PreviewMove(IReadOnlyList<MoveItem> plan, string destination, bool destinationMonitored) => null;
+        public MovePreviewResult? PreviewMove(IReadOnlyList<MoveItem> plan, string destination, bool destinationMonitored, string? summary = null) => PreviewResult;
+        public MovePreviewResult? PreviewResult { get; set; }
         public void ShowMoveHistory(FileIndex index, Action onChanged) { }
     }
 
@@ -194,6 +195,25 @@ public class UiSmokeTests
             PcOrg.Core.Moving.RecycleBin.SendToRecycleBin = originalRecycle;
         }
         window.Tabs.SelectedIndex = 0;
+
+        // Regole di archiviazione: i file di testo vanno in Archivio\Testi\{Anno}
+        vm.SetRules([new PcOrg.Core.Rules.ArchiveRule
+        {
+            Name = "Testi", Category = PcOrg.Core.Classification.FileCategory.Testo,
+            Destination = Path.Combine(temp, "Archivio", "Testi", "{Anno}"),
+        }]);
+        vm.SelectedFiles = [];
+        dialogs.PreviewResult = new MovePreviewResult(AddDestinationToMonitored: true);
+        await_(vm.OrganizeWithRulesCommand.ExecuteAsync(null));
+        dialogs.PreviewResult = null;
+        var archived = Directory.GetFiles(Path.Combine(temp, "Archivio", "Testi"), "nota.txt", SearchOption.AllDirectories);
+        Assert.Single(archived);
+        Assert.Contains(vm.Roots, r => r.Path.EndsWith("Testi")); // la cartella base della regola ora è monitorata
+
+        // Colonna "Sul PC" e dettagli: il confronto con i programmi installati non deve fallire
+        await_(vm.RefreshInstalledAsync());
+        window.ResultsGrid.Columns.First(c => (string)c.Header == "Sul PC").Visibility = Visibility.Visible;
+        Pump(TimeSpan.FromMilliseconds(300));
 
         // Impostazioni e colonne: si nasconde "Versione", si sposta "Cartella" in seconda posizione,
         // si chiude e si riapre la finestra con le stesse preferenze.

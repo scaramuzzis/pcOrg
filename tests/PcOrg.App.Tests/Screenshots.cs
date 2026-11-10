@@ -34,7 +34,8 @@ public class Screenshots
         public bool ConfirmResult { get; set; }
         public void Info(string message, string title) { }
         public void Error(string message, string title) { }
-        public MovePreviewResult? PreviewMove(IReadOnlyList<MoveItem> plan, string destination, bool destinationMonitored) => null;
+        public MovePreviewResult? PreviewMove(IReadOnlyList<MoveItem> plan, string destination, bool destinationMonitored, string? summary = null) => PreviewResult;
+        public MovePreviewResult? PreviewResult { get; set; }
         public void ShowMoveHistory(FileIndex index, Action onChanged) { }
     }
 
@@ -254,6 +255,28 @@ public class Screenshots
         window.ResetColumns("file");
         Pump(300);
 
+        // 24. Impostazioni → Regole (con le regole di esempio)
+        vm.SetRules(SettingsWindow.SampleRules(@"D:\Archivio"));
+        var rulesWindow = new SettingsWindow(vm, window, grids, SettingsWindow.RulesTab) { Owner = window };
+        Show(rulesWindow);
+        Capture(rulesWindow, output, "24-impostazioni-regole.png");
+        rulesWindow.Close();
+
+        // 25. Editor di una regola
+        var editor = new RuleEditorWindow(vm.Rules[0]) { Owner = window };
+        Show(editor);
+        Capture(editor, output, "25-modifica-regola.png");
+        editor.Close();
+
+        // 26. Prodotti con lo stato "Sul PC"
+        await_(vm.RefreshInstalledAsync());
+        window.Tabs.SelectedIndex = 1;
+        vm.OnlyMultipleVersions = false;
+        Pump(800);
+        Capture(window, output, "26-prodotti-sul-pc.png");
+        window.Tabs.SelectedIndex = 0;
+        vm.OnlyMultipleVersions = true;
+
         // 15. Informazioni su pcOrg
         var about = new AboutWindow { Owner = window };
         Show(about);
@@ -436,6 +459,13 @@ public class Screenshots
             samples++;
         }
         return samples == 0 || sum / (samples * 3.0) < 8;
+    }
+
+    private static void await_(Task task)
+    {
+        while (!task.IsCompleted)
+            Pump(100);
+        task.GetAwaiter().GetResult();
     }
 
     private static void Pump(int milliseconds)

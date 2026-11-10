@@ -82,6 +82,7 @@ public sealed partial class MainViewModel : ObservableObject
 
         // Si aspetta il primo disegno della finestra, così l'utente vede subito i dati.
         await Task.Delay(800);
+        await RefreshInstalledAsync();
         if (_scanOnStartup && Roots.Count > 0)
             await ScanRootsAsync(Roots.Select(r => r.Root).ToList());
         else if (await Task.Run(_index.CountFilesNeedingMetadata) > 0)
@@ -293,7 +294,7 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ScanCommand), nameof(FullScanCommand), nameof(AddRootCommand), nameof(RemoveRootCommand),
         nameof(MoveSelectedCommand), nameof(CancelScanCommand), nameof(FindDuplicatesCommand),
-        nameof(RecycleMarkedCommand), nameof(MoveMarkedCommand), nameof(RecycleSelectedCommand))]
+        nameof(RecycleMarkedCommand), nameof(MoveMarkedCommand), nameof(RecycleSelectedCommand), nameof(OrganizeWithRulesCommand))]
     private bool _isBusy;
 
     [ObservableProperty]
@@ -469,6 +470,7 @@ public sealed partial class MainViewModel : ObservableObject
             await RefreshAsync();
         }
         await UpdateMetadataAsync();
+        Fire(RefreshInstalledAsync(), "programmi installati");
     }
 
     /// <summary>Legge versione, produttore, architettura e firma dei file nuovi o modificati.</summary>

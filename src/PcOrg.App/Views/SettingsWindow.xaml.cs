@@ -7,6 +7,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using PcOrg.App.Infrastructure;
 using PcOrg.App.ViewModels;
 using PcOrg.Core.Diagnostics;
+using PcOrg.Core.Classification;
+using PcOrg.Core.Rules;
+using Microsoft.Win32;
 
 namespace PcOrg.App.Views;
 
@@ -18,7 +21,8 @@ public partial class SettingsWindow : Window
 {
     public const int GeneralTab = 0;
     public const int ColumnsTab = 1;
-    public const int DataTab = 2;
+    public const int RulesTab = MainViewModel.RulesTabIndex;
+    public const int DataTab = 3;
 
     /// <summary>Una riga dell'elenco colonne: nome, visibilità e se può essere nascosta.</summary>
     public sealed partial class ColumnRow : ObservableObject
@@ -33,6 +37,9 @@ public partial class SettingsWindow : Window
     private readonly MainViewModel _vm;
     private readonly MainWindow _main;
     private readonly IReadOnlyDictionary<string, DataGrid> _grids;
+
+    /// <summary>Copia di lavoro delle regole: diventa effettiva solo con "Salva".</summary>
+    private readonly ObservableCollection<ArchiveRule> _rules;
 
     /// <summary>Copia di lavoro delle colonne di ogni elenco: diventa effettiva solo con "Salva".</summary>
     private readonly Dictionary<string, ObservableCollection<ColumnRow>> _columns = [];
@@ -71,6 +78,10 @@ public partial class SettingsWindow : Window
             GridChooser.Items.Add(new ComboBoxItem { Content = MainWindow.GridTitles[name], Tag = name });
         }
         GridChooser.SelectedIndex = Math.Max(0, grids.Keys.ToList().IndexOf(grid ?? "file"));
+
+        // Regole: copie indipendenti, così "Annulla" non modifica quelle in uso
+        _rules = new ObservableCollection<ArchiveRule>(vm.Rules.Select(Clone));
+        RuleList.ItemsSource = _rules;
 
         RefreshDataInfo();
         Tabs.SelectedIndex = tab;
@@ -130,6 +141,78 @@ public partial class SettingsWindow : Window
         }
     }
 
+    // ------------------------------------------------------------------ Regole
+
+    private static ArchiveRule Clone(ArchiveRule r) => new()
+    {
+        Name = r.Name, Enabled = r.Enabled, Category = r.Category, CompanyContains = r.CompanyContains,
+        NameContains = r.NameContains, Destination = r.Destination,
+    };
+
+    private void NewRule_Click(object sender, RoutedEventArgs e)
+    {
+        var rule = new ArchiveRule { Name = $"Regola {_rules.Count + 1}" };
+        if (new RuleEditorWindow(rule) { Owner = this }.ShowDialog() == true)
+        {
+            _rules.Add(rule);
+            RuleList.SelectedItem = rule;
+        }
+    }
+
+    private void EditRule_Click(object sender, RoutedEventArgs e)
+    {
+        if (RuleList.SelectedItem is not ArchiveRule rule)
+            return;
+        var copy = Clone(rule);
+        if (new RuleEditorWindow(copy) { Owner = this }.ShowDialog() == true)
+        {
+            var index = _rules.IndexOf(rule);
+            _rules[index] = copy;
+            RuleList.SelectedIndex = index;
+        }
+    }
+
+    private void DeleteRule_Click(object sender, RoutedEventArgs e)
+    {
+        if (RuleList.SelectedItem is ArchiveRule rule)
+            _rules.Remove(rule);
+    }
+
+    private void RuleUp_Click(object sender, RoutedEventArgs e) => MoveRule(-1);
+    private void RuleDown_Click(object sender, RoutedEventArgs e) => MoveRule(+1);
+
+    private void MoveRule(int delta)
+    {
+        var index = RuleList.SelectedIndex;
+        var target = index + delta;
+        if (index < 0 || target < 0 || target >= _rules.Count)
+            return;
+        _rules.Move(index, target);
+        RuleList.SelectedIndex = target;
+    }
+
+    /// <summary>Crea regole pronte all'uso dentro una cartella di archivio scelta dall'utente.</summary>
+    private void SampleRules_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFolderDialog { Title = "Scegli la cartella di archivio (es. D:\\Archivio)" };
+        if (dialog.ShowDialog(this) != true)
+            return;
+        var root = dialog.FolderName;
+        foreach (var rule in SampleRules(root))
+            _rules.Add(rule);
+    }
+
+    /// <summary>Insieme di regole di esempio con una struttura di archivio ordinata.</summary>
+    public static IEnumerable<ArchiveRule> SampleRules(string root) =>
+    [
+        new() { Name = "Driver per produttore", Category = FileCategory.Driver, Destination = Path.Combine(root, "Driver", "{Produttore}") },
+        new() { Name = "Installer per produttore e prodotto", Category = FileCategory.Installer, Destination = Path.Combine(root, "Installer", "{Produttore}", "{Prodotto}") },
+        new() { Name = "Immagini disco per tipo", Category = FileCategory.ImmagineDisco, Destination = Path.Combine(root, "Immagini disco", "{Estensione}") },
+        new() { Name = "Connessioni remote", Category = FileCategory.AccessoRemoto, Destination = Path.Combine(root, "Connessioni remote") },
+        new() { Name = "PDF per anno", Category = FileCategory.Pdf, Destination = Path.Combine(root, "Documenti", "PDF", "{Anno}") },
+        new() { Name = "Documenti Word per anno", Category = FileCategory.Word, Destination = Path.Combine(root, "Documenti", "Word", "{Anno}") },
+    ];
+
     // ------------------------------------------------------------------ Dati e registro
 
     private void RefreshDataInfo()
@@ -179,6 +262,7 @@ public partial class SettingsWindow : Window
     {
         var theme = ThemeDark.IsChecked == true ? "Scuro" : ThemeLight.IsChecked == true ? "Chiaro" : "Sistema";
         ApplyColumns();
+        _vm.SetRules(_rules);
         var level = Enum.TryParse<LogLevel>((LogLevelChooser.SelectedItem as ComboBoxItem)?.Tag as string, out var l) ? l : LogLevel.Info;
         _vm.ApplyOptions(new MainViewModel.Options(theme,
             ScanOnStartup: ScanOnStartup.IsChecked == true,
