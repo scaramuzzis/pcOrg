@@ -215,7 +215,10 @@ public partial class MainWindow : Window
     {
         SaveLayout();
         if (_closingConfirmed || ViewModel is not { IsBusy: true } vm)
+        {
+            ViewModel?.Shutdown();
             return;
+        }
 
         e.Cancel = true;
         var stop = ModernDialog.Show(this, "Uscire durante l'aggiornamento?",
@@ -227,6 +230,7 @@ public partial class MainWindow : Window
         Log.Info("Chiusura richiesta durante l'aggiornamento: interruzione in corso.");
         vm.CancelScanCommand.Execute(null);
         await vm.WaitUntilIdleAsync(TimeSpan.FromSeconds(10));
+        vm.Shutdown();
         _closingConfirmed = true;
         Close();
     }

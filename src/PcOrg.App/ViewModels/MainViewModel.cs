@@ -47,6 +47,8 @@ public sealed partial class MainViewModel : ObservableObject
     private readonly FileIndex _index;
     private readonly IDialogService _dialogs;
     private readonly MoveService _moves;
+    /// <summary>Thread dell'interfaccia: gli eventi dell'osservatore arrivano da altri thread.</summary>
+    private readonly System.Windows.Threading.Dispatcher _dispatcher;
     private CancellationTokenSource? _searchCts;
     private CancellationTokenSource? _scanCts;
 
@@ -54,6 +56,7 @@ public sealed partial class MainViewModel : ObservableObject
     {
         _index = index;
         _dialogs = dialogs;
+        _dispatcher = System.Windows.Threading.Dispatcher.CurrentDispatcher;
         _moves = new MoveService(index);
         ProductsView = CollectionViewSource.GetDefaultView(Products);
         ProductsView.Filter = FilterProduct;
@@ -374,13 +377,22 @@ public sealed partial class MainViewModel : ObservableObject
     private bool CanModify() => !IsBusy;
     private bool CanRemoveRoot() => !IsBusy && SelectedRoot is not null;
 
+    /// <summary>Aggiornamento rapido (F5): rilegge solo le cartelle cambiate.</summary>
     [RelayCommand(CanExecute = nameof(CanModify))]
     private Task ScanAsync() => ScanRootsAsync(Roots.Select(r => r.Root).ToList());
+
+    /// <summary>Scansione completa (Ctrl+F5): rilegge tutte le cartelle, rileva anche i file modificati nel contenuto.</summary>
+    [RelayCommand(CanExecute = nameof(CanModify))]
+    private Task FullScanAsync() => ScanRootsAsync(Roots.Select(r => r.Root).ToList(), full: true);
 
     [RelayCommand(CanExecute = nameof(IsBusy))]
     private void CancelScan() => _scanCts?.Cancel();
 
-    private async Task ScanRootsAsync(IReadOnlyList<RootFolder> roots)
+    /// <summary>
+    /// Aggiorna le cartelle indicate. Di norma è un aggiornamento rapido (<see cref="FileIndex.UpdateRoot"/>):
+    /// si rileggono solo le cartelle in cui qualcosa è stato aggiunto, tolto o rinominato.
+    /// </summary>
+    private async Task ScanRootsAsync(IReadOnlyList<RootFolder> roots, bool full = false)
     {
         if (roots.Count == 0)
         {
@@ -391,10 +403,11 @@ public sealed partial class MainViewModel : ObservableObject
         IsBusy = true;
         _scanCts = new CancellationTokenSource();
         var token = _scanCts.Token;
-        var total = 0;
+        var total = ScanResult.Empty;
         var offline = new List<string>();
         var stopwatch = Stopwatch.StartNew();
-        Log.Info($"Scansione avviata: {string.Join(", ", roots.Select(r => r.Path))}");
+        var kind = full ? "Scansione completa" : "Aggiornamento rapido";
+        Log.Info($"{kind} avviato: {string.Join(", ", roots.Select(r => r.Path))}");
         try
         {
             foreach (var root in roots)
@@ -406,11 +419,13 @@ public sealed partial class MainViewModel : ObservableObject
                     offline.Add(root.Path);
                     continue;
                 }
-                var progress = new Progress<int>(n => Status = $"Scansione di {root.Path}: {n:N0} file…");
+                var progress = new Progress<ScanResult>(p => Status =
+                    $"{kind} di {root.Path}: {p.DirectoriesVisited:N0} cartelle controllate, {p.DirectoriesChanged:N0} rilette, " +
+                    $"{p.FilesChanged:N0} file cambiati…");
                 try
                 {
                     total += await Task.Run(
-                        () => _index.SyncRoot(root.Id, FolderScanner.Enumerate(root.Path, token), progress, token,
+                        () => _index.UpdateRoot(root.Id, root.Path, full, progress, token,
                             isStillAvailable: () => Directory.Exists(root.Path)), token);
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -421,11 +436,14 @@ public sealed partial class MainViewModel : ObservableObject
                     offline.Add(root.Path);
                 }
             }
-            Status = $"Scansione completata: {total:N0} file in {stopwatch.Elapsed.TotalSeconds:N1} s";
-            Log.Info($"Scansione completata: {total:N0} file in {stopwatch.Elapsed.TotalSeconds:N1} s" +
+            var summary = DescribeChanges(total);
+            Status = $"{kind} completato in {stopwatch.Elapsed.TotalSeconds:N1} s: {summary} " +
+                     $"({total.DirectoriesVisited:N0} cartelle controllate, {total.DirectoriesChanged:N0} rilette)";
+            Log.Info($"{kind} completato in {stopwatch.Elapsed.TotalSeconds:N1} s: {summary}; " +
+                     $"cartelle controllate {total.DirectoriesVisited:N0}, rilette {total.DirectoriesChanged:N0}" +
                      (offline.Count > 0 ? $"; non raggiungibili: {string.Join(", ", offline)}" : ""));
             if (offline.Count == 0)
-                ShowToast($"Indice aggiornato: {total:N0} file trovati");
+                ShowToast($"Indice aggiornato: {summary}", total.FilesChanged > 0 ? ToastKind.Success : ToastKind.Info);
             else
                 ShowToast(offline.Count == 1
                         ? $"{offline[0]} non è raggiungibile: i suoi file restano nell'elenco e verranno aggiornati quando torna disponibile"
@@ -476,6 +494,16 @@ public sealed partial class MainViewModel : ObservableObject
         await RefreshAsync();
     }
 
+    /// <summary>Testo come "3 file nuovi, 1 rimosso" o "nessuna modifica".</summary>
+    private static string DescribeChanges(ScanResult r)
+    {
+        var parts = new List<string>();
+        if (r.FilesAdded > 0) parts.Add(r.FilesAdded == 1 ? "1 file nuovo" : $"{r.FilesAdded:N0} file nuovi");
+        if (r.FilesUpdated > 0) parts.Add(r.FilesUpdated == 1 ? "1 modificato" : $"{r.FilesUpdated:N0} modificati");
+        if (r.FilesRemoved > 0) parts.Add(r.FilesRemoved == 1 ? "1 rimosso" : $"{r.FilesRemoved:N0} rimossi");
+        return parts.Count == 0 ? "nessuna modifica" : string.Join(", ", parts);
+    }
+
     private void ReloadRoots()
     {
         var selected = SelectedRoot?.Id;
@@ -484,6 +512,7 @@ public sealed partial class MainViewModel : ObservableObject
             Roots.Add(new RootItem(root));
         SelectedRoot = Roots.FirstOrDefault(r => r.Id == selected);
         OnPropertyChanged(nameof(HasRoots));
+        _watcher?.Watch(_index.GetRoots());
         Fire(CheckAvailabilityAsync(Roots.ToList()), "verifica delle cartelle");
     }
 

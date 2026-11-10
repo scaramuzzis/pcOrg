@@ -63,6 +63,7 @@ public static class Glyphs
         FileCategory.Testo => "\uE7C3",
         FileCategory.FoglioDiCalcolo => "\uE80A",
         FileCategory.Presentazione => "\uE786",
+        FileCategory.AccessoRemoto => "\uE8AF",
         _ => "\uE9CE",
     };
 }
@@ -87,6 +88,7 @@ public static class CategoryColors
         [FileCategory.Testo] = "#6B7280",
         [FileCategory.FoglioDiCalcolo] = "#217346",
         [FileCategory.Presentazione] = "#D24726",
+        [FileCategory.AccessoRemoto] = "#0EA5E9",
         [FileCategory.Altro] = "#94A3B8",
     };
 

@@ -3,7 +3,7 @@ namespace PcOrg.Core.Classification;
 /// <summary>Suddivisione di una categoria per tipo di file (es. Immagini disco → Ghost, ISO, dischi virtuali...).</summary>
 public sealed record Subcategory(FileCategory Category, string Name, IReadOnlyList<string> Extensions);
 
-/// <summary>Elenco delle sottocategorie conosciute (oggi quelle delle immagini disco).</summary>
+/// <summary>Elenco delle sottocategorie conosciute (immagini disco, accesso remoto).</summary>
 public static class Subcategories
 {
     public static IReadOnlyList<Subcategory> All { get; } =
@@ -16,6 +16,9 @@ public static class Subcategories
         new(FileCategory.ImmagineDisco, "Backup Acronis", [".tib", ".tibx"]),
         new(FileCategory.ImmagineDisco, "Backup Macrium", [".mrimg", ".mrbak"]),
         new(FileCategory.ImmagineDisco, "Immagini raw (IMG, DD)", [".img", ".dd"]),
+        new(FileCategory.AccessoRemoto, "VNC (.vnc)", [".vnc"]),
+        new(FileCategory.AccessoRemoto, "Desktop remoto (.rdp)", [".rdp"]),
+        new(FileCategory.AccessoRemoto, "Altre connessioni remote", [".rdg", ".tvc", ".tvlink", ".anydesk"]),
     ];
 
     public static IEnumerable<Subcategory> For(FileCategory category) => All.Where(s => s.Category == category);

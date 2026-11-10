@@ -15,6 +15,7 @@
 
     <Window.InputBindings>
         <KeyBinding Key="F5" Command="{Binding ScanCommand}" />
+        <KeyBinding Key="F5" Modifiers="Control" Command="{Binding FullScanCommand}" />
         <KeyBinding Key="F" Modifiers="Control" Command="{x:Static vm:FocusCommands.FocusSearch}" />
         <KeyBinding Key="Escape" Command="{Binding ClearSearchCommand}" />
         <KeyBinding Key="O" Modifiers="Control" Command="{Binding AddRootCommand}" />
@@ -44,8 +45,11 @@
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Delete}" /></MenuItem.Icon>
                 </MenuItem>
                 <Separator />
-                <MenuItem Header="_Aggiorna l'indice" Command="{Binding ScanCommand}" InputGestureText="F5">
+                <MenuItem Header="_Aggiorna (rapido)" Command="{Binding ScanCommand}" InputGestureText="F5">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Refresh}" /></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Scansione completa" Command="{Binding FullScanCommand}" InputGestureText="Ctrl+F5">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Database}" /></MenuItem.Icon>
                 </MenuItem>
                 <MenuItem Header="_Esporta l'elenco in Excel (CSV)…" Command="{Binding ExportCsvCommand}" InputGestureText="Ctrl+E">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Export}" /></MenuItem.Icon>
@@ -198,7 +202,7 @@
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <c:IconButton Glyph="{x:Static inf:Glyphs.Refresh}" Label="Aggiorna" Command="{Binding ScanCommand}" Margin="0,0,8,0"
-                                  ToolTip="Ricerca file nuovi, spostati o eliminati nelle cartelle monitorate (F5)" />
+                                  ToolTip="Aggiornamento rapido: rilegge solo le cartelle in cui qualcosa è cambiato (F5). Scansione completa: Ctrl+F5" />
                     <c:IconButton Glyph="{x:Static inf:Glyphs.History}" Label="Cronologia" Command="{Binding ShowHistoryCommand}"
                                   ToolTip="Vedi gli spostamenti fatti e annullali" />
                 </StackPanel>

@@ -37,9 +37,12 @@
                         </StackPanel>
 
                         <TextBlock Text="AGGIORNAMENTO" Style="{StaticResource SectionHeader}" Margin="0,0,0,8" />
-                        <CheckBox x:Name="ScanOnStartup" Content="Aggiorna le cartelle monitorate a ogni avvio" />
+                        <CheckBox x:Name="WatchFolders" Content="Rileva automaticamente file nuovi, modificati o eliminati (consigliato)" />
                         <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="28,2,0,12"
-                                   Text="L'elenco salvato compare subito; l'aggiornamento avviene in background e trova i file nuovi o spostati con altri programmi." />
+                                   Text="Mentre pcOrg è aperto, ogni file che scarichi, sposti o elimini nelle cartelle monitorate viene registrato subito, senza ripetere la scansione." />
+                        <CheckBox x:Name="ScanOnStartup" Content="Aggiornamento rapido delle cartelle a ogni avvio" />
+                        <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="28,2,0,12"
+                                   Text="Trova ciò che è cambiato mentre pcOrg era chiuso. È rapido anche con milioni di file: rilegge solo le cartelle in cui qualcosa è stato aggiunto, tolto o rinominato. Per un controllo totale usa File → Scansione completa (Ctrl+F5)." />
                         <CheckBox x:Name="VerifySignatures" Content="Verifica le firme digitali dei programmi" />
                         <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="28,2,0,18"
                                    Text="Garantisce che il file non sia stato modificato, ma legge ogni programma per intero: disattivala se l'aggiornamento è lento. Sui file in rete la firma non viene mai verificata." />
@@ -130,6 +133,25 @@
                         <WrapPanel Margin="0,10,0,20">
                             <c:IconButton Glyph="{x:Static inf:Glyphs.FolderOpen}" Label="Apri la cartella dei dati" Click="OpenData_Click" Margin="0,0,8,8" />
                             <c:IconButton Glyph="{x:Static inf:Glyphs.Log}" Label="Apri il registro attività" Click="OpenLog_Click" Margin="0,0,8,8" />
+                        </WrapPanel>
+
+                        <TextBlock Text="REGISTRO ATTIVITÀ (LOG)" Style="{StaticResource SectionHeader}" Margin="0,0,0,8" />
+                        <CheckBox x:Name="LogEnabled" Content="Abilita il registro attività" />
+                        <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="28,2,0,8"
+                                   Text="Annota in un file di testo avvii, scansioni, spostamenti e soprattutto gli errori, con data e ora: è lo strumento per capire cosa è andato storto. Il file viene limitato automaticamente a pochi MB." />
+                        <DockPanel Margin="28,0,0,8">
+                            <TextBlock Text="Dettaglio:" VerticalAlignment="Center" Margin="0,0,10,0" />
+                            <ComboBox x:Name="LogLevelChooser" MinWidth="320" HorizontalAlignment="Left"
+                                      IsEnabled="{Binding IsChecked, ElementName=LogEnabled}">
+                                <ComboBoxItem Content="Solo errori" Tag="Error" />
+                                <ComboBoxItem Content="Errori e avvisi" Tag="Warning" />
+                                <ComboBoxItem Content="Normale: anche avvii, scansioni e spostamenti" Tag="Info" />
+                                <ComboBoxItem Content="Dettagliato: anche ogni cartella aggiornata" Tag="Debug" />
+                            </ComboBox>
+                        </DockPanel>
+                        <WrapPanel Margin="28,0,0,20">
+                            <c:IconButton Glyph="{x:Static inf:Glyphs.Log}" Label="Apri il registro" Click="OpenLog_Click" Margin="0,0,8,8" />
+                            <c:IconButton Glyph="{x:Static inf:Glyphs.Delete}" Label="Svuota il registro" Click="ClearLog_Click" Margin="0,0,8,8" />
                         </WrapPanel>
 
                         <TextBlock Text="MANUTENZIONE DELL'INDICE" Style="{StaticResource SectionHeader}" Margin="0,0,0,8" />

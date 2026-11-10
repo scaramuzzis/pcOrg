@@ -12,9 +12,9 @@ namespace PcOrg.Core.Storage;
 /// Indice dei file su SQLite, con ricerca full-text (FTS5, tokenizer trigram) su nome e cartella.
 /// Ogni metodo apre una propria connessione: la classe si può usare da più thread.
 /// </summary>
-public sealed class FileIndex
+public sealed partial class FileIndex
 {
-    private const int SchemaVersion = 4;
+    private const int SchemaVersion = 5;
     private readonly string _connectionString;
 
     /// <summary>Percorso completo del file dell'indice (indice.db).</summary>
@@ -68,6 +68,11 @@ public sealed class FileIndex
             Reclassify(conn, tx, FileCategory.Documento);
         if (version < 4)
             Reclassify(conn, tx, FileCategory.Altro); // nuovi formati: Ghost, Acronis, Macrium, dischi virtuali...
+        if (version < 5)
+        {
+            CreateDirectoryTable(conn, tx);
+            Reclassify(conn, tx, FileCategory.Altro); // nuova categoria Accesso remoto (.vnc, .rdp)
+        }
         Exec(conn, $"PRAGMA user_version = {SchemaVersion};", tx);
         tx.Commit();
     }
@@ -249,6 +254,7 @@ public sealed class FileIndex
             foreach (var child in roots.Where(root => PathUtil.IsSameOrUnder(root.Path, normalized)))
             {
                 Exec(conn, $"UPDATE files SET root_id = {id} WHERE root_id = {child.Id};", tx);
+                Exec(conn, $"UPDATE dirs SET root_id = {id} WHERE root_id = {child.Id};", tx);
                 Exec(conn, $"DELETE FROM roots WHERE id = {child.Id};", tx);
             }
             tx.Commit();
@@ -408,7 +414,7 @@ public sealed class FileIndex
     {
         using var conn = Connect();
         using var tx = conn.BeginTransaction();
-        Exec(conn, "DELETE FROM files; UPDATE roots SET last_scan_utc = NULL;", tx);
+        Exec(conn, "DELETE FROM files; DELETE FROM dirs; UPDATE roots SET last_scan_utc = NULL;", tx);
         tx.Commit();
     }
 

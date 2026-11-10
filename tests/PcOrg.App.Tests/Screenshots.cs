@@ -132,6 +132,17 @@ public class Screenshots
         Select(window, vm, vm.Results.First());
         Capture(window, output, "04-immagini-ghost.png");
 
+        // 4b. Accesso remoto → VNC, con il computer di destinazione nei dettagli
+        var vnc = vm.Categories.FirstOrDefault(c => c.IsSubcategory && c.Name.StartsWith("VNC"));
+        if (vnc is not null)
+        {
+            vm.SelectedCategory = vnc;
+            Pump(600);
+            if (vm.Results.Count > 0)
+                Select(window, vm, vm.Results.First());
+            Capture(window, output, "22-accesso-remoto-vnc.png");
+        }
+
         // 5. Ricerca
         vm.SelectedCategory = vm.Categories[0];
         vm.SearchText = "driver";
@@ -474,6 +485,12 @@ internal static class SampleData
         Fake(Path.Combine(root, "Driver", "Realtek", "RTKVHD64.sys"), 6_200_000);
         Fake(Path.Combine(root, "intel-wifi-driver-23.80.zip"), 54_000_000);
 
+        // Connessioni remote
+        File.WriteAllText(Path.Combine(root, "Connessioni", "Ufficio Mario.vnc").Also(p => Directory.CreateDirectory(Path.GetDirectoryName(p)!)),
+            "[connection]\r\nhost=192.168.1.20\r\nport=5900\r\n");
+        File.WriteAllText(Path.Combine(root, "Connessioni", "Server gestionale.rdp"),
+            "full address:s:srv-gestionale\r\nusername:s:amministratore\r\n");
+
         // Documenti
         Fake(Path.Combine(root, "Manuale scheda madre ASUS B550.pdf"), 7_400_000);
         Fake(Path.Combine(root, "Fattura 2024-118.pdf"), 120_000);
@@ -568,5 +585,15 @@ internal static class SampleData
         encoder.Frames.Add(BitmapFrame.Create(bitmap));
         using var stream = File.Create(path);
         encoder.Save(stream);
+    }
+}
+
+internal static class StringExtensions
+{
+    /// <summary>Esegue un'azione sul valore e lo restituisce (per scrivere più compatto).</summary>
+    public static string Also(this string value, Action<string> action)
+    {
+        action(value);
+        return value;
     }
 }

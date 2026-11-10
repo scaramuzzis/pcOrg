@@ -46,6 +46,17 @@ public sealed class AppSettings
     /// <summary>Verifica le firme digitali (più lento: legge ogni programma per intero).</summary>
     public bool VerifySignatures { get; set; } = true;
 
+    /// <summary>Rileva subito file aggiunti, modificati o eliminati mentre l'app è aperta.</summary>
+    public bool WatchFolders { get; set; } = true;
+
+    // ---------------------------------------------------------------- Registro attività
+
+    /// <summary>Scrive il registro attività (log\pcorg.log).</summary>
+    public bool LogEnabled { get; set; } = true;
+
+    /// <summary>Livello di dettaglio del registro.</summary>
+    public LogLevel LogLevel { get; set; } = LogLevel.Info;
+
     // ---------------------------------------------------------------- Aspetto
 
     public bool ShowPreviewPanel { get; set; } = true;
@@ -65,6 +76,7 @@ public sealed class AppSettings
     {
         WriteIndented = true,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        Converters = { new JsonStringEnumConverter() },
     };
 
     /// <summary>Percorso del file da cui sono state lette le preferenze (null = non salvare).</summary>

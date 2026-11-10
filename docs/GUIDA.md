@@ -59,18 +59,21 @@ pcOrg può tenere in ordine anche cartelle condivise su un **NAS** o su un **alt
 
 ## Aggiornare l'indice
 
-pcOrg non controlla le cartelle di continuo: aggiorna l'elenco quando glielo chiedi. Premi **F5**, il pulsante **Aggiorna** oppure **File → Aggiorna l'indice** dopo aver scaricato o spostato file con altri programmi.
+pcOrg tiene l'elenco aggiornato in tre modi, pensati per essere veloci anche con milioni di file.
 
-L'aggiornamento avviene in due fasi:
+**1. Rilevamento automatico (mentre pcOrg è aperto).** Ogni file che scarichi, copi, rinomini o elimini in una cartella monitorata viene registrato subito, in pochi millisecondi, senza nessuna scansione: la barra di stato mostra per esempio "Modifiche rilevate: 1 file nuovo". Funziona anche con le cartelle di rete che supportano le notifiche di modifica (la maggior parte dei NAS).
 
-1. **Scansione delle cartelle**: pcOrg trova i file nuovi, quelli modificati e quelli che non ci sono più. È molto veloce, anche con decine di migliaia di file.
-2. **Lettura di versioni e firme**: per i programmi e gli installer nuovi o modificati (`.exe`, `.msi`, `.sys`) legge produttore, versione, architettura e firma digitale. Questa fase può richiedere qualche minuto la prima volta, perché la verifica della firma legge ogni file per intero; le volte successive vengono letti solo i file nuovi.
+**2. Aggiornamento rapido (F5 e a ogni avvio).** Trova ciò che è cambiato mentre pcOrg era chiuso. pcOrg ricorda la data di modifica di ogni cartella: Windows la aggiorna quando nella cartella viene aggiunto, tolto o rinominato qualcosa. Le cartelle non cambiate non vengono rilette; si rileggono solo quelle cambiate e nell'indice si scrivono solo le differenze. Con 100.000 file in 1.000 cartelle, un aggiornamento senza modifiche richiede circa un centesimo di secondo.
+
+**3. Scansione completa (Ctrl+F5 o File → Scansione completa).** Rilegge tutte le cartelle. Serve raramente: per esempio se un file è stato *modificato nel contenuto* (non aggiunto o rinominato) mentre pcOrg era chiuso, perché in quel caso la data della cartella non cambia.
+
+Dopo l'aggiornamento pcOrg legge **versioni e firme** dei programmi e degli installer nuovi o modificati (`.exe`, `.msi`, `.sys`) e l'indirizzo delle connessioni remote (`.vnc`, `.rdp`). La prima volta può richiedere qualche minuto, perché la verifica della firma legge ogni programma per intero; le volte successive vengono letti solo i file nuovi.
 
 Puoi continuare a usare pcOrg durante l'aggiornamento. Il pulsante **Interrompi** nella barra di stato ferma l'operazione: riprenderà dal punto in cui si era fermata al prossimo aggiornamento.
 
-**I dati restano salvati.** Tutto ciò che pcOrg trova viene registrato nel file dell'indice (`indice.db`) man mano, a blocchi di qualche migliaio di file: chiudendo e riaprendo l'applicazione l'elenco ricompare subito, anche se avevi interrotto una scansione a metà. Se chiudi la finestra mentre un aggiornamento è in corso, pcOrg te lo segnala, salva l'ultimo blocco e poi si chiude.
+**I dati restano salvati.** Tutto ciò che pcOrg trova viene registrato man mano nel file dell'indice (`indice.db`): chiudendo e riaprendo l'applicazione l'elenco ricompare subito, anche se avevi interrotto un aggiornamento a metà. Se chiudi la finestra mentre un aggiornamento è in corso, pcOrg te lo segnala, salva il lavoro fatto e poi si chiude.
 
-**Aggiornamento all'avvio.** Per impostazione predefinita, a ogni avvio pcOrg mostra subito l'elenco salvato e poi aggiorna le cartelle in background. Puoi disattivarlo da **Strumenti → Impostazioni → Generale**.
+Rilevamento automatico e aggiornamento all'avvio si possono disattivare da **Strumenti → Impostazioni → Generale**.
 
 ## Le categorie
 
@@ -88,6 +91,7 @@ Ogni file viene assegnato a una categoria in base al tipo. Il pannello di sinist
 | **Testo** | `.txt`, `.md`, `.log`, `.nfo`. |
 | **Fogli di calcolo** | `.xls`, `.xlsx`, `.ods`, `.csv`. |
 | **Presentazioni** | `.ppt`, `.pptx`, `.odp`. |
+| **Accesso remoto** | Connessioni salvate per il controllo di altri computer: **VNC** (`.vnc`), **Desktop remoto** (`.rdp`), e altre (`.rdg`, `.tvc`, `.anydesk`). Nei dettagli compare il computer di destinazione, per esempio "Connessione VNC a 192.168.1.20:5900", e lo si può cercare. |
 | **Altri documenti** | `.epub`, `.chm`, `.xps`, `.djvu`… |
 | **Immagini, Audio, Video** | Foto e grafica, musica, filmati. |
 | **Script** | `.bat`, `.cmd`, `.ps1`, `.reg`, `.py`… |
@@ -198,7 +202,8 @@ Usi tipici: un inventario dei driver da conservare, l'elenco degli installer da 
 | Cancella la ricerca | **Esc** |
 | Aggiungi cartella | **Ctrl+O** |
 | Aggiungi cartella di rete | **Ctrl+Maiusc+O** |
-| Aggiorna l'indice | **F5** |
+| Aggiornamento rapido | **F5** |
+| Scansione completa | **Ctrl+F5** |
 | Esporta in Excel (CSV) | **Ctrl+E** |
 | Apri il file | **Invio** o doppio clic |
 | Mostra nella cartella | **Ctrl+Maiusc+E** |
@@ -221,7 +226,8 @@ Apri **Strumenti → Impostazioni** (o **Ctrl+,**). La finestra ha tre schede; l
 **Generale**
 
 - **Tema**: come Windows (segue il tema chiaro o scuro del sistema), chiaro oppure scuro.
-- **Aggiorna le cartelle monitorate a ogni avvio**: l'elenco salvato compare subito e l'aggiornamento avviene in background.
+- **Rileva automaticamente file nuovi, modificati o eliminati**: mentre pcOrg è aperto ogni modifica viene registrata subito.
+- **Aggiornamento rapido a ogni avvio**: l'elenco salvato compare subito e in background vengono rilette solo le cartelle cambiate.
 - **Verifica le firme digitali**: garantisce che i programmi non siano stati modificati, ma legge ogni programma per intero; disattivala se l'aggiornamento è lento.
 - **Pannelli**: mostra o nascondi l'anteprima delle immagini e i dettagli del file.
 
@@ -244,7 +250,8 @@ pcOrg ricorda posizione, larghezza, visibilità e ordinamento delle colonne, la 
 
 Mostra dove sono salvati i dati e quanti file contiene l'indice, e permette di:
 
-- **aprire la cartella dei dati** e il **registro attività**;
+- **aprire la cartella dei dati**;
+- **abilitare o disabilitare il registro attività** e sceglierne il dettaglio: *Solo errori*, *Errori e avvisi*, *Normale* (anche avvii, aggiornamenti e spostamenti) oppure *Dettagliato* (anche ogni cartella aggiornata, utile per indagare un problema); **aprirlo** o **svuotarlo**;
 - **compattare l'indice**, per ridurre lo spazio occupato dopo aver rimosso molte cartelle;
 - **ricostruire l'indice**: svuota l'elenco dei file e analizza di nuovo tutte le cartelle (cartelle, cronologia e preferenze restano).
 
@@ -270,6 +277,8 @@ Mostra dove sono salvati i dati e quanti file contiene l'indice, e permette di:
 8. **Esporta in Excel** un inventario dei driver dopo aver riordinato: è utile quando reinstalli Windows.
 
 ## Domande frequenti
+
+**Ho aggiunto un file ma non lo vedo.** Con il rilevamento automatico attivo compare in pochi istanti; altrimenti premi **F5**. Se il file è stato solo modificato nel contenuto mentre pcOrg era chiuso, usa **Ctrl+F5** (scansione completa).
 
 **Chiudendo e riaprendo pcOrg non vedo più i file.** Dalla versione 0.7 i file trovati vengono salvati man mano e l'elenco ricompare subito all'avvio; la barra di stato indica "Indice caricato: N file in M cartelle". Se non succede, apri **Strumenti → Impostazioni → Dati e registro** per controllare dove si trova l'indice e quanti file contiene, e apri il **registro attività** per vedere eventuali errori.
 

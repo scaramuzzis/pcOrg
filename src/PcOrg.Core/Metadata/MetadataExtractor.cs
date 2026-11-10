@@ -6,9 +6,9 @@ namespace PcOrg.Core.Metadata;
 /// <summary>Legge versione, produttore, architettura, firma e tipo di installer da exe, msi e sys.</summary>
 public static partial class MetadataExtractor
 {
-    /// <summary>Estensioni di cui si leggono i metadati.</summary>
+    /// <summary>Estensioni di cui si leggono i metadati (programmi, installer, driver, connessioni remote).</summary>
     public static readonly IReadOnlySet<string> SupportedExtensions =
-        new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".exe", ".msi", ".sys" };
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".exe", ".msi", ".sys", ".vnc", ".rdp" };
 
     public static bool IsSupported(string path) => SupportedExtensions.Contains(Path.GetExtension(path));
 
@@ -16,6 +16,8 @@ public static partial class MetadataExtractor
     public static FileMeta? Extract(string path, bool verifySignature = true)
     {
         var ext = Path.GetExtension(path);
+        if (RemoteConnectionReader.SupportedExtensions.Contains(ext))
+            return RemoteConnectionReader.Read(path);
         return ext.Equals(".msi", StringComparison.OrdinalIgnoreCase)
             ? ExtractMsi(path, verifySignature)
             : ExtractPe(path, verifySignature);

@@ -185,6 +185,8 @@ public class FileIndexMetadataTests
                     VALUES (1, 'C:\Download\note.txt', 'note.txt', '.txt', 'C:\Download', 10, 0, 6);
                 INSERT INTO files(root_id, path, name, ext, folder, size, modified_utc, category)
                     VALUES (1, 'C:\Download\pc.gho', 'pc.gho', '.gho', 'C:\Download', 10, 0, 0);
+                INSERT INTO files(root_id, path, name, ext, folder, size, modified_utc, category)
+                    VALUES (1, 'C:\Download\ufficio.vnc', 'ufficio.vnc', '.vnc', 'C:\Download', 10, 0, 0);
                 PRAGMA user_version = 1;
                 """;
             cmd.ExecuteNonQuery();
@@ -193,12 +195,14 @@ public class FileIndexMetadataTests
         var index = FileIndex.Open(dbPath);
 
         Assert.Single(index.Search(new SearchQuery("nvidia")));
-        Assert.Single(index.GetFilesNeedingMetadata());
+        Assert.Equal(2, index.GetFilesNeedingMetadata().Count); // l'exe e il file .vnc
         // v3: i documenti esistenti passano alle nuove categorie
         Assert.Equal(FileCategory.Pdf, Assert.Single(index.Search(new SearchQuery("manuale"))).Category);
         Assert.Equal(FileCategory.Testo, Assert.Single(index.Search(new SearchQuery("note.txt"))).Category);
         Assert.Empty(index.Search(new SearchQuery(null, FileCategory.Documento)));
         // v4: le immagini Ghost (prima "Altro") passano a Immagini disco
         Assert.Equal(FileCategory.ImmagineDisco, Assert.Single(index.Search(new SearchQuery("pc.gho"))).Category);
+        // v5: i file .vnc passano ad Accesso remoto
+        Assert.Equal(FileCategory.AccessoRemoto, Assert.Single(index.Search(new SearchQuery("ufficio.vnc"))).Category);
     }
 }

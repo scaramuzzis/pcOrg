@@ -31,6 +31,8 @@ public sealed partial class MainViewModel
         ShowPreviewPanel = settings.ShowPreviewPanel;
         ShowDetailsPanel = settings.ShowDetailsPanel;
         ApplyTheme(settings.Theme, save: false);
+        Log.Configure(settings.LogEnabled, settings.LogLevel);
+        EnableWatching(settings.WatchFolders);
     }
 
     /// <summary>Salva le preferenze su disco (se l'app le ha caricate da file).</summary>
@@ -40,16 +42,26 @@ public sealed partial class MainViewModel
             _settings.Save();
     }
 
-    /// <summary>Applica le opzioni scelte nella finestra Impostazioni.</summary>
-    public void ApplyOptions(string theme, bool scanOnStartup, bool verifySignatures, bool showPreview, bool showDetails)
+    /// <summary>Opzioni modificabili dalla finestra Impostazioni.</summary>
+    public sealed record Options(string Theme, bool ScanOnStartup, bool WatchFolders, bool VerifySignatures,
+        bool ShowPreview, bool ShowDetails, bool LogEnabled, LogLevel LogLevel);
+
+    /// <summary>Applica e salva le opzioni scelte nella finestra Impostazioni.</summary>
+    public void ApplyOptions(Options o)
     {
-        _settings.ScanOnStartup = scanOnStartup;
-        _settings.VerifySignatures = verifySignatures;
-        ShowPreviewPanel = showPreview;
-        ShowDetailsPanel = showDetails;
-        ApplyTheme(theme, save: false);
+        _settings.ScanOnStartup = o.ScanOnStartup;
+        _settings.WatchFolders = o.WatchFolders;
+        _settings.VerifySignatures = o.VerifySignatures;
+        _settings.LogEnabled = o.LogEnabled;
+        _settings.LogLevel = o.LogLevel;
+        ShowPreviewPanel = o.ShowPreview;
+        ShowDetailsPanel = o.ShowDetails;
+        ApplyTheme(o.Theme, save: false);
+        Log.Configure(o.LogEnabled, o.LogLevel);
+        EnableWatching(o.WatchFolders);
         SaveSettings();
-        Log.Info($"Impostazioni: tema {theme}, aggiorna all'avvio {scanOnStartup}, verifica firme {verifySignatures}.");
+        Log.Info($"Impostazioni: tema {o.Theme}, aggiornamento all'avvio {o.ScanOnStartup}, rilevamento automatico " +
+                 $"{o.WatchFolders}, verifica firme {o.VerifySignatures}, registro {o.LogEnabled} ({o.LogLevel}).");
     }
 
     // ------------------------------------------------------------------ Manutenzione dell'indice

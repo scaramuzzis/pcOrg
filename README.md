@@ -5,7 +5,12 @@ sparsi nel PC. Scegli le cartelle da tenere sotto controllo; pcOrg le indicizza,
 per categoria e li trova all'istante mentre scrivi. Sei tu a decidere se e dove spostarli: prima
 vedi un'anteprima, e ogni spostamento si può annullare.
 
-## Cosa fa oggi (v0.7)
+## Cosa fa oggi (v0.8)
+- **Aggiornamento incrementale**: mentre l'app è aperta ogni file aggiunto, modificato o eliminato
+  viene registrato subito (FileSystemWatcher); all'avvio e con F5 l'aggiornamento rapido rilegge solo
+  le cartelle cambiate (100.000 file senza modifiche: ~10 ms). Scansione completa con Ctrl+F5.
+- **Registro attività attivabile** dalle Impostazioni, con quattro livelli di dettaglio.
+- **Categoria Accesso remoto**: file VNC (`.vnc`) e Desktop remoto (`.rdp`), con il computer di destinazione letto dal file.
 - **Dati sempre salvati**: i file trovati vengono registrati man mano in `indice.db` e ricompaiono
   subito alla riapertura, anche dopo una scansione interrotta; chiusura sicura durante gli aggiornamenti;
   aggiornamento automatico all'avvio (disattivabile); **registro attività** in `log\pcorg.log`.

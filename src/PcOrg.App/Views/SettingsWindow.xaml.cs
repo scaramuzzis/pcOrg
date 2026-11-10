@@ -50,6 +50,10 @@ public partial class SettingsWindow : Window
         ThemeLight.IsChecked = vm.IsThemeLight;
         ThemeDark.IsChecked = vm.IsThemeDark;
         ScanOnStartup.IsChecked = settings.ScanOnStartup;
+        WatchFolders.IsChecked = settings.WatchFolders;
+        LogEnabled.IsChecked = settings.LogEnabled;
+        LogLevelChooser.SelectedItem = LogLevelChooser.Items.OfType<ComboBoxItem>()
+            .FirstOrDefault(i => (string)i.Tag == settings.LogLevel.ToString()) ?? LogLevelChooser.Items[2];
         VerifySignatures.IsChecked = settings.VerifySignatures;
         ShowPreview.IsChecked = vm.ShowPreviewPanel;
         ShowDetails.IsChecked = vm.ShowDetailsPanel;
@@ -135,7 +139,8 @@ public partial class SettingsWindow : Window
         DatabaseText.ToolTip = stats.DatabasePath;
         ContentText.Text = $"{stats.Files:N0} file in {stats.Roots:N0} cartelle · {stats.MoveBatches:N0} spostamenti in cronologia · {FileSizeConverter.Format(stats.DatabaseBytes)}";
         SettingsText.Text = _vm.Settings.FilePath ?? "(non salvate)";
-        LogText.Text = Log.FilePath ?? "(non attivo)";
+        LogText.Text = Log.FilePath is null ? "(non attivo)"
+            : Log.Enabled ? Log.FilePath : $"{Log.FilePath} (disattivato)";
         var busy = _vm.IsBusy;
         CompactButton.IsEnabled = !busy;
         RebuildButton.IsEnabled = !busy;
@@ -143,6 +148,13 @@ public partial class SettingsWindow : Window
 
     private void OpenData_Click(object sender, RoutedEventArgs e) => _vm.OpenDataFolderCommand.Execute(null);
     private void OpenLog_Click(object sender, RoutedEventArgs e) => _vm.OpenLogCommand.Execute(null);
+
+    private void ClearLog_Click(object sender, RoutedEventArgs e)
+    {
+        Log.Clear();
+        Log.Info("Registro svuotato dall'utente.");
+        RefreshDataInfo();
+    }
 
     private async void Compact_Click(object sender, RoutedEventArgs e)
     {
@@ -167,8 +179,15 @@ public partial class SettingsWindow : Window
     {
         var theme = ThemeDark.IsChecked == true ? "Scuro" : ThemeLight.IsChecked == true ? "Chiaro" : "Sistema";
         ApplyColumns();
-        _vm.ApplyOptions(theme, ScanOnStartup.IsChecked == true, VerifySignatures.IsChecked == true,
-            ShowPreview.IsChecked == true, ShowDetails.IsChecked == true);
+        var level = Enum.TryParse<LogLevel>((LogLevelChooser.SelectedItem as ComboBoxItem)?.Tag as string, out var l) ? l : LogLevel.Info;
+        _vm.ApplyOptions(new MainViewModel.Options(theme,
+            ScanOnStartup: ScanOnStartup.IsChecked == true,
+            WatchFolders: WatchFolders.IsChecked == true,
+            VerifySignatures: VerifySignatures.IsChecked == true,
+            ShowPreview: ShowPreview.IsChecked == true,
+            ShowDetails: ShowDetails.IsChecked == true,
+            LogEnabled: LogEnabled.IsChecked == true,
+            LogLevel: level));
         _main.SaveLayout();
         DialogResult = true;
     }
