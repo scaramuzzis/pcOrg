@@ -55,8 +55,18 @@ public partial class App : Application
             return;
         }
 
+        // Modalità sicura: se l'ultima sessione non si è chiusa correttamente (blocco o chiusura forzata),
+        // questa volta si saltano le operazioni automatiche pesanti, così l'app si apre comunque.
+        var safeMode = SessionGuard.PreviousSessionCrashed();
+        SessionGuard.Begin();
+
         var viewModel = new MainViewModel(index, new DialogService());
         viewModel.UseSettings(AppSettings.Load());
+        if (safeMode)
+        {
+            Log.Warn("La sessione precedente non si è chiusa correttamente: avvio in modalità sicura.");
+            viewModel.EnterSafeMode();
+        }
         var window = new MainWindow { DataContext = viewModel };
         MainWindow = window;
         window.Show();
@@ -64,6 +74,7 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        SessionGuard.End();
         Log.Info("=== Chiusura di pcOrg ===");
         base.OnExit(e);
     }

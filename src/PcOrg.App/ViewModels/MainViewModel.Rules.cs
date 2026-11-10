@@ -121,9 +121,44 @@ public sealed partial class MainViewModel
     /// <summary>Legge in background programmi installati e periferiche, e aggiorna le colonne "Sul PC".</summary>
     public async Task RefreshInstalledAsync()
     {
-        var programs = await Task.Run(InstalledPrograms.Read);
-        InstalledCatalog.Current = new InstalledIndex(programs);
-        await RefreshDriversAsync();
+        // Registro di Windows e periferiche sono letti con API di sistema: un loro problema non deve mai
+        // fermare l'app, quindi ogni parte è protetta e si registra l'errore.
+        try
+        {
+            var programs = await Task.Run(InstalledPrograms.Read);
+            InstalledCatalog.Current = new InstalledIndex(programs);
+        }
+        catch (Exception ex)
+        {
+            Log.Error("Lettura dei programmi installati non riuscita.", ex);
+        }
+        if (!_safeMode)
+        {
+            try
+            {
+                await RefreshDriversAsync();
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Confronto dei driver con le periferiche non riuscito.", ex);
+                DriversSummary = "Non è stato possibile leggere le periferiche: dettagli nel registro attività.";
+            }
+        }
         await RefreshAsync(); // ridisegna gli elenchi con lo stato aggiornato
+    }
+
+    private bool _safeMode;
+
+    /// <summary>
+    /// Modalità sicura (l'ultima sessione non si è chiusa correttamente): niente aggiornamento automatico
+    /// all'avvio né lettura delle periferiche; restano disponibili a mano (F5, scheda Driver).
+    /// </summary>
+    public void EnterSafeMode()
+    {
+        _safeMode = true;
+        _scanOnStartup = false;
+        DriversSummary = "Modalità sicura: le periferiche non sono state lette. Riavvia pcOrg per tornare alla modalità normale.";
+        ShowToast("L'ultima volta pcOrg non si è chiuso correttamente: avvio in modalità sicura, senza aggiornamento automatico. " +
+                  "Dettagli nel registro attività.", ToastKind.Warning);
     }
 }

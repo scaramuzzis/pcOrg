@@ -6,9 +6,19 @@ Questa guida spiega in dettaglio ogni funzione e come usarla al meglio. Puoi apr
 
 ## Primo avvio
 
-pcOrg è un unico file, **PcOrg.exe**, che non richiede installazione: copialo dove preferisci (per esempio in `C:\Programmi\pcOrg` o sul Desktop) e avvialo con un doppio clic.
+pcOrg non richiede installazione. Dalla pagina **Releases** del progetto scegli uno di questi pacchetti:
+
+| Pacchetto | Quando sceglierlo |
+|---|---|
+| **pcOrg-portatile-win-x64.zip** (consigliato) | Contiene tutto il necessario. Estrai la cartella `pcOrg` dove preferisci (per esempio in `C:\Programmi` o su una chiavetta) e avvia `PcOrg.exe`. È il più veloce ad avviarsi e il più stabile. |
+| **pcOrg-leggero-win-x64.zip** | Solo 2–3 MB. Richiede il **.NET 10 Desktop Runtime** di Microsoft: se manca, al primo avvio Windows propone di scaricarlo. Ideale se lo hai già o se distribuisci pcOrg su più PC. |
+| **PcOrg.exe** (file unico) | Un solo file da copiare. È il più comodo ma il più lento ad avviarsi, perché ogni volta deve decomprimersi; alcuni antivirus lo controllano più a lungo. |
+
+Nei pacchetti a cartella tieni insieme tutti i file: `PcOrg.exe` da solo non funziona senza le sue librerie. Per comodità puoi creare un collegamento sul Desktop (tasto destro su `PcOrg.exe` → **Mostra altre opzioni → Invia a → Desktop**).
 
 **Avviso di Windows.** Al primo avvio Windows potrebbe mostrare "PC protetto da Windows", perché il programma non ha una firma digitale commerciale. Clicca **Ulteriori informazioni** e poi **Esegui comunque**: l'avviso non comparirà più.
+
+**Modalità sicura.** Se pcOrg si era bloccato o era stato chiuso a forza, all'avvio successivo parte in **modalità sicura**: mostra l'elenco salvato ma salta l'aggiornamento automatico e la lettura delle periferiche, così si apre comunque. Puoi aggiornare a mano con **F5**; la volta dopo riparte normalmente. Il registro attività indica cosa era successo.
 
 **Schermata di benvenuto.** Finché non aggiungi una cartella vedi una schermata di benvenuto con il pulsante **Aggiungi la prima cartella**. Da lì in poi la finestra principale mostra le tue cartelle, le categorie e l'elenco dei file.
 

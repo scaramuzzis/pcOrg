@@ -5,7 +5,7 @@ sparsi nel PC. Scegli le cartelle da tenere sotto controllo; pcOrg le indicizza,
 per categoria e li trova all'istante mentre scrivi. Sei tu a decidere se e dove spostarli: prima
 vedi un'anteprima, e ogni spostamento si può annullare.
 
-## Cosa fa oggi (v0.11)
+## Cosa fa oggi (v0.12)
 - **Driver e periferiche** (Ctrl+4): legge i file `.inf` dei pacchetti driver (classe, fornitore, versione,
   identificativi hardware) e li confronta con le periferiche presenti (SetupAPI, come Gestione dispositivi):
   aggiornamenti disponibili, driver già installati, driver che non servono più a questo PC.
@@ -71,19 +71,27 @@ Scorciatoie principali: `Ctrl+F` cerca, `Esc` cancella la ricerca, `F5` aggiorna
 `Ctrl+E` esporta in Excel, `Ctrl+M` sposta, `Ctrl+H` cronologia, `Invio` o doppio clic apre il file, `F1` guida.
 
 ## Come si usa
-Scarica `PcOrg.exe` (vedi sotto), copialo dove vuoi e avvialo: non serve installare nulla,
-neanche .NET.
+Dalla pagina **Releases** scarica uno dei pacchetti:
+
+| Pacchetto | Dimensione | Note |
+|---|---|---|
+| **pcOrg-portatile-win-x64.zip** (consigliato) | ~60 MB | Cartella con `PcOrg.exe` (~200 KB) e le librerie, .NET incluso, codice precompilato: avvio rapido, nessuna estrazione |
+| **pcOrg-leggero-win-x64.zip** | ~2–3 MB | Richiede il [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) |
+| **PcOrg.exe** | ~60 MB | File unico compresso: più lento ad avviarsi |
+
+Estrai la cartella `pcOrg` dove vuoi e avvia `PcOrg.exe`: non serve installare nulla.
 
 I dati sono in `%LOCALAPPDATA%\pcOrg`: `indice.db` (cartelle, file, cronologia), `settings.json`
-(preferenze) e `log\pcorg.log` (registro attività). Per la **modalità portatile**
-(es. su chiavetta) crea una cartella `pcOrg-dati` accanto a `PcOrg.exe`: i dati verranno salvati lì.
+(preferenze) e `log\pcorg.log` (registro attività). Per la **modalità portatile** (es. su chiavetta)
+crea una cartella `pcOrg-dati` accanto a `PcOrg.exe`: i dati verranno salvati lì.
 
-### Dove trovare l'eseguibile
-- Nel repository, nella cartella **`dist/`**: `dist/PcOrg.exe` (versione 0.6.1).
-- Ogni push genera `PcOrg-win-x64` nella scheda **Actions** del repository (artifact della build).
-- Le versioni pubblicate sono nella pagina **Releases** del repository (`PcOrg-win-x64.zip`).
-  Una nuova Release si crea spingendo un tag `v*` oppure con un commit il cui messaggio
-  contiene `[release]` (la versione è quella in `src/PcOrg.App/PcOrg.App.csproj`).
+Se l'app si era bloccata o era stata chiusa a forza, al riavvio parte in **modalità sicura** (senza
+aggiornamento automatico né lettura delle periferiche) e il registro indica cosa era successo.
+
+### Dove trovare i pacchetti
+- Ogni push genera l'artifact `pcOrg-win-x64` nella scheda **Actions** del repository.
+- Le versioni pubblicate sono nella pagina **Releases**. Una nuova Release si crea spingendo un tag `v*`
+  oppure con un commit il cui messaggio contiene `[release]` (versione in `src/PcOrg.App/PcOrg.App.csproj`).
 
 ## Sviluppo
 Requisiti: [.NET SDK 10](https://dotnet.microsoft.com/download).
@@ -91,7 +99,7 @@ Requisiti: [.NET SDK 10](https://dotnet.microsoft.com/download).
 ```powershell
 dotnet test                                   # test (girano anche su Linux/macOS)
 dotnet run --project src/PcOrg.App            # avvia l'app (solo Windows)
-dotnet publish src/PcOrg.App -c Release -o publish   # crea publish\PcOrg.exe
+dotnet publish src/PcOrg.App -c Release -p:Pacchetto=Portatile -o publish   # oppure Leggero / FileUnico
 ```
 
 Documentazione funzionale (come si usa): [docs/GUIDA.md](docs/GUIDA.md).
