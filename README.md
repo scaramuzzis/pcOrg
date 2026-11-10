@@ -5,11 +5,22 @@ sparsi nel PC. Scegli le cartelle da tenere sotto controllo; pcOrg le indicizza,
 per categoria e li trova all'istante mentre scrivi. Sei tu a decidere se e dove spostarli: prima
 vedi un'anteprima, e ogni spostamento si può annullare.
 
-## Cosa fa oggi (v0.3)
+## Cosa fa oggi (v0.6)
+- **Guida completa** dentro l'app (**F1** o menu **?**), con indice dei capitoli e ricerca. Lo stesso
+  testo è leggibile qui: [docs/GUIDA.md](docs/GUIDA.md).
+- **Barra dei menu** (File, Modifica, Visualizza, Strumenti, ?) con icone e scorciatoie da tastiera:
+  aggiungi cartelle, **esporta l'elenco in Excel (CSV)**, scegli il **tema** (come Windows, chiaro,
+  scuro), mostra o nascondi i pannelli anteprima e dettagli, guida rapida (F1) e Informazioni.
+  Le preferenze vengono ricordate.
 - **Interfaccia moderna** con tema Fluent di Windows 11 (chiaro/scuro automatico), icone colorate
   per ogni categoria, schermata di benvenuto, suggerimenti su ogni pulsante, finestre di conferma
   chiare e notifiche a comparsa (dopo uno spostamento la notifica offre subito **Annulla**).
 - **Cartelle monitorate**: aggiungi/rimuovi cartelle; rimuoverne una non tocca i file su disco.
+- **Cartelle di rete**: NAS e cartelle condivise di altri computer (`\\NAS\Foto`); le unità di rete
+  mappate (es. `Z:`) vengono salvate con il percorso di rete. Se una cartella non è raggiungibile i suoi
+  file restano cercabili (dall'ultimo aggiornamento) e vengono aggiornati quando torna disponibile;
+  se la rete cade durante la scansione l'indice non perde nulla. Sui file in rete la firma digitale
+  viene letta ma non verificata, per non scaricare ogni file per intero.
 - **Categorie automatiche**: Installer, Driver, Programmi, Archivi, Immagini disco, PDF, Word
   (doc/docx/odt/rtf), Testo (txt/md/log), Fogli di calcolo, Presentazioni, Altri documenti, Immagini,
   Audio, Video, Script, Altro, con numero di file e spazio occupato.
@@ -32,7 +43,8 @@ vedi un'anteprima, e ogni spostamento si può annullare.
   esistente usa `nome (2).ext`); propone di monitorare la cartella di destinazione.
 - **Cronologia spostamenti** con annullamento.
 
-Scorciatoie: `Ctrl+F` ricerca, `F5` aggiorna l'indice, doppio clic apre il file.
+Scorciatoie principali: `Ctrl+F` cerca, `Esc` cancella la ricerca, `F5` aggiorna, `Ctrl+O` aggiungi cartella,
+`Ctrl+E` esporta in Excel, `Ctrl+M` sposta, `Ctrl+H` cronologia, `Invio` o doppio clic apre il file, `F1` guida.
 
 ## Come si usa
 Scarica `PcOrg.exe` (vedi sotto), copialo dove vuoi e avvialo: non serve installare nulla,
@@ -42,7 +54,7 @@ I dati (indice e cronologia) sono in `%LOCALAPPDATA%\pcOrg`. Per la **modalità 
 (es. su chiavetta) crea una cartella `pcOrg-dati` accanto a `PcOrg.exe`: i dati verranno salvati lì.
 
 ### Dove trovare l'eseguibile
-- Nel repository, nella cartella **`dist/`**: `dist/PcOrg.exe` (versione 0.3.3).
+- Nel repository, nella cartella **`dist/`**: `dist/PcOrg.exe` (versione 0.6.1).
 - Ogni push genera `PcOrg-win-x64` nella scheda **Actions** del repository (artifact della build).
 - Le versioni pubblicate sono nella pagina **Releases** del repository (`PcOrg-win-x64.zip`).
   Una nuova Release si crea spingendo un tag `v*` oppure con un commit il cui messaggio
@@ -57,7 +69,10 @@ dotnet run --project src/PcOrg.App            # avvia l'app (solo Windows)
 dotnet publish src/PcOrg.App -c Release -o publish   # crea publish\PcOrg.exe
 ```
 
+Documentazione funzionale (come si usa): [docs/GUIDA.md](docs/GUIDA.md).
 Struttura, scelte tecniche e piano di sviluppo: [docs/ANALISI.md](docs/ANALISI.md).
+
+Sviluppato da **Scaramus**.
 
 ## Prossimi passi
 1. Cloni (hash) e vista "Pulizia" con spostamento nel Cestino.

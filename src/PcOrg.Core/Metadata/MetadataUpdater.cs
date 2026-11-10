@@ -29,7 +29,10 @@ public static class MetadataUpdater
                     FileMeta? meta = null;
                     try
                     {
-                        meta = MetadataExtractor.Extract(batch[i].Path, verifySignatures);
+                        // Sulle cartelle di rete la verifica della firma leggerebbe ogni file per intero
+                        // attraverso la rete: si legge solo chi ha firmato, senza verificarla.
+                        var verify = verifySignatures && !NetworkPaths.IsNetworkPath(batch[i].Path);
+                        meta = MetadataExtractor.Extract(batch[i].Path, verify);
                     }
                     catch (Exception ex) when (ex is not OperationCanceledException)
                     {

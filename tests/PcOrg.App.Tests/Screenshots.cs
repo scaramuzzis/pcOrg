@@ -25,6 +25,11 @@ public class Screenshots
     private sealed class SilentDialogs : IDialogService
     {
         public string? PickFolder(string title) => null;
+        public string? AskNetworkFolder() => null;
+        public string? PickSaveFile(string title, string defaultName, string filter) => SavePath;
+        public void ShowAbout() { }
+        public void ShowHelp(string? chapter = null) { }
+        public string? SavePath { get; set; }
         public bool Confirm(string message, string title, string confirmText = "Conferma") => false;
         public void Info(string message, string title) { }
         public void Error(string message, string title) { }
@@ -66,6 +71,32 @@ public class Screenshots
         var root = index.AddRoot(download);
         index.SyncRoot(root.Id, FolderScanner.Enumerate(root.Path));
         index.AddRoot(archive);
+
+        // Cartella di rete: la condivisione amministrativa \\localhost\C$ punta alla stessa macchina.
+        try
+        {
+            var shared = Path.Combine(temp, "NAS");
+            Directory.CreateDirectory(shared);
+            File.WriteAllText(Path.Combine(shared, "Listino prezzi 2025.pdf"), "x");
+            File.WriteAllText(Path.Combine(shared, "Driver stampante HP.zip"), "x");
+            var unc = @"\\localhost\" + shared[0] + "$" + shared[2..];
+            if (Directory.Exists(unc))
+            {
+                var nas = index.AddRoot(unc);
+                index.SyncRoot(nas.Id, FolderScanner.Enumerate(nas.Path));
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
+        {
+        }
+
+        // Cartella non più raggiungibile (es. chiavetta scollegata)
+        var usb = Directory.CreateDirectory(Path.Combine(temp, "Chiavetta USB")).FullName;
+        File.WriteAllText(Path.Combine(usb, "Foto matrimonio.zip"), "x");
+        var usbRoot = index.AddRoot(usb);
+        index.SyncRoot(usbRoot.Id, FolderScanner.Enumerate(usbRoot.Path));
+        Directory.Delete(usb, recursive: true);
+
         MetadataUpdater.Run(index);
 
         var app = new App();
@@ -143,6 +174,43 @@ public class Screenshots
         Capture(dialog, output, "09-conferma.png");
         dialog.Close();
 
+        // 9b. Aggiunta di una cartella di rete
+        var network = new NetworkFolderDialog { Owner = window };
+        Show(network);
+        ((System.Windows.Controls.TextBox)network.FindName("PathBox")).Text = @"\\NAS\Condivisa\Download";
+        Pump(300);
+        Capture(network, output, "12-cartella-di-rete.png");
+        network.Close();
+
+        // 13. Barra dei menu aperta (il menu è una finestra a parte: si fotografa lo schermo)
+        var fileMenu = window.MainMenu.Items.OfType<System.Windows.Controls.MenuItem>().First();
+        window.Activate();
+        fileMenu.IsSubmenuOpen = true;
+        Pump(800);
+        CaptureScreen(window, output, "13-menu-file.png");
+        fileMenu.IsSubmenuOpen = false;
+        var viewMenu = window.MainMenu.Items.OfType<System.Windows.Controls.MenuItem>().ElementAt(2);
+        viewMenu.IsSubmenuOpen = true;
+        Pump(800);
+        CaptureScreen(window, output, "14-menu-visualizza.png");
+        viewMenu.IsSubmenuOpen = false;
+        Pump(300);
+
+        // 16-17. Guida
+        var help = new HelpWindow { Owner = window };
+        Show(help);
+        Capture(help, output, "16-guida.png");
+        help.ShowChapter("Spostare i file");
+        Pump(800);
+        Capture(help, output, "17-guida-spostare-i-file.png");
+        help.Close();
+
+        // 15. Informazioni su pcOrg
+        var about = new AboutWindow { Owner = window };
+        Show(about);
+        Capture(about, output, "15-informazioni.png");
+        about.Close();
+
         // 10. Cronologia spostamenti
         var history = new MoveHistoryWindow(index, new SilentDialogs(), () => { }) { Owner = window };
         Show(history);
@@ -201,6 +269,45 @@ public class Screenshots
         if (shot is null || IsMostlyBlack(shot))
             shot = RenderContent(window);
 
+        var encoder = new PngBitmapEncoder();
+        encoder.Frames.Add(BitmapFrame.Create(shot));
+        using var stream = File.Create(Path.Combine(folder, name));
+        encoder.Save(stream);
+    }
+
+    /// <summary>Fotografa la zona dello schermo occupata dalla finestra (compresi menu e popup aperti).</summary>
+    private static void CaptureScreen(Window window, string folder, string name)
+    {
+        var hwnd = new WindowInteropHelper(window).Handle;
+        BitmapSource? shot = null;
+        if (DwmGetWindowAttribute(hwnd, 9, out var frame, Marshal.SizeOf<NativeRect>()) == 0)
+        {
+            int width = frame.Right - frame.Left, height = frame.Bottom - frame.Top;
+            var screen = GetDC(IntPtr.Zero);
+            var memory = CreateCompatibleDC(screen);
+            var bitmap = CreateCompatibleBitmap(screen, width, height);
+            var previous = SelectObject(memory, bitmap);
+            try
+            {
+                if (BitBlt(memory, 0, 0, width, height, screen, frame.Left, frame.Top, 0x00CC0020 /* SRCCOPY */))
+                {
+                    SelectObject(memory, previous);
+                    shot = Imaging.CreateBitmapSourceFromHBitmap(bitmap, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+                    shot.Freeze();
+                }
+            }
+            finally
+            {
+                DeleteObject(bitmap);
+                DeleteDC(memory);
+                ReleaseDC(IntPtr.Zero, screen);
+            }
+        }
+        if (shot is null || IsMostlyBlack(shot))
+        {
+            Capture(window, folder, name);
+            return;
+        }
         var encoder = new PngBitmapEncoder();
         encoder.Frames.Add(BitmapFrame.Create(shot));
         using var stream = File.Create(Path.Combine(folder, name));
@@ -306,6 +413,7 @@ public class Screenshots
     [DllImport("gdi32.dll")] private static extern IntPtr SelectObject(IntPtr hdc, IntPtr obj);
     [DllImport("gdi32.dll")] private static extern bool DeleteObject(IntPtr obj);
     [DllImport("gdi32.dll")] private static extern bool DeleteDC(IntPtr hdc);
+    [DllImport("gdi32.dll")] private static extern bool BitBlt(IntPtr dest, int x, int y, int width, int height, IntPtr source, int sx, int sy, uint rop);
     [DllImport("dwmapi.dll")] private static extern int DwmGetWindowAttribute(IntPtr hwnd, int attribute, out NativeRect value, int size);
 }
 

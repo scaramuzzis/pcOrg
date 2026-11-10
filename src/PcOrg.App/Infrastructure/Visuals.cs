@@ -11,6 +11,7 @@ public static class Glyphs
 {
     public const string All = "\uE71D";
     public const string Folder = "\uE8B7";
+    public const string NetworkFolder = "\uE8CE";
     public const string FolderOpen = "\uE838";
     public const string Add = "\uE710";
     public const string Delete = "\uE74D";
@@ -31,6 +32,12 @@ public static class Glyphs
     public const string Package = "\uE7B8";
     public const string Shield = "\uE83D";
     public const string Photo = "\uEB9F";
+    public const string Export = "\uEDE1";
+    public const string Exit = "\uE7E8";
+    public const string Help = "\uE897";
+    public const string Theme = "\uE790";
+    public const string Keyboard = "\uE765";
+    public const string Lightbulb = "\uEA80";
 
     public static string ForCategory(FileCategory? category) => category switch
     {

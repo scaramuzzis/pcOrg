@@ -4,7 +4,11 @@ using PcOrg.Core.Metadata;
 namespace PcOrg.Core.Storage;
 
 /// <summary>Cartella scelta dall'utente da tenere indicizzata.</summary>
-public sealed record RootFolder(long Id, string Path, DateTime? LastScanUtc);
+public sealed record RootFolder(long Id, string Path, DateTime? LastScanUtc)
+{
+    /// <summary>Cartella su un altro computer o su un NAS.</summary>
+    public bool IsNetwork => NetworkPaths.IsUnc(Path);
+}
 
 /// <summary>Un file presente nell'indice.</summary>
 public sealed record FileRecord(
