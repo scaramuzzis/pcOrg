@@ -6,7 +6,7 @@ namespace PcOrg.App.Views;
 /// <summary>Mostra cosa verrà spostato e dove, prima di toccare qualsiasi file.</summary>
 public partial class MovePreviewWindow : Window
 {
-    public MovePreviewWindow(IReadOnlyList<MoveItem> plan, string destination, bool destinationMonitored)
+    public MovePreviewWindow(IReadOnlyList<MoveItem> plan, string destination, bool destinationMonitored, string? summary = null)
     {
         InitializeComponent();
         PlanGrid.ItemsSource = plan;
@@ -14,7 +14,7 @@ public partial class MovePreviewWindow : Window
         var toMove = plan.Count(p => p.WillMove);
         var renamed = plan.Count(p => p.Status == MoveItemStatus.Rinominato);
         var skipped = plan.Count - toMove;
-        Summary.Text = $"{toMove} file andranno in \"{destination}\"."
+        Summary.Text = (summary ?? $"{toMove} file andranno in \"{destination}\".")
             + (renamed > 0 ? $" {renamed} avranno un nuovo nome perché lì esiste già un file con lo stesso nome." : "")
             + (skipped > 0 ? $" {skipped} saranno ignorati." : "")
             + " Nessun file viene sovrascritto e potrai annullare tutto con un clic.";

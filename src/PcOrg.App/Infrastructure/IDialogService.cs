@@ -26,7 +26,8 @@ public interface IDialogService
     void Error(string message, string title);
 
     /// <summary>Mostra l'anteprima degli spostamenti. Restituisce null se l'utente annulla.</summary>
-    MovePreviewResult? PreviewMove(IReadOnlyList<MoveItem> plan, string destination, bool destinationMonitored);
+    /// <param name="summary">Testo introduttivo al posto di "N file andranno in …" (es. per le regole).</param>
+    MovePreviewResult? PreviewMove(IReadOnlyList<MoveItem> plan, string destination, bool destinationMonitored, string? summary = null);
 
     void ShowMoveHistory(Core.Storage.FileIndex index, Action onChanged);
 }

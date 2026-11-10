@@ -20,8 +20,11 @@ public enum FileCategory
     Testo = 13,
     FoglioDiCalcolo = 14,
     Presentazione = 15,
+    /// <summary>Connessioni salvate per il controllo remoto: VNC (.vnc), Desktop remoto (.rdp)...</summary>
+    AccessoRemoto = 16,
 }
 
+/// <summary>Testi da mostrare per le categorie.</summary>
 public static class FileCategoryExtensions
 {
     /// <summary>Nome da mostrare nell'interfaccia.</summary>
@@ -42,6 +45,7 @@ public static class FileCategoryExtensions
         FileCategory.Testo => "Testo",
         FileCategory.FoglioDiCalcolo => "Fogli di calcolo",
         FileCategory.Presentazione => "Presentazioni",
+        FileCategory.AccessoRemoto => "Accesso remoto",
         _ => "Altro",
     };
 }

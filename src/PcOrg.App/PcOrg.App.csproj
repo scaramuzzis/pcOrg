@@ -11,23 +11,45 @@
     <AssemblyName>PcOrg</AssemblyName>
     <RootNamespace>PcOrg.App</RootNamespace>
     <Product>pcOrg</Product>
-    <Version>0.6.1</Version>
+    <Version>0.12.0</Version>
     <NeutralLanguage>it-IT</NeutralLanguage>
     <!-- ThemeMode (tema Fluent) è ancora marcato come sperimentale -->
     <NoWarn>$(NoWarn);WPF0001</NoWarn>
     <ApplicationIcon>Assets\pcorg.ico</ApplicationIcon>
   </PropertyGroup>
 
-  <!-- Eseguibile unico da copiare: dotnet publish -c Release (solo in pubblicazione,
-       così i test possono referenziare il progetto) -->
+  <!--
+    Pacchetti di distribuzione (dotnet publish -c Release -p:Pacchetto=...):
+      Portatile (predefinito): cartella con PcOrg.exe e le librerie, .NET incluso, codice precompilato
+                               (ReadyToRun). Nessuna estrazione all'avvio: è il più veloce e il più stabile.
+      Leggero:                 cartella di pochi MB che usa il .NET 10 Desktop Runtime installato sul PC.
+      FileUnico:               un solo PcOrg.exe compresso con tutto dentro (il più comodo, ma il più lento ad avviarsi):
+                               all'avvio estrae la libreria del database in una cartella temporanea.
+    Le impostazioni valgono solo in pubblicazione, così i test possono referenziare il progetto.
+  -->
+  <PropertyGroup>
+    <Pacchetto Condition="'$(Pacchetto)' == ''">Portatile</Pacchetto>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release' And '$(_IsPublishing)' == 'true'">
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <SelfContained>true</SelfContained>
-    <PublishSingleFile>true</PublishSingleFile>
-    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <DebugType>embedded</DebugType>
     <SatelliteResourceLanguages>it</SatelliteResourceLanguages>
+    <PublishReadyToRun>true</PublishReadyToRun>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release' And '$(_IsPublishing)' == 'true' And '$(Pacchetto)' == 'Portatile'">
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>false</PublishSingleFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release' And '$(_IsPublishing)' == 'true' And '$(Pacchetto)' == 'Leggero'">
+    <SelfContained>false</SelfContained>
+    <PublishSingleFile>false</PublishSingleFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release' And '$(_IsPublishing)' == 'true' And '$(Pacchetto)' == 'FileUnico'">
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <PublishReadyToRun>false</PublishReadyToRun>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
   </PropertyGroup>
 
   <ItemGroup>

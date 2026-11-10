@@ -30,10 +30,12 @@ public class Screenshots
         public void ShowAbout() { }
         public void ShowHelp(string? chapter = null) { }
         public string? SavePath { get; set; }
-        public bool Confirm(string message, string title, string confirmText = "Conferma") => false;
+        public bool Confirm(string message, string title, string confirmText = "Conferma") => ConfirmResult;
+        public bool ConfirmResult { get; set; }
         public void Info(string message, string title) { }
         public void Error(string message, string title) { }
-        public MovePreviewResult? PreviewMove(IReadOnlyList<MoveItem> plan, string destination, bool destinationMonitored) => null;
+        public MovePreviewResult? PreviewMove(IReadOnlyList<MoveItem> plan, string destination, bool destinationMonitored, string? summary = null) => PreviewResult;
+        public MovePreviewResult? PreviewResult { get; set; }
         public void ShowMoveHistory(FileIndex index, Action onChanged) { }
     }
 
@@ -132,6 +134,17 @@ public class Screenshots
         Select(window, vm, vm.Results.First());
         Capture(window, output, "04-immagini-ghost.png");
 
+        // 4b. Accesso remoto → VNC, con il computer di destinazione nei dettagli
+        var vnc = vm.Categories.FirstOrDefault(c => c.IsSubcategory && c.Name.StartsWith("VNC"));
+        if (vnc is not null)
+        {
+            vm.SelectedCategory = vnc;
+            Pump(600);
+            if (vm.Results.Count > 0)
+                Select(window, vm, vm.Results.First());
+            Capture(window, output, "22-accesso-remoto-vnc.png");
+        }
+
         // 5. Ricerca
         vm.SelectedCategory = vm.Categories[0];
         vm.SearchText = "driver";
@@ -141,6 +154,30 @@ public class Screenshots
         Capture(window, output, "05-ricerca.png");
         vm.SearchText = "";
         Pump(600);
+
+        // 6b. Cloni e pulizia
+        window.Tabs.SelectedIndex = 2;
+        vm.SelectedSizeOption = vm.SizeOptions[0];
+        var find = vm.FindDuplicatesCommand.ExecuteAsync(null);
+        while (!find.IsCompleted)
+            Pump(200);
+        vm.MarkDoublesCommand.Execute(null);
+        Pump(600);
+        Capture(window, output, "23-cloni-e-pulizia.png");
+        window.Tabs.SelectedIndex = 0;
+        Pump(300);
+
+        // 6c. Driver e periferiche (dopo la lettura di periferiche e programmi installati)
+        await_(vm.RefreshInstalledAsync());
+        window.Tabs.SelectedIndex = 3;
+        Pump(800);
+        Capture(window, output, "27-driver-e-periferiche.png");
+        vm.ShowUnneededDrivers = true;
+        Pump(500);
+        Capture(window, output, "28-driver-che-non-servono.png");
+        vm.ShowUnneededDrivers = false;
+        window.Tabs.SelectedIndex = 0;
+        Pump(300);
 
         // 6. Prodotti e versioni
         window.Tabs.SelectedIndex = 1;
@@ -204,6 +241,53 @@ public class Screenshots
         Pump(800);
         Capture(help, output, "17-guida-spostare-i-file.png");
         help.Close();
+
+        // 18-20. Impostazioni (generale, colonne, dati)
+        var grids = new Dictionary<string, System.Windows.Controls.DataGrid>
+        {
+            ["file"] = window.ResultsGrid,
+        };
+        foreach (var (tab, file) in new[] { (SettingsWindow.GeneralTab, "18-impostazioni-generale.png"),
+                                           (SettingsWindow.ColumnsTab, "19-impostazioni-colonne.png"),
+                                           (SettingsWindow.DataTab, "20-impostazioni-dati.png") })
+        {
+            var settings = new SettingsWindow(vm, window, grids, tab) { Owner = window };
+            Show(settings);
+            Capture(settings, output, file);
+            settings.Close();
+        }
+
+        // 21. Elenco con colonne facoltative attivate (firma, architettura) e "Cartella" spostata
+        foreach (var header in new[] { "Firma digitale", "Architettura" })
+            window.ResultsGrid.Columns.First(c => (string)c.Header == header).Visibility = Visibility.Visible;
+        window.ResultsGrid.Columns.First(c => (string)c.Header == "Modificato").Visibility = Visibility.Collapsed;
+        window.ResultsGrid.Columns.First(c => (string)c.Header == "Firma digitale").DisplayIndex = 1;
+        Pump(500);
+        Capture(window, output, "21-colonne-personalizzate.png");
+        window.ResetColumns("file");
+        Pump(300);
+
+        // 24. Impostazioni → Regole (con le regole di esempio)
+        vm.SetRules(SettingsWindow.SampleRules(@"D:\Archivio"));
+        var rulesWindow = new SettingsWindow(vm, window, grids, SettingsWindow.RulesTab) { Owner = window };
+        Show(rulesWindow);
+        Capture(rulesWindow, output, "24-impostazioni-regole.png");
+        rulesWindow.Close();
+
+        // 25. Editor di una regola
+        var editor = new RuleEditorWindow(vm.Rules[0]) { Owner = window };
+        Show(editor);
+        Capture(editor, output, "25-modifica-regola.png");
+        editor.Close();
+
+        // 26. Prodotti con lo stato "Sul PC"
+        await_(vm.RefreshInstalledAsync());
+        window.Tabs.SelectedIndex = 1;
+        vm.OnlyMultipleVersions = false;
+        Pump(800);
+        Capture(window, output, "26-prodotti-sul-pc.png");
+        window.Tabs.SelectedIndex = 0;
+        vm.OnlyMultipleVersions = true;
 
         // 15. Informazioni su pcOrg
         var about = new AboutWindow { Owner = window };
@@ -389,6 +473,13 @@ public class Screenshots
         return samples == 0 || sum / (samples * 3.0) < 8;
     }
 
+    private static void await_(Task task)
+    {
+        while (!task.IsCompleted)
+            Pump(100);
+        task.GetAwaiter().GetResult();
+    }
+
     private static void Pump(int milliseconds)
     {
         var frame = new DispatcherFrame();
@@ -449,6 +540,41 @@ internal static class SampleData
         Fake(Path.Combine(root, "Driver", "Realtek", "RTKVHD64.sys"), 6_200_000);
         Fake(Path.Combine(root, "intel-wifi-driver-23.80.zip"), 54_000_000);
 
+        // Cloni: lo stesso installer scaricato più volte e una foto copiata
+        CopyAs(@"C:\Program Files\Mozilla Firefox\firefox.exe", Path.Combine(root, "Vecchi download", "Firefox Setup 132.0 (1).exe"));
+        CopyAs(@"C:\Program Files\Mozilla Firefox\firefox.exe", Path.Combine(root, "Backup", "firefox-installer.exe"));
+        CopyAs(Environment.ProcessPath!, Path.Combine(root, "Vecchi download", "dotnet-runtime-10.0.0-win-x64 (2).exe"));
+
+        // Driver: pacchetti .inf costruiti sulle periferiche vere della macchina di build, così la scheda
+        // "Driver e periferiche" mostra un aggiornamento disponibile, un driver uguale e uno che non serve.
+        var devices = PcOrg.Core.Drivers.DeviceInventory.Read().Where(d => d.DriverVersion is not null).Take(2).ToList();
+        void Inf(string folder, string cls, string provider, string version, string description, string hwid)
+        {
+            var dir = Path.Combine(root, "Driver", folder);
+            Directory.CreateDirectory(dir);
+            File.WriteAllText(Path.Combine(dir, "driver.inf"),
+                $"[Version]\r\nClass={cls}\r\nProvider=%P%\r\nDriverVer=05/14/2025,{version}\r\n[Manufacturer]\r\n%P%=Models,NTamd64\r\n" +
+                $"[Models.NTamd64]\r\n%D%=Install,{hwid}\r\n[Strings]\r\nP=\"{provider}\"\r\nD=\"{description}\"\r\n",
+                System.Text.Encoding.Unicode);
+            Fake(Path.Combine(dir, "driver.sys"), 180_000);
+            Fake(Path.Combine(dir, "driver.cat"), 12_000);
+        }
+        if (devices.Count > 0)
+        {
+            var v = devices[0].DriverVersion!.Split('.').Select(p => int.TryParse(p, out var n) ? n : 0).ToArray();
+            var newer = string.Join('.', v.Take(v.Length - 1).Append(v[^1] + 10));
+            Inf("Aggiornamento", devices[0].Class ?? "System", devices[0].DriverProvider ?? "Produttore", newer, devices[0].Name, devices[0].HardwareIds[0]);
+        }
+        if (devices.Count > 1)
+            Inf("Uguale", devices[1].Class ?? "System", devices[1].DriverProvider ?? "Produttore", devices[1].DriverVersion!, devices[1].Name, devices[1].HardwareIds[0]);
+        Inf("Stampante HP LaserJet 1020", "Printer", "HP", "5.0.1.2", "HP LaserJet 1020", @"USBPRINT\Hewlett-PackardHP_LaFDE6");
+
+        // Connessioni remote
+        File.WriteAllText(Path.Combine(root, "Connessioni", "Ufficio Mario.vnc").Also(p => Directory.CreateDirectory(Path.GetDirectoryName(p)!)),
+            "[connection]\r\nhost=192.168.1.20\r\nport=5900\r\n");
+        File.WriteAllText(Path.Combine(root, "Connessioni", "Server gestionale.rdp"),
+            "full address:s:srv-gestionale\r\nusername:s:amministratore\r\n");
+
         // Documenti
         Fake(Path.Combine(root, "Manuale scheda madre ASUS B550.pdf"), 7_400_000);
         Fake(Path.Combine(root, "Fattura 2024-118.pdf"), 120_000);
@@ -484,6 +610,7 @@ internal static class SampleData
         var names = new[] { "Vacanze Sardegna 2024.jpg", "Tramonto al lago.jpg", "Montagna - Dolomiti.png", "Cena di Natale.jpg" };
         for (var i = 0; i < names.Length; i++)
             Picture(Path.Combine(photos, names[i]), 1600, 1067, palettes[i].Item1, palettes[i].Item2);
+        File.Copy(Path.Combine(photos, names[1]), Path.Combine(photos, "Copia di Tramonto al lago.jpg"));
     }
 
     private static IEnumerable<string> FindAll(string folder, string exe, int max)
@@ -543,5 +670,15 @@ internal static class SampleData
         encoder.Frames.Add(BitmapFrame.Create(bitmap));
         using var stream = File.Create(path);
         encoder.Save(stream);
+    }
+}
+
+internal static class StringExtensions
+{
+    /// <summary>Esegue un'azione sul valore e lo restituisce (per scrivere più compatto).</summary>
+    public static string Also(this string value, Action<string> action)
+    {
+        action(value);
+        return value;
     }
 }

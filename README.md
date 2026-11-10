@@ -5,7 +5,31 @@ sparsi nel PC. Scegli le cartelle da tenere sotto controllo; pcOrg le indicizza,
 per categoria e li trova all'istante mentre scrivi. Sei tu a decidere se e dove spostarli: prima
 vedi un'anteprima, e ogni spostamento si può annullare.
 
-## Cosa fa oggi (v0.6)
+## Cosa fa oggi (v0.12)
+- **Driver e periferiche** (Ctrl+4): legge i file `.inf` dei pacchetti driver (classe, fornitore, versione,
+  identificativi hardware) e li confronta con le periferiche presenti (SetupAPI, come Gestione dispositivi):
+  aggiornamenti disponibili, driver già installati, driver che non servono più a questo PC.
+- **Regole di archiviazione** (Impostazioni → Regole): condizioni su categoria, produttore e nome,
+  destinazione con segnaposto (`D:\Archivio\Driver\{Produttore}`), regole di esempio pronte;
+  **Organizza con le regole** prepara gli spostamenti con anteprima e annullamento.
+- **Installato sul PC?** Installer e driver confrontati con i programmi installati (registro di Windows):
+  non installato, stessa versione, aggiornamento disponibile, installer superato.
+- **Cloni e pulizia** (Ctrl+3): trova i file con contenuto identico anche con nomi diversi
+  (dimensione → impronta veloce → confronto completo, impronte memorizzate), mostra lo spazio
+  recuperabile, segna i doppioni con una regola (tieni il più vecchio, il più recente…) e li sposta
+  nel **Cestino di Windows** o in un'altra cartella. Non lascia mai un file senza nessuna copia.
+- **Sposta nel Cestino** anche dalle schede File e Prodotti (tasto Canc).
+- **Aggiornamento incrementale**: mentre l'app è aperta ogni file aggiunto, modificato o eliminato
+  viene registrato subito (FileSystemWatcher); all'avvio e con F5 l'aggiornamento rapido rilegge solo
+  le cartelle cambiate (100.000 file senza modifiche: ~10 ms). Scansione completa con Ctrl+F5.
+- **Registro attività attivabile** dalle Impostazioni, con quattro livelli di dettaglio.
+- **Categoria Accesso remoto**: file VNC (`.vnc`) e Desktop remoto (`.rdp`), con il computer di destinazione letto dal file.
+- **Dati sempre salvati**: i file trovati vengono registrati man mano in `indice.db` e ricompaiono
+  subito alla riapertura, anche dopo una scansione interrotta; chiusura sicura durante gli aggiornamenti;
+  aggiornamento automatico all'avvio (disattivabile); **registro attività** in `log\pcorg.log`.
+- **Impostazioni** (Strumenti → Impostazioni, `Ctrl+,`): tema, opzioni di aggiornamento e firme,
+  **colonne visibili e loro ordine** per ogni elenco, informazioni e manutenzione dell'indice.
+  Posizione, larghezza e ordinamento delle colonne, pannello laterale e finestra vengono ricordati.
 - **Guida completa** dentro l'app (**F1** o menu **?**), con indice dei capitoli e ricerca. Lo stesso
   testo è leggibile qui: [docs/GUIDA.md](docs/GUIDA.md).
 - **Barra dei menu** (File, Modifica, Visualizza, Strumenti, ?) con icone e scorciatoie da tastiera:
@@ -47,18 +71,29 @@ Scorciatoie principali: `Ctrl+F` cerca, `Esc` cancella la ricerca, `F5` aggiorna
 `Ctrl+E` esporta in Excel, `Ctrl+M` sposta, `Ctrl+H` cronologia, `Invio` o doppio clic apre il file, `F1` guida.
 
 ## Come si usa
-Scarica `PcOrg.exe` (vedi sotto), copialo dove vuoi e avvialo: non serve installare nulla,
-neanche .NET.
+Dalla pagina **Releases** scarica uno dei pacchetti:
 
-I dati (indice e cronologia) sono in `%LOCALAPPDATA%\pcOrg`. Per la **modalità portatile**
-(es. su chiavetta) crea una cartella `pcOrg-dati` accanto a `PcOrg.exe`: i dati verranno salvati lì.
+| Pacchetto | Dimensione | Note |
+|---|---|---|
+| **pcOrg-portatile-win-x64.zip** (consigliato) | ~60 MB | Cartella con `PcOrg.exe` (~200 KB) e le librerie, .NET incluso, codice precompilato: avvio rapido, nessuna estrazione |
+| **pcOrg-leggero-win-x64.zip** | ~2–3 MB | Richiede il [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) |
+| **PcOrg.exe** | ~60 MB | File unico compresso: più lento ad avviarsi |
 
-### Dove trovare l'eseguibile
-- Nel repository, nella cartella **`dist/`**: `dist/PcOrg.exe` (versione 0.6.1).
-- Ogni push genera `PcOrg-win-x64` nella scheda **Actions** del repository (artifact della build).
-- Le versioni pubblicate sono nella pagina **Releases** del repository (`PcOrg-win-x64.zip`).
-  Una nuova Release si crea spingendo un tag `v*` oppure con un commit il cui messaggio
-  contiene `[release]` (la versione è quella in `src/PcOrg.App/PcOrg.App.csproj`).
+Estrai la cartella `pcOrg` dove vuoi e avvia `PcOrg.exe`: non serve installare nulla.
+
+I dati sono in `%LOCALAPPDATA%\pcOrg`: `indice.db` (cartelle, file, cronologia), `settings.json`
+(preferenze) e `log\pcorg.log` (registro attività). Per la **modalità portatile** (es. su chiavetta)
+crea una cartella `pcOrg-dati` accanto a `PcOrg.exe`: i dati verranno salvati lì.
+
+Se l'app si era bloccata o era stata chiusa a forza, al riavvio parte in **modalità sicura** (senza
+aggiornamento automatico né lettura delle periferiche) e il registro indica cosa era successo.
+
+### Dove trovare i pacchetti
+- Ogni push genera l'artifact `pcOrg-win-x64` nella scheda **Actions** del repository.
+- Nel repository, nella cartella **`dist/`**: il pacchetto leggero della versione corrente (`dist/pcOrg-leggero`,
+  richiede il .NET 10 Desktop Runtime) e le istruzioni in `dist/LEGGIMI.md`.
+- Le versioni pubblicate sono nella pagina **Releases**. Una nuova Release si crea spingendo un tag `v*`
+  oppure con un commit il cui messaggio contiene `[release]` (versione in `src/PcOrg.App/PcOrg.App.csproj`).
 
 ## Sviluppo
 Requisiti: [.NET SDK 10](https://dotnet.microsoft.com/download).
@@ -66,11 +101,12 @@ Requisiti: [.NET SDK 10](https://dotnet.microsoft.com/download).
 ```powershell
 dotnet test                                   # test (girano anche su Linux/macOS)
 dotnet run --project src/PcOrg.App            # avvia l'app (solo Windows)
-dotnet publish src/PcOrg.App -c Release -o publish   # crea publish\PcOrg.exe
+dotnet publish src/PcOrg.App -c Release -p:Pacchetto=Portatile -o publish   # oppure Leggero / FileUnico
 ```
 
 Documentazione funzionale (come si usa): [docs/GUIDA.md](docs/GUIDA.md).
 Struttura, scelte tecniche e piano di sviluppo: [docs/ANALISI.md](docs/ANALISI.md).
+Migliorie proposte: [docs/MIGLIORIE.md](docs/MIGLIORIE.md).
 
 Sviluppato da **Scaramus**.
 

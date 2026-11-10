@@ -1,5 +1,6 @@
 namespace PcOrg.Core.Moving;
 
+/// <summary>Esito previsto per un file nell'anteprima di uno spostamento.</summary>
 public enum MoveItemStatus
 {
     /// <summary>Il file verrà spostato con lo stesso nome.</summary>
@@ -50,6 +51,41 @@ public static class MovePlanner
                 continue;
             }
 
+            var target = Path.Combine(destination, Path.GetFileName(source));
+            var status = MoveItemStatus.Pronto;
+            if (IsTaken(target, reserved))
+            {
+                target = FreeName(destination, Path.GetFileName(source), reserved);
+                status = MoveItemStatus.Rinominato;
+            }
+            reserved.Add(target);
+            plan.Add(new MoveItem(source, target, status));
+        }
+        return plan;
+    }
+
+    /// <summary>
+    /// Piano con una cartella di destinazione diversa per ogni file (es. regole di archiviazione).
+    /// Come <see cref="Plan"/> non sovrascrive mai e non tocca alcun file.
+    /// </summary>
+    public static IReadOnlyList<MoveItem> PlanMany(IEnumerable<(string Source, string Folder)> targets)
+    {
+        var reserved = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var plan = new List<MoveItem>();
+        foreach (var (raw, folder) in targets)
+        {
+            var source = PathUtil.Normalize(raw);
+            var destination = PathUtil.Normalize(folder);
+            if (!File.Exists(source))
+            {
+                plan.Add(new MoveItem(source, source, MoveItemStatus.NonTrovato));
+                continue;
+            }
+            if (string.Equals(Path.GetDirectoryName(source), destination, PathUtil.Comparison))
+            {
+                plan.Add(new MoveItem(source, source, MoveItemStatus.GiaPresente));
+                continue;
+            }
             var target = Path.Combine(destination, Path.GetFileName(source));
             var status = MoveItemStatus.Pronto;
             if (IsTaken(target, reserved))

@@ -50,14 +50,24 @@ jobs:
           name: screenshot
           path: screenshots/*.png
 
-      - name: Pubblica eseguibile unico
-        run: dotnet publish src/PcOrg.App -c Release -o publish
+      # Tre pacchetti: portatile (consigliato), leggero (richiede .NET 10 Desktop Runtime), file unico.
+      - name: Pubblica i pacchetti
+        run: |
+          dotnet publish src/PcOrg.App -c Release -p:Pacchetto=Portatile -o out/portatile/pcOrg
+          dotnet publish src/PcOrg.App -c Release -p:Pacchetto=Leggero -o out/leggero/pcOrg
+          dotnet publish src/PcOrg.App -c Release -p:Pacchetto=FileUnico -o out/fileunico
+          Compress-Archive -Path out/portatile/pcOrg -DestinationPath pcOrg-portatile-win-x64.zip
+          Compress-Archive -Path out/leggero/pcOrg -DestinationPath pcOrg-leggero-win-x64.zip
+          Copy-Item out/fileunico/PcOrg.exe PcOrg.exe
 
-      - name: Carica PcOrg.exe
+      - name: Carica i pacchetti
         uses: actions/upload-artifact@v5
         with:
-          name: PcOrg-win-x64
-          path: publish/PcOrg.exe
+          name: pcOrg-win-x64
+          path: |
+            pcOrg-portatile-win-x64.zip
+            pcOrg-leggero-win-x64.zip
+            PcOrg.exe
 
       # Si pubblica una Release quando si spinge un tag v* oppure quando il messaggio
       # del commit contiene [release] (la versione viene letta da PcOrg.App.csproj).
@@ -69,10 +79,6 @@ jobs:
           $tag = if ('${{ github.ref }}'.StartsWith('refs/tags/')) { '${{ github.ref_name }}' } else { "v$v" }
           "tag=$tag" >> $env:GITHUB_OUTPUT
 
-      - name: Crea lo zip
-        if: steps.ver.outputs.tag != ''
-        run: Compress-Archive -Path publish/PcOrg.exe -DestinationPath PcOrg-win-x64.zip
-
       - name: Release
         if: steps.ver.outputs.tag != ''
         uses: softprops/action-gh-release@v2
@@ -81,8 +87,13 @@ jobs:
           target_commitish: ${{ github.sha }}
           name: pcOrg ${{ steps.ver.outputs.tag }}
           body: |
-            Scarica **PcOrg-win-x64.zip**, estrai `PcOrg.exe` e avvialo: non serve installare nulla.
+            ## Quale scaricare
+            - **pcOrg-portatile-win-x64.zip** (consigliato): estrai la cartella `pcOrg` dove vuoi e avvia `PcOrg.exe`. Contiene tutto il necessario, si avvia velocemente.
+            - **pcOrg-leggero-win-x64.zip** (2–3 MB): come il portatile ma richiede il [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0); se manca, Windows propone di scaricarlo.
+            - **PcOrg.exe**: un unico file da copiare, più lento ad avviarsi perché deve decomprimersi.
+
             Se compare "PC protetto da Windows": Ulteriori informazioni → Esegui comunque.
           files: |
-            PcOrg-win-x64.zip
-            publish/PcOrg.exe
+            pcOrg-portatile-win-x64.zip
+            pcOrg-leggero-win-x64.zip
+            PcOrg.exe

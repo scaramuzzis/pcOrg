@@ -8,6 +8,7 @@ namespace PcOrg.Core.Metadata;
 [SupportedOSPlatform("windows")]
 public static class MsiReader
 {
+    /// <summary>Proprietà del pacchetto (tabella Property) e riepilogo "Template" (piattaforma;lingua).</summary>
     public sealed record MsiInfo(IReadOnlyDictionary<string, string> Properties, string? Template);
 
     public static MsiInfo? Read(string path)

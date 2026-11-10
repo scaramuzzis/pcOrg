@@ -13,7 +13,14 @@ public static class AppPaths
 
     public static string DataFolder { get; } = ResolveDataFolder();
 
+    /// <summary>L'indice: cartelle monitorate, elenco dei file con metadati, cronologia degli spostamenti.</summary>
     public static string DatabaseFile => Path.Combine(DataFolder, "indice.db");
+
+    /// <summary>Preferenze dell'utente (tema, pannelli, colonne, posizione della finestra).</summary>
+    public static string SettingsFile => Path.Combine(DataFolder, "settings.json");
+
+    /// <summary>Cartella del registro delle attività (pcorg.log).</summary>
+    public static string LogFolder => Path.Combine(DataFolder, "log");
 
     private static string ResolveDataFolder()
     {

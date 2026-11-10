@@ -1,0 +1,220 @@
+<Window x:Class="PcOrg.App.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:inf="clr-namespace:PcOrg.App.Infrastructure"
+        xmlns:c="clr-namespace:PcOrg.App.Controls"
+        Title="Impostazioni" Icon="pack://application:,,,/PcOrg;component/Assets/pcorg.ico"
+        Width="720" Height="600" MinWidth="560" MinHeight="460"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Intestazione -->
+        <StackPanel Orientation="Horizontal" Margin="24,20,24,8">
+            <Border Width="40" Height="40" CornerRadius="20" Background="#475569" Margin="0,0,14,0">
+                <TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Settings}" FontSize="18" Foreground="White" HorizontalAlignment="Center" />
+            </Border>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="Impostazioni" FontSize="18" FontWeight="SemiBold" />
+                <TextBlock Text="Le scelte vengono ricordate ai prossimi avvii" Style="{StaticResource Secondary}" />
+            </StackPanel>
+        </StackPanel>
+
+        <TabControl x:Name="Tabs" Grid.Row="1" Margin="20,4,20,0">
+            <!-- ======================================================= Generale -->
+            <TabItem Header="Generale">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="8,16,8,8">
+                        <TextBlock Text="TEMA" Style="{StaticResource SectionHeader}" Margin="0,0,0,8" />
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,18">
+                            <RadioButton x:Name="ThemeSystem" Content="Come Windows" GroupName="Theme" Margin="0,0,18,0" />
+                            <RadioButton x:Name="ThemeLight" Content="Chiaro" GroupName="Theme" Margin="0,0,18,0" />
+                            <RadioButton x:Name="ThemeDark" Content="Scuro" GroupName="Theme" />
+                        </StackPanel>
+
+                        <TextBlock Text="AGGIORNAMENTO" Style="{StaticResource SectionHeader}" Margin="0,0,0,8" />
+                        <CheckBox x:Name="WatchFolders" Content="Rileva automaticamente file nuovi, modificati o eliminati (consigliato)" />
+                        <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="28,2,0,12"
+                                   Text="Mentre pcOrg è aperto, ogni file che scarichi, sposti o elimini nelle cartelle monitorate viene registrato subito, senza ripetere la scansione." />
+                        <CheckBox x:Name="ScanOnStartup" Content="Aggiornamento rapido delle cartelle a ogni avvio" />
+                        <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="28,2,0,12"
+                                   Text="Trova ciò che è cambiato mentre pcOrg era chiuso. È rapido anche con milioni di file: rilegge solo le cartelle in cui qualcosa è stato aggiunto, tolto o rinominato. Per un controllo totale usa File → Scansione completa (Ctrl+F5)." />
+                        <CheckBox x:Name="VerifySignatures" Content="Verifica le firme digitali dei programmi" />
+                        <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="28,2,0,18"
+                                   Text="Garantisce che il file non sia stato modificato, ma legge ogni programma per intero: disattivala se l'aggiornamento è lento. Sui file in rete la firma non viene mai verificata." />
+
+                        <TextBlock Text="PANNELLI" Style="{StaticResource SectionHeader}" Margin="0,0,0,8" />
+                        <CheckBox x:Name="ShowPreview" Content="Mostra l'anteprima delle immagini" Margin="0,0,0,6" />
+                        <CheckBox x:Name="ShowDetails" Content="Mostra i dettagli del file selezionato" />
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ======================================================= Colonne -->
+            <TabItem Header="Colonne">
+                <Grid Margin="8,16,8,8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <DockPanel Grid.ColumnSpan="2" Margin="0,0,0,8">
+                        <TextBlock Text="Elenco:" VerticalAlignment="Center" Margin="0,0,10,0" />
+                        <ComboBox x:Name="GridChooser" MinWidth="260" HorizontalAlignment="Left" SelectionChanged="GridChooser_SelectionChanged" />
+                    </DockPanel>
+                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="0,0,0,10"
+                               Text="Spunta le colonne da mostrare e usa le frecce per cambiarne l'ordine. Puoi anche trascinare le intestazioni nell'elenco e scegliere le colonne con il tasto destro: la disposizione viene ricordata." />
+
+                    <ListBox x:Name="ColumnList" Grid.Row="2" ItemContainerStyle="{StaticResource CompactItem}"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <CheckBox Content="{Binding Key}" IsChecked="{Binding Visible}" IsEnabled="{Binding CanHide}" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <StackPanel Grid.Row="2" Grid.Column="1" Margin="12,0,0,0">
+                        <c:IconButton Glyph="{x:Static inf:Glyphs.Up}" Label="Su" Click="MoveUp_Click" HorizontalAlignment="Stretch" Margin="0,0,0,6"
+                                      ToolTip="Sposta la colonna selezionata più a sinistra" />
+                        <c:IconButton Glyph="{x:Static inf:Glyphs.Down}" Label="Giù" Click="MoveDown_Click" HorizontalAlignment="Stretch" Margin="0,0,0,18"
+                                      ToolTip="Sposta la colonna selezionata più a destra" />
+                        <c:IconButton Glyph="{x:Static inf:Glyphs.Undo}" Label="Predefinite" Click="ResetColumns_Click" HorizontalAlignment="Stretch"
+                                      ToolTip="Ripristina colonne, ordine e larghezze originali di questo elenco" />
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+
+            <!-- ======================================================= Regole -->
+            <TabItem Header="Regole">
+                <Grid Margin="8,16,8,8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.ColumnSpan="2" Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="0,0,0,10"
+                               Text="Le regole dicono dove archiviare i file. Con &quot;Organizza con le regole&quot; (scheda File o menu Strumenti) ogni file va nella cartella della prima regola che lo riguarda, dall'alto in basso. Vedrai sempre l'anteprima e potrai annullare." />
+                    <ListBox x:Name="RuleList" Grid.Row="1" ItemContainerStyle="{StaticResource CompactItem}"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled" MouseDoubleClick="EditRule_Click">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel Margin="0,2">
+                                    <CheckBox DockPanel.Dock="Left" IsChecked="{Binding Enabled}" VerticalAlignment="Center" Margin="0,0,10,0"
+                                              ToolTip="Regola attiva" />
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                                        <TextBlock Style="{StaticResource Secondary}">
+                                            <Run Text="Se " /><Run Text="{Binding ConditionText, Mode=OneWay}" /><Run Text=" → " /><Run Text="{Binding Destination}" />
+                                        </TextBlock>
+                                    </StackPanel>
+                                </DockPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="12,0,0,0" MinWidth="150">
+                        <c:IconButton Glyph="{x:Static inf:Glyphs.Add}" Label="Nuova…" Click="NewRule_Click" HorizontalAlignment="Stretch" Margin="0,0,0,6" />
+                        <c:IconButton Glyph="{x:Static inf:Glyphs.Edit}" Label="Modifica…" Click="EditRule_Click" HorizontalAlignment="Stretch" Margin="0,0,0,6" />
+                        <c:IconButton Glyph="{x:Static inf:Glyphs.Delete}" Label="Elimina" Click="DeleteRule_Click" HorizontalAlignment="Stretch" Margin="0,0,0,18" />
+                        <c:IconButton Glyph="{x:Static inf:Glyphs.Up}" Label="Su" Click="RuleUp_Click" HorizontalAlignment="Stretch" Margin="0,0,0,6"
+                                      ToolTip="Le regole più in alto hanno la precedenza" />
+                        <c:IconButton Glyph="{x:Static inf:Glyphs.Down}" Label="Giù" Click="RuleDown_Click" HorizontalAlignment="Stretch" Margin="0,0,0,18" />
+                        <c:IconButton Glyph="{x:Static inf:Glyphs.Lightbulb}" Label="Regole di esempio…" Click="SampleRules_Click" HorizontalAlignment="Stretch"
+                                      ToolTip="Crea un insieme di regole pronte (driver per produttore, installer, immagini disco, documenti) in una cartella di archivio a tua scelta" />
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+
+            <!-- ======================================================= Dati -->
+            <TabItem Header="Dati e registro">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="8,16,8,8">
+                        <TextBlock Text="DOVE SONO SALVATI I DATI" Style="{StaticResource SectionHeader}" Margin="0,0,0,8" />
+                        <Border Style="{StaticResource Card}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="170" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.Resources>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Margin" Value="0,3" />
+                                        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                    </Style>
+                                </Grid.Resources>
+                                <TextBlock Style="{StaticResource Secondary}" Margin="0,3" Text="Indice (indice.db)" />
+                                <TextBlock Grid.Column="1" x:Name="DatabaseText" />
+                                <TextBlock Grid.Row="1" Style="{StaticResource Secondary}" Margin="0,3" Text="Contenuto" />
+                                <TextBlock Grid.Row="1" Grid.Column="1" x:Name="ContentText" />
+                                <TextBlock Grid.Row="2" Style="{StaticResource Secondary}" Margin="0,3" Text="Preferenze" />
+                                <TextBlock Grid.Row="2" Grid.Column="1" x:Name="SettingsText" />
+                                <TextBlock Grid.Row="3" Style="{StaticResource Secondary}" Margin="0,3" Text="Registro attività" />
+                                <TextBlock Grid.Row="3" Grid.Column="1" x:Name="LogText" />
+                                <TextBlock Grid.Row="4" Grid.ColumnSpan="2" Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="0,8,0,0"
+                                           Text="L'indice contiene cartelle, elenco dei file con versioni e firme, e la cronologia degli spostamenti: resta salvato alla chiusura e viene ricaricato all'avvio. Il registro attività annota avvii, scansioni, spostamenti ed eventuali errori." />
+                            </Grid>
+                        </Border>
+                        <WrapPanel Margin="0,10,0,20">
+                            <c:IconButton Glyph="{x:Static inf:Glyphs.FolderOpen}" Label="Apri la cartella dei dati" Click="OpenData_Click" Margin="0,0,8,8" />
+                            <c:IconButton Glyph="{x:Static inf:Glyphs.Log}" Label="Apri il registro attività" Click="OpenLog_Click" Margin="0,0,8,8" />
+                        </WrapPanel>
+
+                        <TextBlock Text="REGISTRO ATTIVITÀ (LOG)" Style="{StaticResource SectionHeader}" Margin="0,0,0,8" />
+                        <CheckBox x:Name="LogEnabled" Content="Abilita il registro attività" />
+                        <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="28,2,0,8"
+                                   Text="Annota in un file di testo avvii, scansioni, spostamenti e soprattutto gli errori, con data e ora: è lo strumento per capire cosa è andato storto. Il file viene limitato automaticamente a pochi MB." />
+                        <DockPanel Margin="28,0,0,8">
+                            <TextBlock Text="Dettaglio:" VerticalAlignment="Center" Margin="0,0,10,0" />
+                            <ComboBox x:Name="LogLevelChooser" MinWidth="320" HorizontalAlignment="Left"
+                                      IsEnabled="{Binding IsChecked, ElementName=LogEnabled}">
+                                <ComboBoxItem Content="Solo errori" Tag="Error" />
+                                <ComboBoxItem Content="Errori e avvisi" Tag="Warning" />
+                                <ComboBoxItem Content="Normale: anche avvii, scansioni e spostamenti" Tag="Info" />
+                                <ComboBoxItem Content="Dettagliato: anche ogni cartella aggiornata" Tag="Debug" />
+                            </ComboBox>
+                        </DockPanel>
+                        <WrapPanel Margin="28,0,0,20">
+                            <c:IconButton Glyph="{x:Static inf:Glyphs.Log}" Label="Apri il registro" Click="OpenLog_Click" Margin="0,0,8,8" />
+                            <c:IconButton Glyph="{x:Static inf:Glyphs.Delete}" Label="Svuota il registro" Click="ClearLog_Click" Margin="0,0,8,8" />
+                        </WrapPanel>
+
+                        <TextBlock Text="MANUTENZIONE DELL'INDICE" Style="{StaticResource SectionHeader}" Margin="0,0,0,8" />
+                        <WrapPanel>
+                            <c:IconButton x:Name="CompactButton" Glyph="{x:Static inf:Glyphs.Database}" Label="Compatta l'indice" Click="Compact_Click" Margin="0,0,8,8"
+                                          ToolTip="Riduce lo spazio occupato dal file dell'indice (utile dopo aver rimosso molte cartelle)" />
+                            <c:IconButton x:Name="RebuildButton" Glyph="{x:Static inf:Glyphs.Refresh}" Label="Ricostruisci l'indice" Click="Rebuild_Click" Margin="0,0,8,8"
+                                          ToolTip="Svuota l'elenco dei file e rifà la scansione di tutte le cartelle. Cartelle e cronologia restano." />
+                        </WrapPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+
+        <Border Grid.Row="2" Margin="0,16,0,0" Padding="24,14" Background="{DynamicResource LayerFillColorAltBrush}"
+                BorderThickness="0,1,0,0" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Salva" MinWidth="110" IsDefault="True" Margin="0,0,8,0" Style="{DynamicResource AccentButtonStyle}" Click="Save_Click" />
+                <Button Content="Annulla" MinWidth="110" IsCancel="True" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

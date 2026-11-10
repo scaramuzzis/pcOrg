@@ -15,6 +15,7 @@
 
     <Window.InputBindings>
         <KeyBinding Key="F5" Command="{Binding ScanCommand}" />
+        <KeyBinding Key="F5" Modifiers="Control" Command="{Binding FullScanCommand}" />
         <KeyBinding Key="F" Modifiers="Control" Command="{x:Static vm:FocusCommands.FocusSearch}" />
         <KeyBinding Key="Escape" Command="{Binding ClearSearchCommand}" />
         <KeyBinding Key="O" Modifiers="Control" Command="{Binding AddRootCommand}" />
@@ -26,7 +27,10 @@
         <KeyBinding Key="H" Modifiers="Control" Command="{Binding ShowHistoryCommand}" />
         <KeyBinding Key="D1" Modifiers="Control" Command="{Binding ShowTabCommand}" CommandParameter="0" />
         <KeyBinding Key="D2" Modifiers="Control" Command="{Binding ShowTabCommand}" CommandParameter="1" />
+        <KeyBinding Key="D3" Modifiers="Control" Command="{Binding ShowTabCommand}" CommandParameter="2" />
+        <KeyBinding Key="D4" Modifiers="Control" Command="{Binding ShowTabCommand}" CommandParameter="3" />
         <KeyBinding Key="F1" Command="{Binding ShowHelpCommand}" />
+        <KeyBinding Key="OemComma" Modifiers="Control" Command="{x:Static vm:FocusCommands.OpenSettings}" />
     </Window.InputBindings>
 
     <DockPanel>
@@ -43,8 +47,11 @@
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Delete}" /></MenuItem.Icon>
                 </MenuItem>
                 <Separator />
-                <MenuItem Header="_Aggiorna l'indice" Command="{Binding ScanCommand}" InputGestureText="F5">
+                <MenuItem Header="_Aggiorna (rapido)" Command="{Binding ScanCommand}" InputGestureText="F5">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Refresh}" /></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Scansione completa" Command="{Binding FullScanCommand}" InputGestureText="Ctrl+F5">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Database}" /></MenuItem.Icon>
                 </MenuItem>
                 <MenuItem Header="_Esporta l'elenco in Excel (CSV)…" Command="{Binding ExportCsvCommand}" InputGestureText="Ctrl+E">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Export}" /></MenuItem.Icon>
@@ -71,6 +78,9 @@
                 <MenuItem Header="_Sposta in…" Command="{Binding MoveSelectedCommand}" InputGestureText="Ctrl+M">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Move}" /></MenuItem.Icon>
                 </MenuItem>
+                <MenuItem Header="Sposta nel Ce_stino…" Command="{Binding RecycleSelectedCommand}" InputGestureText="Canc">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Delete}" /></MenuItem.Icon>
+                </MenuItem>
                 <Separator />
                 <MenuItem Header="_Cerca" Command="{x:Static vm:FocusCommands.FocusSearch}" InputGestureText="Ctrl+F">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Search}" /></MenuItem.Icon>
@@ -86,7 +96,16 @@
                 <MenuItem Header="_Prodotti e versioni" Command="{Binding ShowTabCommand}" CommandParameter="1" InputGestureText="Ctrl+2">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Package}" /></MenuItem.Icon>
                 </MenuItem>
+                <MenuItem Header="C_loni e pulizia" Command="{Binding ShowTabCommand}" CommandParameter="2" InputGestureText="Ctrl+3">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Duplicate}" /></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Driver e periferiche" Command="{Binding ShowTabCommand}" CommandParameter="3" InputGestureText="Ctrl+4">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Device}" /></MenuItem.Icon>
+                </MenuItem>
                 <Separator />
+                <MenuItem Header="_Colonne dell'elenco…" Click="ColumnsSettings_Click">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Columns}" /></MenuItem.Icon>
+                </MenuItem>
                 <MenuItem Header="Pannello _anteprima immagini" IsCheckable="True" IsChecked="{Binding ShowPreviewPanel}" />
                 <MenuItem Header="Pannello _dettagli del file" IsCheckable="True" IsChecked="{Binding ShowDetailsPanel}" />
                 <Separator />
@@ -101,6 +120,12 @@
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="_Strumenti">
+                <MenuItem Header="_Organizza con le regole…" Command="{Binding OrganizeWithRulesCommand}">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Rules}" /></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Cerca i c_loni" Command="{Binding FindDuplicatesCommand}">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Duplicate}" /></MenuItem.Icon>
+                </MenuItem>
                 <MenuItem Header="_Cronologia spostamenti…" Command="{Binding ShowHistoryCommand}" InputGestureText="Ctrl+H">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.History}" /></MenuItem.Icon>
                 </MenuItem>
@@ -110,6 +135,13 @@
                 <Separator />
                 <MenuItem Header="Apri la cartella dei _dati" Command="{Binding OpenDataFolderCommand}">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.FolderOpen}" /></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Apri il _registro attività" Command="{Binding OpenLogCommand}">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Log}" /></MenuItem.Icon>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="_Impostazioni…" Command="{x:Static vm:FocusCommands.OpenSettings}" InputGestureText="Ctrl+,">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Settings}" /></MenuItem.Icon>
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="_?">
@@ -187,7 +219,7 @@
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <c:IconButton Glyph="{x:Static inf:Glyphs.Refresh}" Label="Aggiorna" Command="{Binding ScanCommand}" Margin="0,0,8,0"
-                                  ToolTip="Ricerca file nuovi, spostati o eliminati nelle cartelle monitorate (F5)" />
+                                  ToolTip="Aggiornamento rapido: rilegge solo le cartelle in cui qualcosa è cambiato (F5). Scansione completa: Ctrl+F5" />
                     <c:IconButton Glyph="{x:Static inf:Glyphs.History}" Label="Cronologia" Command="{Binding ShowHistoryCommand}"
                                   ToolTip="Vedi gli spostamenti fatti e annullali" />
                 </StackPanel>
@@ -199,9 +231,9 @@
                      Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}" />
 
         <!-- ============================================================ Contenuto -->
-        <Grid Grid.Row="2" Margin="14,12,14,8">
+        <Grid x:Name="ContentGrid" Grid.Row="2" Margin="14,12,14,8">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="300" MinWidth="230" />
+                <ColumnDefinition Width="300" MinWidth="230" MaxWidth="600" />
                 <ColumnDefinition Width="12" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
@@ -304,6 +336,11 @@
                 </Grid>
             </Border>
 
+            <!-- Divisore trascinabile: la larghezza del pannello sinistro viene ricordata -->
+            <GridSplitter Grid.Column="1" Width="6" HorizontalAlignment="Center" VerticalAlignment="Stretch"
+                          Background="Transparent" ResizeBehavior="PreviousAndNext" Cursor="SizeWE"
+                          ToolTip="Trascina per allargare o restringere il pannello" />
+
             <!-- Pannello destro: schede File / Prodotti -->
             <TabControl x:Name="Tabs" x:FieldModifier="public" Grid.Column="2" SelectedIndex="{Binding SelectedTabIndex}"
                         Visibility="{Binding HasRoots, Converter={StaticResource BoolToVisibility}}">
@@ -336,12 +373,15 @@
                                               ToolTip="Apri Esplora risorse con il file già selezionato" />
                                 <c:IconButton Glyph="{x:Static inf:Glyphs.Copy}" Label="Copia percorso" Command="{Binding CopyPathCommand}" Margin="0,0,6,0"
                                               ToolTip="Copia negli appunti il percorso dei file selezionati" />
+                                <c:IconButton Glyph="{x:Static inf:Glyphs.Rules}" Label="Organizza con le regole" Command="{Binding OrganizeWithRulesCommand}" Margin="0,0,6,0"
+                                              ToolTip="Applica le regole di archiviazione ai file selezionati (o a tutto l'elenco): prima vedrai l'anteprima" />
                                 <c:IconButton Glyph="{x:Static inf:Glyphs.Move}" Label="Sposta in…" Command="{Binding MoveSelectedCommand}" Margin="0,0,6,0"
                                               Style="{DynamicResource AccentButtonStyle}"
                                               ToolTip="Scegli dove spostare i file selezionati: prima vedrai un'anteprima, e potrai sempre annullare" />
                             </WrapPanel>
 
                             <DataGrid x:Name="ResultsGrid" Grid.Row="1" ItemsSource="{Binding Results}"
+                                      inf:GridKeys.DeleteCommand="{Binding RecycleSelectedCommand}"
                                       AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Extended"
                                       HeadersVisibility="Column" GridLinesVisibility="None" RowHeight="34"
                                       EnableRowVirtualization="True" EnableColumnVirtualization="True"
@@ -363,6 +403,9 @@
                                         <MenuItem Header="Sposta in…" Command="{Binding MoveSelectedCommand}">
                                             <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Move}" /></MenuItem.Icon>
                                         </MenuItem>
+                                        <MenuItem Header="Sposta nel Cestino…" Command="{Binding RecycleSelectedCommand}" InputGestureText="Canc">
+                                            <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Delete}" /></MenuItem.Icon>
+                                        </MenuItem>
                                     </ContextMenu>
                                 </DataGrid.ContextMenu>
                                 <DataGrid.Columns>
@@ -378,10 +421,10 @@
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
-                                    <DataGridTextColumn Header="Categoria" Binding="{Binding CategoryName}" SortMemberPath="Category" Width="115" MinWidth="115" ElementStyle="{StaticResource CellText}" />
-                                    <DataGridTextColumn Header="Versione" Binding="{Binding Version}" Width="100" MinWidth="100" ElementStyle="{StaticResource CellText}" />
+                                    <DataGridTextColumn Header="Categoria" Binding="{Binding CategoryName}" SortMemberPath="Category" Width="115" MinWidth="86" ElementStyle="{StaticResource CellText}" />
+                                    <DataGridTextColumn Header="Versione" Binding="{Binding Version}" Width="100" MinWidth="75" ElementStyle="{StaticResource CellText}" />
                                     <DataGridTextColumn Header="Produttore" Binding="{Binding Company}" Width="*" MinWidth="110" ElementStyle="{StaticResource CellText}" />
-                                    <DataGridTextColumn Header="Dimensione" Binding="{Binding Size, Converter={StaticResource FileSize}}" Width="95" MinWidth="95"
+                                    <DataGridTextColumn Header="Dimensione" Binding="{Binding Size, Converter={StaticResource FileSize}}" Width="95" MinWidth="71"
                                                         SortMemberPath="Size">
                                         <DataGridTextColumn.ElementStyle>
                                             <Style TargetType="TextBlock">
@@ -392,8 +435,17 @@
                                         </DataGridTextColumn.ElementStyle>
                                     </DataGridTextColumn>
                                     <DataGridTextColumn Header="Modificato" Binding="{Binding ModifiedUtc, StringFormat=g, Converter={x:Static vm:UtcToLocalConverter.Instance}}"
-                                                        Width="130" MinWidth="130" SortMemberPath="ModifiedUtc" ElementStyle="{StaticResource CellText}" />
+                                                        Width="130" MinWidth="97" SortMemberPath="ModifiedUtc" ElementStyle="{StaticResource CellText}" />
                                     <DataGridTextColumn Header="Cartella" Binding="{Binding Folder}" Width="2*" MinWidth="160" ElementStyle="{StaticResource CellText}" />
+                                    <!-- Colonne facoltative: si attivano da Impostazioni → Colonne o col tasto destro sulle intestazioni -->
+                                    <DataGridTextColumn Header="Prodotto" Binding="{Binding ProductName}" Width="150" MinWidth="80" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
+                                    <DataGridTextColumn Header="Descrizione" Binding="{Binding Meta.FileDescription}" Width="180" MinWidth="80" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
+                                    <DataGridTextColumn Header="Firma digitale" Binding="{Binding SignatureText}" Width="180" MinWidth="80" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
+                                    <DataGridTextColumn Header="Architettura" Binding="{Binding ArchitectureText}" Width="115" MinWidth="80" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
+                                    <DataGridTextColumn Header="Tipo di installer" Binding="{Binding Meta.InstallerType}" Width="150" MinWidth="80" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
+                                    <DataGridTextColumn Header="Sul PC" Binding="{Binding Converter={x:Static inf:InstallStateConverter.Instance}}" Width="230" MinWidth="100" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
+                                    <DataGridTextColumn Header="Estensione" Binding="{Binding Extension}" Width="85" MinWidth="60" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
+                                    <DataGridTextColumn Header="Percorso completo" Binding="{Binding Path}" Width="320" MinWidth="120" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
                                 </DataGrid.Columns>
                             </DataGrid>
 
@@ -414,6 +466,7 @@
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
                                     <Grid.Resources>
                                         <Style TargetType="TextBlock">
@@ -422,7 +475,7 @@
                                         </Style>
                                     </Grid.Resources>
 
-                                    <Border Grid.RowSpan="5" Width="48" Height="48" CornerRadius="10" VerticalAlignment="Top" Margin="0,0,14,0"
+                                    <Border Grid.RowSpan="6" Width="48" Height="48" CornerRadius="10" VerticalAlignment="Top" Margin="0,0,14,0"
                                             Background="{Binding Category, Converter={x:Static inf:CategoryBrushConverter.Instance}}">
                                         <TextBlock Style="{StaticResource Icon}" FontSize="22" Foreground="White" HorizontalAlignment="Center" Margin="0"
                                                    Text="{Binding Category, Converter={x:Static inf:CategoryGlyphConverter.Instance}}" />
@@ -450,8 +503,14 @@
 
                                     <TextBlock Grid.Row="4" Grid.Column="1" Style="{StaticResource Secondary}" Text="Tipo di installer" />
                                     <TextBlock Grid.Row="4" Grid.Column="2" Text="{Binding Meta.InstallerType, TargetNullValue='—'}" />
-                                    <TextBlock Grid.Row="4" Grid.Column="3" Style="{StaticResource Secondary}" Text="Dimensione" />
-                                    <TextBlock Grid.Row="4" Grid.Column="4" Text="{Binding Size, Converter={StaticResource FileSize}}" />
+                                    <TextBlock Grid.Row="4" Grid.Column="3" Style="{StaticResource Secondary}" Text="Sul PC" />
+                                    <TextBlock Grid.Row="4" Grid.Column="4" Text="{Binding Converter={x:Static inf:InstallStateConverter.Instance}, TargetNullValue='—'}"
+                                               ToolTip="Confronto con i programmi installati su questo PC" />
+
+                                    <TextBlock Grid.Row="5" Grid.Column="1" Style="{StaticResource Secondary}" Text="Dimensione" />
+                                    <TextBlock Grid.Row="5" Grid.Column="2" Text="{Binding Size, Converter={StaticResource FileSize}}" />
+                                    <TextBlock Grid.Row="5" Grid.Column="3" Style="{StaticResource Secondary}" Text="Modificato" />
+                                    <TextBlock Grid.Row="5" Grid.Column="4" Text="{Binding ModifiedUtc, StringFormat=g, Converter={x:Static vm:UtcToLocalConverter.Instance}}" />
                                 </Grid>
                             </Border>
                         </Grid>
@@ -504,7 +563,7 @@
                             </DockPanel>
                         </Border>
 
-                        <DataGrid Grid.Row="1" ItemsSource="{Binding ProductsView}" SelectedItem="{Binding SelectedProduct}"
+                        <DataGrid x:Name="ProductsGrid" Grid.Row="1" ItemsSource="{Binding ProductsView}" SelectedItem="{Binding SelectedProduct}"
                                   AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" RowHeight="34"
                                   HeadersVisibility="Column" GridLinesVisibility="None"
                                   EnableRowVirtualization="True" VirtualizingPanel.VirtualizationMode="Recycling">
@@ -520,13 +579,14 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                                 <DataGridTextColumn Header="Produttore" Binding="{Binding Company}" Width="*" MinWidth="110" ElementStyle="{StaticResource CellText}" />
-                                <DataGridTextColumn Header="Ultima versione" Binding="{Binding LatestVersion}" Width="115" MinWidth="115" ElementStyle="{StaticResource CellText}" />
-                                <DataGridTextColumn Header="Versioni" Binding="{Binding VersionCount}" Width="75" MinWidth="75" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Sul PC" Binding="{Binding Converter={x:Static inf:InstallStateConverter.Instance}}" Width="230" MinWidth="120" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Ultima versione" Binding="{Binding LatestVersion}" Width="115" MinWidth="86" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Versioni" Binding="{Binding VersionCount}" Width="75" MinWidth="56" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="File" Binding="{Binding Files.Count}" Width="55" MinWidth="55" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="Spazio" Binding="{Binding TotalSize, Converter={StaticResource FileSize}}"
-                                                    SortMemberPath="TotalSize" Width="90" MinWidth="90" ElementStyle="{StaticResource CellText}" />
+                                                    SortMemberPath="TotalSize" Width="90" MinWidth="67" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="Versioni vecchie" Binding="{Binding OldVersionsSize, Converter={StaticResource FileSize}}"
-                                                    SortMemberPath="OldVersionsSize" Width="120" MinWidth="120" ElementStyle="{StaticResource CellText}" />
+                                                    SortMemberPath="OldVersionsSize" Width="120" MinWidth="90" ElementStyle="{StaticResource CellText}" />
                             </DataGrid.Columns>
                         </DataGrid>
 
@@ -537,9 +597,12 @@
                             <c:IconButton Glyph="{x:Static inf:Glyphs.Move}" Label="Sposta in…" Command="{Binding MoveSelectedCommand}" Margin="0,0,6,0"
                                           Style="{DynamicResource AccentButtonStyle}" ToolTip="Sposta i file selezionati (con anteprima e annullamento)" />
                             <c:IconButton Glyph="{x:Static inf:Glyphs.FolderOpen}" Label="Mostra nella cartella" Command="{Binding OpenFolderCommand}" Margin="0,0,6,0" />
+                            <c:IconButton Glyph="{x:Static inf:Glyphs.Delete}" Label="Sposta nel Cestino…" Command="{Binding RecycleSelectedCommand}" Margin="0,0,6,0"
+                                          ToolTip="Sposta nel Cestino di Windows i file selezionati (Canc). Potrai ripristinarli dal Cestino." />
                         </WrapPanel>
 
                         <DataGrid x:Name="ProductFilesGrid" Grid.Row="3" ItemsSource="{Binding ProductFiles}"
+                                  inf:GridKeys.DeleteCommand="{Binding RecycleSelectedCommand}"
                                   AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Extended" RowHeight="32"
                                   HeadersVisibility="Column" GridLinesVisibility="None"
                                   SelectionChanged="ProductFilesGrid_SelectionChanged" MouseDoubleClick="FileGrid_MouseDoubleClick">
@@ -553,8 +616,8 @@
                                 </Style>
                             </DataGrid.RowStyle>
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Versione" Binding="{Binding File.Version}" Width="110" MinWidth="110" ElementStyle="{StaticResource CellText}" />
-                                <DataGridTemplateColumn Header="Stato" Width="140" MinWidth="140" SortMemberPath="State">
+                                <DataGridTextColumn Header="Versione" Binding="{Binding File.Version}" Width="110" MinWidth="82" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTemplateColumn Header="Stato" Width="140" MinWidth="105" SortMemberPath="State">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <Border CornerRadius="10" Padding="8,2" HorizontalAlignment="Left" VerticalAlignment="Center"
@@ -575,10 +638,228 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                                 <DataGridTextColumn Header="Nome" Binding="{Binding File.Name}" Width="2*" ElementStyle="{StaticResource CellText}" />
-                                <DataGridTextColumn Header="Architettura" Binding="{Binding File.ArchitectureText}" Width="115" MinWidth="115" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Architettura" Binding="{Binding File.ArchitectureText}" Width="115" MinWidth="86" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="Firma" Binding="{Binding File.SignatureText}" Width="*" ElementStyle="{StaticResource CellText}" />
-                                <DataGridTextColumn Header="Dimensione" Binding="{Binding File.Size, Converter={StaticResource FileSize}}" Width="95" MinWidth="95" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Dimensione" Binding="{Binding File.Size, Converter={StaticResource FileSize}}" Width="95" MinWidth="71" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="Cartella" Binding="{Binding File.Folder}" Width="2*" ElementStyle="{StaticResource CellText}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
+
+                <!-- Scheda Cloni e pulizia -->
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Duplicate}" FontSize="14" Margin="0,0,8,0" />
+                            <TextBlock Text="Cloni e pulizia" />
+                        </StackPanel>
+                    </TabItem.Header>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Ricerca -->
+                        <Border Style="{StaticResource Card}" Margin="0,0,0,10" Padding="12,10">
+                            <DockPanel>
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <ComboBox ItemsSource="{Binding SizeOptions}" SelectedItem="{Binding SelectedSizeOption}" DisplayMemberPath="Label"
+                                              MinWidth="170" Margin="12,0,10,0" ToolTip="Ignora i file più piccoli: la ricerca è più veloce e mostra solo ciò che pesa davvero" />
+                                    <CheckBox Content="Anche cartelle di rete" IsChecked="{Binding IncludeNetworkInDuplicates}" Margin="0,0,12,0" VerticalAlignment="Center"
+                                              ToolTip="I file in rete vanno letti attraverso la rete: la ricerca può essere molto più lenta" />
+                                    <c:IconButton Glyph="{x:Static inf:Glyphs.Search}" Label="Cerca i cloni" Command="{Binding FindDuplicatesCommand}"
+                                                  Style="{DynamicResource AccentButtonStyle}"
+                                                  ToolTip="Trova i file con contenuto identico, anche se hanno nomi diversi o sono in cartelle diverse" />
+                                </StackPanel>
+                                <TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Duplicate}" Foreground="#7C3AED" Margin="0,0,10,0" />
+                                <TextBlock Text="{Binding DuplicatesSummary}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                            </DockPanel>
+                        </Border>
+
+                        <!-- Gruppi di file identici -->
+                        <DataGrid x:Name="DuplicateGroupsGrid" Grid.Row="1" ItemsSource="{Binding DuplicateGroups}" SelectedItem="{Binding SelectedDuplicateGroup}"
+                                  AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" RowHeight="32"
+                                  HeadersVisibility="Column" GridLinesVisibility="None"
+                                  EnableRowVirtualization="True" VirtualizingPanel.VirtualizationMode="Recycling">
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Header="File" Width="2*" MinWidth="200" SortMemberPath="Name">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Duplicate}" Foreground="#7C3AED" Margin="2,0,10,0" />
+                                                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="Copie" Binding="{Binding Files.Count}" Width="70" MinWidth="55" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Dimensione" Binding="{Binding Size, Converter={StaticResource FileSize}}" SortMemberPath="Size" Width="100" MinWidth="75" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Spazio recuperabile" Binding="{Binding WastedBytes, Converter={StaticResource FileSize}}" SortMemberPath="WastedBytes" Width="150" MinWidth="112" ElementStyle="{StaticResource CellText}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <!-- Azioni -->
+                        <WrapPanel Grid.Row="2" Margin="0,12,0,10">
+                            <TextBlock Text="COPIE DEL FILE SELEZIONATO" Style="{StaticResource SectionHeader}" Margin="2,0,14,0" />
+                            <ComboBox ItemsSource="{Binding KeepRules}" SelectedItem="{Binding SelectedKeepRule}" DisplayMemberPath="Label"
+                                      MinWidth="260" Margin="0,0,6,0" ToolTip="Quale copia tenere in ogni gruppo" />
+                            <c:IconButton Glyph="{x:Static inf:Glyphs.SelectAll}" Label="Segna i doppioni" Command="{Binding MarkDoublesCommand}" Margin="0,0,6,0"
+                                          ToolTip="In tutti i gruppi segna le copie da eliminare, tenendone una secondo la regola scelta" />
+                            <c:IconButton Glyph="{x:Static inf:Glyphs.Cancel}" Label="Togli i segni" Command="{Binding ClearMarksCommand}" Margin="0,0,12,0" />
+                            <TextBlock Text="{Binding MarkedSummary}" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,12,0" />
+                            <c:IconButton Glyph="{x:Static inf:Glyphs.Delete}" Label="Sposta nel Cestino" Command="{Binding RecycleMarkedCommand}" Margin="0,0,6,0"
+                                          Style="{DynamicResource AccentButtonStyle}"
+                                          ToolTip="Sposta nel Cestino di Windows le copie segnate. Resta sempre almeno una copia di ogni file." />
+                            <c:IconButton Glyph="{x:Static inf:Glyphs.Move}" Label="Sposta in…" Command="{Binding MoveMarkedCommand}" Margin="0,0,6,0"
+                                          ToolTip="Sposta le copie segnate in un'altra cartella (con anteprima e annullamento)" />
+                        </WrapPanel>
+
+                        <!-- Copie del gruppo selezionato -->
+                        <DataGrid x:Name="DuplicateFilesGrid" Grid.Row="3" ItemsSource="{Binding DuplicateFiles}"
+                                  AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Extended" RowHeight="32"
+                                  HeadersVisibility="Column" GridLinesVisibility="None"
+                                  SelectionChanged="DuplicateFilesGrid_SelectionChanged" MouseDoubleClick="FileGrid_MouseDoubleClick">
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Header="Da eliminare" Width="100" MinWidth="90" SortMemberPath="IsMarked">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <CheckBox IsChecked="{Binding IsMarked, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center"
+                                                      ToolTip="Segna questa copia da spostare nel Cestino" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="Stato" Width="110" MinWidth="90" SortMemberPath="State">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border CornerRadius="10" Padding="8,2" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Background" Value="#E5E7EB" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsKeeper}" Value="True">
+                                                                <Setter Property="Background" Value="#DCFCE7" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <TextBlock Text="{Binding State}" FontSize="12" Foreground="#1F2937" />
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="Nome" Binding="{Binding File.Name}" Width="*" MinWidth="160" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Modificato" Binding="{Binding File.ModifiedUtc, StringFormat=g, Converter={x:Static vm:UtcToLocalConverter.Instance}}"
+                                                    SortMemberPath="File.ModifiedUtc" Width="130" MinWidth="97" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Cartella" Binding="{Binding File.Folder}" Width="2*" MinWidth="160" ElementStyle="{StaticResource CellText}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
+
+                <!-- Scheda Driver e periferiche -->
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Device}" FontSize="14" Margin="0,0,8,0" />
+                            <TextBlock Text="Driver e periferiche" />
+                        </StackPanel>
+                    </TabItem.Header>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <Border Style="{StaticResource Card}" Margin="0,0,0,10" Padding="12,10">
+                            <DockPanel>
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <CheckBox Content="Solo periferiche con driver nell'archivio" IsChecked="{Binding OnlyDevicesWithDrivers}" Margin="12,0,0,0"
+                                              ToolTip="Togli la spunta per vedere tutte le periferiche di questo PC" />
+                                </StackPanel>
+                                <TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Device}" Foreground="#7C3AED" Margin="0,0,10,0" />
+                                <TextBlock Text="{Binding DriversSummary}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                            </DockPanel>
+                        </Border>
+
+                        <!-- Periferiche presenti -->
+                        <DataGrid x:Name="DevicesGrid" Grid.Row="1" ItemsSource="{Binding DeviceRows}" SelectedItem="{Binding SelectedDevice}"
+                                  AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" RowHeight="32"
+                                  HeadersVisibility="Column" GridLinesVisibility="None"
+                                  EnableRowVirtualization="True" VirtualizingPanel.VirtualizationMode="Recycling">
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Header="Periferica" Width="2*" MinWidth="200" SortMemberPath="Name">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <TextBlock x:Name="Icon" Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Device}" Foreground="#64748B" Margin="2,0,10,0" />
+                                                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                            <DataTemplate.Triggers>
+                                                <DataTrigger Binding="{Binding HasUpdate}" Value="True">
+                                                    <Setter TargetName="Icon" Property="Foreground" Value="#16A34A" />
+                                                </DataTrigger>
+                                            </DataTemplate.Triggers>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="Classe" Binding="{Binding Class}" Width="110" MinWidth="82" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Driver installato" Binding="{Binding InstalledVersion}" Width="140" MinWidth="105" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Fornitore" Binding="{Binding Provider}" Width="*" MinWidth="100" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Nell'archivio" Binding="{Binding DriverCount}" Width="100" MinWidth="75" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Stato" Binding="{Binding State}" Width="2*" MinWidth="160" ElementStyle="{StaticResource CellText}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <WrapPanel Grid.Row="2" Margin="0,12,0,10">
+                            <TextBlock Text="DRIVER DELL'ARCHIVIO" Style="{StaticResource SectionHeader}" Margin="2,0,14,0" />
+                            <CheckBox Content="Mostra quelli che non servono a questo PC" IsChecked="{Binding ShowUnneededDrivers}" VerticalAlignment="Center" Margin="0,0,12,0"
+                                      ToolTip="Pacchetti driver per periferiche che questo PC non ha (es. vecchie stampanti o schede)" />
+                            <c:IconButton Glyph="{x:Static inf:Glyphs.SelectAll}" Label="Seleziona quelli che non servono" Command="{Binding SelectUnneededDriversCommand}" Margin="0,0,6,0" />
+                            <c:IconButton Glyph="{x:Static inf:Glyphs.FolderOpen}" Label="Mostra nella cartella" Command="{Binding OpenFolderCommand}" Margin="0,0,6,0" />
+                            <c:IconButton Glyph="{x:Static inf:Glyphs.Move}" Label="Sposta in…" Command="{Binding MoveSelectedCommand}" Margin="0,0,6,0" />
+                            <c:IconButton Glyph="{x:Static inf:Glyphs.Delete}" Label="Sposta nel Cestino…" Command="{Binding RecycleSelectedCommand}" Margin="0,0,6,0" />
+                        </WrapPanel>
+
+                        <DataGrid x:Name="DriverFilesGrid" Grid.Row="3" ItemsSource="{Binding DriverFiles}"
+                                  inf:GridKeys.DeleteCommand="{Binding RecycleSelectedCommand}"
+                                  AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Extended" RowHeight="32"
+                                  HeadersVisibility="Column" GridLinesVisibility="None"
+                                  SelectionChanged="DriverFilesGrid_SelectionChanged" MouseDoubleClick="FileGrid_MouseDoubleClick">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Versione" Binding="{Binding Version}" Width="130" MinWidth="97" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTemplateColumn Header="Stato" Width="190" MinWidth="140" SortMemberPath="StateText">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border x:Name="Badge" CornerRadius="10" Padding="8,2" HorizontalAlignment="Left" VerticalAlignment="Center" Background="#E5E7EB">
+                                                <TextBlock Text="{Binding StateText}" FontSize="12" Foreground="#1F2937" />
+                                            </Border>
+                                            <DataTemplate.Triggers>
+                                                <DataTrigger Binding="{Binding State}" Value="PiuRecente">
+                                                    <Setter TargetName="Badge" Property="Background" Value="#DCFCE7" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding State}" Value="StessaVersione">
+                                                    <Setter TargetName="Badge" Property="Background" Value="#DBEAFE" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding State}" Value="Superato">
+                                                    <Setter TargetName="Badge" Property="Background" Value="#FEF3C7" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding State}" Value="NonServe">
+                                                    <Setter TargetName="Badge" Property="Background" Value="#FEE2E2" />
+                                                </DataTrigger>
+                                            </DataTemplate.Triggers>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="Driver" Binding="{Binding File.ProductName}" Width="*" MinWidth="150" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Fornitore" Binding="{Binding File.Company}" Width="150" MinWidth="100" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="File" Binding="{Binding File.Name}" Width="140" MinWidth="100" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Cartella" Binding="{Binding File.Folder}" Width="2*" MinWidth="160" ElementStyle="{StaticResource CellText}" />
                             </DataGrid.Columns>
                         </DataGrid>
                     </Grid>

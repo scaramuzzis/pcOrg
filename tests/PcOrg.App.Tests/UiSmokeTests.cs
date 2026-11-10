@@ -26,10 +26,12 @@ public class UiSmokeTests
         public void ShowAbout() { }
         public void ShowHelp(string? chapter = null) { }
         public string? SavePath { get; set; }
-        public bool Confirm(string message, string title, string confirmText = "Conferma") => false;
+        public bool Confirm(string message, string title, string confirmText = "Conferma") => ConfirmResult;
+        public bool ConfirmResult { get; set; }
         public void Info(string message, string title) { }
         public void Error(string message, string title) => throw new InvalidOperationException(message);
-        public MovePreviewResult? PreviewMove(IReadOnlyList<MoveItem> plan, string destination, bool destinationMonitored) => null;
+        public MovePreviewResult? PreviewMove(IReadOnlyList<MoveItem> plan, string destination, bool destinationMonitored, string? summary = null) => PreviewResult;
+        public MovePreviewResult? PreviewResult { get; set; }
         public void ShowMoveHistory(FileIndex index, Action onChanged) { }
     }
 
@@ -70,8 +72,11 @@ public class UiSmokeTests
         File.Copy(Environment.ProcessPath!, Path.Combine(folder, "host-1.exe"));
         File.Copy(Environment.ProcessPath!, Path.Combine(folder, "host-2.exe"));
         File.WriteAllText(Path.Combine(folder, "nota.txt"), "x");
-        File.WriteAllText(Path.Combine(folder, "backup.gho"), "x");
+        File.WriteAllText(Path.Combine(folder, "backup.gho"), "immagine ghost di prova"); // contenuto diverso da nota.txt: non sono cloni
         WritePng(Path.Combine(folder, "foto.png"), 1200, 800);
+        Directory.CreateDirectory(Path.Combine(folder, "VecchiaStampante"));
+        File.WriteAllText(Path.Combine(folder, "VecchiaStampante", "stampante.inf"),
+            "[Version]\nClass=Printer\nProvider=Stampanti Spa\nDriverVer=01/02/2020,1.2.3.4\n[Manufacturer]\nX=Modelli\n[Modelli]\nStampante = Inst, USBPRINT\\VECCHIA_STAMPANTE_1234\n");
 
         var index = FileIndex.Open(Path.Combine(temp, "indice.db"));
         var root = index.AddRoot(folder);
@@ -88,7 +93,7 @@ public class UiSmokeTests
         Pump(TimeSpan.FromSeconds(3));
 
         var vm = (MainViewModel)window.DataContext;
-        Assert.Equal(5, vm.Results.Count);
+        Assert.Equal(6, vm.Results.Count);
 
         // Anteprima: compare per le immagini, sparisce per gli altri file.
         vm.SelectedFiles = [vm.Results.First(r => r.Name == "foto.png")];
@@ -171,7 +176,93 @@ public class UiSmokeTests
         Pump(TimeSpan.FromMilliseconds(300));
         history.Close();
 
+        // Cloni: host-1.exe e host-2.exe sono copie identiche
+        window.Tabs.SelectedIndex = 2;
+        vm.SelectedSizeOption = vm.SizeOptions[0];
+        await_(vm.FindDuplicatesCommand.ExecuteAsync(null));
+        Assert.Single(vm.DuplicateGroups);
+        vm.MarkDoublesCommand.Execute(null);
+        Assert.Equal(1, vm.MarkedCount);
+        var originalRecycle = PcOrg.Core.Moving.RecycleBin.SendToRecycleBin;
+        PcOrg.Core.Moving.RecycleBin.SendToRecycleBin = path => { File.Delete(path); return true; };
+        try
+        {
+            dialogs.ConfirmResult = true;
+            await_(vm.RecycleMarkedCommand.ExecuteAsync(null));
+            dialogs.ConfirmResult = false;
+            Assert.Empty(vm.DuplicateGroups);
+            Assert.Single(Directory.GetFiles(folder, "host-*.exe"));
+        }
+        finally
+        {
+            PcOrg.Core.Moving.RecycleBin.SendToRecycleBin = originalRecycle;
+        }
+        window.Tabs.SelectedIndex = 0;
+
+        // Regole di archiviazione: i file di testo vanno in Archivio\Testi\{Anno}
+        vm.SetRules([new PcOrg.Core.Rules.ArchiveRule
+        {
+            Name = "Testi", Category = PcOrg.Core.Classification.FileCategory.Testo,
+            Destination = Path.Combine(temp, "Archivio", "Testi", "{Anno}"),
+        }]);
+        vm.SelectedFiles = [];
+        dialogs.PreviewResult = new MovePreviewResult(AddDestinationToMonitored: true);
+        await_(vm.OrganizeWithRulesCommand.ExecuteAsync(null));
+        dialogs.PreviewResult = null;
+        var archived = Directory.GetFiles(Path.Combine(temp, "Archivio", "Testi"), "nota.txt", SearchOption.AllDirectories);
+        Assert.Single(archived);
+        Assert.Contains(vm.Roots, r => r.Path.EndsWith("Testi")); // la cartella base della regola ora è monitorata
+
+        // Colonna "Sul PC" e dettagli: il confronto con i programmi installati non deve fallire
+        await_(vm.RefreshInstalledAsync());
+
+        // Driver e periferiche: il driver della stampante che non c'è va fra quelli che non servono
+        window.Tabs.SelectedIndex = 3;
+        Pump(TimeSpan.FromMilliseconds(400));
+        Assert.Contains("periferiche presenti", vm.DriversSummary);
+        vm.SelectUnneededDriversCommand.Execute(null);
+        Assert.Contains(vm.SelectedFiles, f => f.Name == "stampante.inf");
+        Assert.Contains(vm.DriverFiles, d => d.State == PcOrg.Core.Drivers.DriverState.NonServe);
+        vm.ShowUnneededDrivers = false;
+        window.Tabs.SelectedIndex = 0;
+        window.ResultsGrid.Columns.First(c => (string)c.Header == "Sul PC").Visibility = Visibility.Visible;
+        Pump(TimeSpan.FromMilliseconds(300));
+
+        // Impostazioni e colonne: si nasconde "Versione", si sposta "Cartella" in seconda posizione,
+        // si chiude e si riapre la finestra con le stesse preferenze.
+        var settingsPath = Path.Combine(temp, "settings.json");
+        var settings = AppSettings.Load(settingsPath);
+        settings.ScanOnStartup = false;
+        vm.UseSettings(settings);
+        var version = window.ResultsGrid.Columns.First(c => (string)c.Header == "Versione");
+        var folder2 = window.ResultsGrid.Columns.First(c => (string)c.Header == "Cartella");
+        version.Visibility = Visibility.Collapsed;
+        folder2.DisplayIndex = 1;
+        window.ResultsGrid.Columns.First(c => (string)c.Header == "Percorso completo").Visibility = Visibility.Visible;
+        var settingsWindow = new SettingsWindow(vm, window, new Dictionary<string, DataGrid> { ["file"] = window.ResultsGrid }, SettingsWindow.ColumnsTab) { Owner = window };
+        settingsWindow.Show();
+        Pump(TimeSpan.FromMilliseconds(400));
+        settingsWindow.Close();
+        window.SaveLayout();
         window.Close();
+        Pump(TimeSpan.FromMilliseconds(200));
+
+        // "Riavvio": nuovo indice dallo stesso file, nuove preferenze dallo stesso file
+        Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
+        var reopenedIndex = FileIndex.Open(Path.Combine(temp, "indice.db"));
+        var vm2 = new MainViewModel(reopenedIndex, new SilentDialogs());
+        vm2.UseSettings(AppSettings.Load(settingsPath));
+        var window2 = new MainWindow { DataContext = vm2 };
+        window2.Show();
+        Pump(TimeSpan.FromSeconds(2));
+        Assert.Equal(vm.Results.Count, vm2.Results.Count);
+        Assert.True(vm2.Results.Count > 0, "Dopo il riavvio l'elenco dei file deve ricomparire");
+        var restoredVersion = window2.ResultsGrid.Columns.First(c => (string)c.Header == "Versione");
+        var restoredFolder = window2.ResultsGrid.Columns.First(c => (string)c.Header == "Cartella");
+        Assert.Equal(Visibility.Collapsed, restoredVersion.Visibility);
+        Assert.Equal(1, restoredFolder.DisplayIndex);
+        Assert.Equal(Visibility.Visible, window2.ResultsGrid.Columns.First(c => (string)c.Header == "Percorso completo").Visibility);
+        window2.Close();
 
         // Schermata di benvenuto con un indice vuoto
         var empty = FileIndex.Open(Path.Combine(temp, "vuoto.db"));
@@ -198,6 +289,15 @@ public class UiSmokeTests
         encoder.Frames.Add(BitmapFrame.Create(bitmap));
         using var stream = File.Create(path);
         encoder.Save(stream);
+    }
+
+    /// <summary>Attende un'operazione asincrona continuando a elaborare i messaggi della finestra.</summary>
+    private static void await_(Task task)
+    {
+        var frame = new DispatcherFrame();
+        task.ContinueWith(_ => frame.Continue = false, TaskScheduler.FromCurrentSynchronizationContext());
+        Dispatcher.PushFrame(frame);
+        task.GetAwaiter().GetResult();
     }
 
     /// <summary>Elabora i messaggi della finestra per il tempo indicato (binding, rendering, task asincroni).</summary>

@@ -37,6 +37,16 @@ public static class Glyphs
     public const string Help = "\uE897";
     public const string Theme = "\uE790";
     public const string Keyboard = "\uE765";
+    public const string Settings = "\uE713";
+    public const string Columns = "\uE8A9";
+    public const string Log = "\uE9F9";
+    public const string Up = "\uE70E";
+    public const string Down = "\uE70D";
+    public const string Database = "\uE7F1";
+    public const string Duplicate = "\uE8F1";
+    public const string Rules = "\uE71C";
+    public const string Device = "\uE772";
+    public const string Edit = "\uE70F";
     public const string Lightbulb = "\uEA80";
 
     public static string ForCategory(FileCategory? category) => category switch
@@ -57,10 +67,12 @@ public static class Glyphs
         FileCategory.Testo => "\uE7C3",
         FileCategory.FoglioDiCalcolo => "\uE80A",
         FileCategory.Presentazione => "\uE786",
+        FileCategory.AccessoRemoto => "\uE8AF",
         _ => "\uE9CE",
     };
 }
 
+/// <summary>Colore distintivo di ogni categoria (usato per icone e badge).</summary>
 public static class CategoryColors
 {
     private static readonly Dictionary<FileCategory, string> Hex = new()
@@ -80,6 +92,7 @@ public static class CategoryColors
         [FileCategory.Testo] = "#6B7280",
         [FileCategory.FoglioDiCalcolo] = "#217346",
         [FileCategory.Presentazione] = "#D24726",
+        [FileCategory.AccessoRemoto] = "#0EA5E9",
         [FileCategory.Altro] = "#94A3B8",
     };
 

@@ -3,6 +3,7 @@ using PcOrg.Core.Storage;
 
 namespace PcOrg.Core.Tests;
 
+/// <summary>Percorsi di rete e comportamento con cartelle non raggiungibili.</summary>
 public class NetworkTests
 {
     [Theory]

@@ -4,6 +4,7 @@ using PcOrg.Core.Storage;
 
 namespace PcOrg.Core.Tests;
 
+/// <summary>Lettura di versioni, firme e architettura; confronto versioni; raggruppamento prodotti.</summary>
 public class MetadataTests
 {
     [Fact]

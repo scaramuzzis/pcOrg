@@ -6,6 +6,7 @@ using PcOrg.Core.Storage;
 
 namespace PcOrg.App.Infrastructure;
 
+/// <summary>Implementazione reale delle finestre di dialogo (scelta cartelle, conferme, guida...).</summary>
 public sealed class DialogService : IDialogService
 {
     private static Window? Owner => Application.Current.MainWindow;
@@ -65,9 +66,9 @@ public sealed class DialogService : IDialogService
     public void Error(string message, string title) =>
         ModernDialog.Show(Owner, title, message, DialogKind.Warning);
 
-    public MovePreviewResult? PreviewMove(IReadOnlyList<MoveItem> plan, string destination, bool destinationMonitored)
+    public MovePreviewResult? PreviewMove(IReadOnlyList<MoveItem> plan, string destination, bool destinationMonitored, string? summary = null)
     {
-        var window = new MovePreviewWindow(plan, destination, destinationMonitored) { Owner = Owner };
+        var window = new MovePreviewWindow(plan, destination, destinationMonitored, summary) { Owner = Owner };
         return window.ShowDialog() == true ? new MovePreviewResult(window.AddDestinationToMonitored) : null;
     }
 
