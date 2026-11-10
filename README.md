@@ -90,6 +90,8 @@ aggiornamento automatico né lettura delle periferiche) e il registro indica cos
 
 ### Dove trovare i pacchetti
 - Ogni push genera l'artifact `pcOrg-win-x64` nella scheda **Actions** del repository.
+- Nel repository, nella cartella **`dist/`**: il pacchetto leggero della versione corrente (`dist/pcOrg-leggero`,
+  richiede il .NET 10 Desktop Runtime) e le istruzioni in `dist/LEGGIMI.md`.
 - Le versioni pubblicate sono nella pagina **Releases**. Una nuova Release si crea spingendo un tag `v*`
   oppure con un commit il cui messaggio contiene `[release]` (versione in `src/PcOrg.App/PcOrg.App.csproj`).
 
