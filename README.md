@@ -54,7 +54,7 @@ I dati (indice e cronologia) sono in `%LOCALAPPDATA%\pcOrg`. Per la **modalità 
 (es. su chiavetta) crea una cartella `pcOrg-dati` accanto a `PcOrg.exe`: i dati verranno salvati lì.
 
 ### Dove trovare l'eseguibile
-- Nel repository, nella cartella **`dist/`**: `dist/PcOrg.exe` (versione 0.3.3).
+- Nel repository, nella cartella **`dist/`**: `dist/PcOrg.exe` (versione 0.6.1).
 - Ogni push genera `PcOrg-win-x64` nella scheda **Actions** del repository (artifact della build).
 - Le versioni pubblicate sono nella pagina **Releases** del repository (`PcOrg-win-x64.zip`).
   Una nuova Release si crea spingendo un tag `v*` oppure con un commit il cui messaggio
