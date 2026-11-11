@@ -351,7 +351,7 @@ Fai clic su una cartella nell'elenco **Cartelle monitorate**: da quel momento Ge
 - la **Panoramica**;
 - **Aggiorna** (F5) e **Scansione completa** (Ctrl+F5), che rileggono solo quella cartella.
 
-Sotto il titolo **Categorie** compare "Solo la cartella: …" per ricordarti che stai vedendo una parte dei file. Per tornare a tutte le cartelle premi **Tutte**, accanto ai pulsanti delle cartelle monitorate. All'avvio si parte sempre da tutte le cartelle.
+Sotto il titolo **Categorie** compare "Solo la cartella: …" per ricordarti che stai vedendo una parte dei file. Per tornare a tutte le cartelle premi **Tutte le cartelle**, accanto a quell'avviso. All'avvio si parte sempre da tutte le cartelle.
 
 ## Impostazioni e personalizzazione
 
