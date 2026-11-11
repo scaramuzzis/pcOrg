@@ -340,6 +340,16 @@ public class Screenshots
         window.Tabs.SelectedIndex = MainViewModel.FilesTab;
         Pump(400);
 
+        // 32. Una sola cartella monitorata selezionata: si vedono solo i suoi file
+        if (vm.Roots.Count > 0)
+        {
+            vm.SelectedRoot = vm.Roots[0];
+            Pump(1500);
+            Capture(window, output, "32-una-sola-cartella.png");
+            vm.ShowAllFoldersCommand.Execute(null);
+            Pump(1500);
+        }
+
         // 11. Tema scuro
         app.ThemeMode = ThemeMode.Dark;
         Pump(1000);

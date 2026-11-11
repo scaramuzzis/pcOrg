@@ -511,6 +511,11 @@ public sealed partial class FileIndex
             where.Add("f.category = $cat");
             cmd.Parameters.AddWithValue("$cat", (int)category);
         }
+        if (query.RootId is { } rootId)
+        {
+            where.Add("f.root_id = $root");
+            cmd.Parameters.AddWithValue("$root", rootId);
+        }
 
         if (where.Count > 0)
             sql.Append(" WHERE ").Append(string.Join(" AND ", where));
@@ -560,10 +565,14 @@ public sealed partial class FileIndex
     private static string EscapeLike(string s) =>
         s.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_");
 
-    public IReadOnlyList<CategoryStat> GetCategoryStats()
+    /// <param name="rootId">Se valorizzato, conta solo i file di quella cartella monitorata.</param>
+    public IReadOnlyList<CategoryStat> GetCategoryStats(long? rootId = null)
     {
         using var conn = Connect();
-        using var cmd = Command(conn, "SELECT category, COUNT(*), COALESCE(SUM(size), 0) FROM files GROUP BY category;");
+        using var cmd = Command(conn, "SELECT category, COUNT(*), COALESCE(SUM(size), 0) FROM files " +
+                                      (rootId is null ? "" : "WHERE root_id = $root ") + "GROUP BY category;");
+        if (rootId is not null)
+            cmd.Parameters.AddWithValue("$root", rootId.Value);
         using var r = cmd.ExecuteReader();
         var list = new List<CategoryStat>();
         while (r.Read())
@@ -572,11 +581,14 @@ public sealed partial class FileIndex
     }
 
     /// <summary>Numero di file e spazio per estensione all'interno di una categoria.</summary>
-    public IReadOnlyList<ExtensionStat> GetExtensionStats(FileCategory category)
+    public IReadOnlyList<ExtensionStat> GetExtensionStats(FileCategory category, long? rootId = null)
     {
         using var conn = Connect();
-        using var cmd = Command(conn, "SELECT ext, COUNT(*), COALESCE(SUM(size), 0) FROM files WHERE category = $cat GROUP BY ext;");
+        using var cmd = Command(conn, "SELECT ext, COUNT(*), COALESCE(SUM(size), 0) FROM files WHERE category = $cat " +
+                                      (rootId is null ? "" : "AND root_id = $root ") + "GROUP BY ext;");
         cmd.Parameters.AddWithValue("$cat", (int)category);
+        if (rootId is not null)
+            cmd.Parameters.AddWithValue("$root", rootId.Value);
         using var r = cmd.ExecuteReader();
         var list = new List<ExtensionStat>();
         while (r.Read())
@@ -684,10 +696,13 @@ public sealed partial class FileIndex
     }
 
     /// <summary>File con una chiave prodotto (exe, msi, sys), per costruire l'elenco dei prodotti.</summary>
-    public IReadOnlyList<FileRecord> GetProductFiles()
+    public IReadOnlyList<FileRecord> GetProductFiles(long? rootId = null)
     {
         using var conn = Connect();
-        using var cmd = Command(conn, SelectFiles + " WHERE m.product_key IS NOT NULL;");
+        using var cmd = Command(conn, SelectFiles + " WHERE m.product_key IS NOT NULL" +
+                                      (rootId is null ? ";" : " AND f.root_id = $root;"));
+        if (rootId is not null)
+            cmd.Parameters.AddWithValue("$root", rootId.Value);
         using var r = cmd.ExecuteReader();
         var list = new List<FileRecord>();
         while (r.Read())

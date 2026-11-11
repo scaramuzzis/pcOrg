@@ -6,6 +6,7 @@ per categoria e li trova all'istante mentre scrivi. Sei tu a decidere se e dove 
 vedi un'anteprima, e ogni spostamento si può annullare.
 
 ## Cosa fa oggi (v1.0)
+- **Una cartella alla volta (1.2)**: clic su una cartella monitorata per vedere e gestire solo i suoi file.
 - **Categorie a scelta (1.1)**: da Impostazioni → Categorie decidi quali categorie mostrare nel pannello.
 - **Nuovo nome (1.0)**: l'applicazione si chiama ora Gestione File (`GestioneFile.exe`); archivio dati e
   impostazioni restano quelli di prima.

@@ -285,7 +285,60 @@ public sealed partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RemoveRootCommand))]
+    [NotifyPropertyChangedFor(nameof(HasScope), nameof(ScopeText))]
     private RootItem? _selectedRoot;
+
+    // ------------------------------------------------------------------ Lavorare su una sola cartella
+    //
+    // Selezionando una cartella monitorata l'intero programma si restringe a quella: categorie, elenco
+    // dei file, ricerca, prodotti e versioni, cloni, driver, Panoramica e aggiornamento (F5).
+    // "Tutte le cartelle" toglie la selezione e si torna a lavorare su tutto.
+
+    /// <summary>Identificativo della cartella su cui si sta lavorando, o null per tutte.</summary>
+    public long? ScopeRootId => SelectedRoot?.Id;
+
+    /// <summary>Vero quando è selezionata una cartella e si vedono solo i suoi file.</summary>
+    public bool HasScope => SelectedRoot is not null;
+
+    /// <summary>Testo dell'avviso "stai vedendo solo…".</summary>
+    public string ScopeText => SelectedRoot is { } root ? $"Solo la cartella: {root.Path}" : "";
+
+    /// <summary>Le cartelle su cui agiscono i comandi di aggiornamento: quella selezionata, oppure tutte.</summary>
+    private List<RootFolder> ScopeRoots() =>
+        SelectedRoot is { } root ? [root.Root] : Roots.Select(r => r.Root).ToList();
+
+    /// <summary>Ultimo ambito mostrato, per non ricaricare quando la selezione viene solo ripristinata.</summary>
+    private long? _shownScope;
+    private bool _reloadingRoots;
+
+    partial void OnSelectedRootChanged(RootItem? value)
+    {
+        if (!_reloadingRoots)
+            ApplyScope();
+    }
+
+    private void ApplyScope()
+    {
+        if (_shownScope == ScopeRootId)
+            return;
+        _shownScope = ScopeRootId;
+        // I cloni trovati valevano per l'ambito precedente: vanno cercati di nuovo.
+        ShowDuplicateGroups([]);
+        Fire(RefreshScopeAsync(), "cambio della cartella");
+    }
+
+    private async Task RefreshScopeAsync()
+    {
+        await RefreshAsync();
+        if (!_safeMode)
+            await RefreshDriversAsync();
+        UpdateDashboard();
+        Status = SelectedRoot is { } root ? $"Stai lavorando solo su {root.Path}" : "Stai lavorando su tutte le cartelle";
+    }
+
+    /// <summary>Toglie la selezione della cartella: si torna a vedere i file di tutte le cartelle.</summary>
+    [RelayCommand]
+    private void ShowAllFolders() => SelectedRoot = null;
 
     [ObservableProperty]
     private CategoryItem? _selectedCategory;
@@ -386,11 +439,11 @@ public sealed partial class MainViewModel : ObservableObject
 
     /// <summary>Aggiornamento rapido (F5): rilegge solo le cartelle cambiate.</summary>
     [RelayCommand(CanExecute = nameof(CanModify))]
-    private Task ScanAsync() => ScanRootsAsync(Roots.Select(r => r.Root).ToList());
+    private Task ScanAsync() => ScanRootsAsync(ScopeRoots());
 
     /// <summary>Scansione completa (Ctrl+F5): rilegge tutte le cartelle, rileva anche i file modificati nel contenuto.</summary>
     [RelayCommand(CanExecute = nameof(CanModify))]
-    private Task FullScanAsync() => ScanRootsAsync(Roots.Select(r => r.Root).ToList(), full: true);
+    private Task FullScanAsync() => ScanRootsAsync(ScopeRoots(), full: true);
 
     [RelayCommand(CanExecute = nameof(IsBusy))]
     private void CancelScan() => _scanCts?.Cancel();
@@ -532,10 +585,19 @@ public sealed partial class MainViewModel : ObservableObject
     private void ReloadRoots()
     {
         var selected = SelectedRoot?.Id;
-        Roots.Clear();
-        foreach (var root in _index.GetRoots())
-            Roots.Add(new RootItem(root));
-        SelectedRoot = Roots.FirstOrDefault(r => r.Id == selected);
+        _reloadingRoots = true; // svuotare l'elenco azzera per un attimo la selezione: non è un cambio di cartella
+        try
+        {
+            Roots.Clear();
+            foreach (var root in _index.GetRoots())
+                Roots.Add(new RootItem(root));
+            SelectedRoot = Roots.FirstOrDefault(r => r.Id == selected);
+        }
+        finally
+        {
+            _reloadingRoots = false;
+        }
+        ApplyScope(); // cambia davvero solo se la cartella selezionata non esiste più
         OnPropertyChanged(nameof(HasRoots));
         _ = _watcher?.WatchInBackground(_index.GetRoots());
         Fire(CheckAvailabilityAsync(Roots.ToList()), "verifica delle cartelle");
@@ -572,7 +634,8 @@ public sealed partial class MainViewModel : ObservableObject
 
     private async Task RefreshCoreAsync()
     {
-        var stats = await Task.Run(_index.GetCategoryStats);
+        var scope = ScopeRootId;
+        var stats = await Task.Run(() => _index.GetCategoryStats(scope));
         _lastStats = stats;
         var selected = SelectedCategory;
         await RefreshProductsAsync();
@@ -589,7 +652,7 @@ public sealed partial class MainViewModel : ObservableObject
             var subcategories = Subcategories.For(category).ToList();
             if (subcategories.Count == 0)
                 continue;
-            var byExtension = await Task.Run(() => _index.GetExtensionStats(category));
+            var byExtension = await Task.Run(() => _index.GetExtensionStats(category, scope));
             foreach (var sub in subcategories)
             {
                 var matching = byExtension.Where(e => sub.Extensions.Contains(e.Extension, StringComparer.OrdinalIgnoreCase)).ToList();
@@ -610,7 +673,7 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task RefreshProductsAsync()
     {
         var selectedKey = SelectedProduct?.Key;
-        var groups = await Task.Run(() => ProductCatalog.Build(_index.GetProductFiles()));
+        var groups = await Task.Run(() => ProductCatalog.Build(_index.GetProductFiles(ScopeRootId)));
         Products.ReplaceAll(groups);
         SelectedProduct = Products.FirstOrDefault(p => p.Key == selectedKey);
 
@@ -635,6 +698,7 @@ public sealed partial class MainViewModel : ObservableObject
             {
                 Extensions = SelectedCategory?.Extensions,
                 InContent = SearchInContent,
+                RootId = ScopeRootId,
             };
             var stopwatch = Stopwatch.StartNew();
             var results = await Task.Run(() => _index.Search(query), cts.Token);

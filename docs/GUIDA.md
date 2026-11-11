@@ -341,6 +341,18 @@ Anche i menu si usano da tastiera: premi **Alt** e la lettera sottolineata (per 
 
 **Apri** esegue il file con il programma predefinito. Per programmi, installer, driver e script Gestione File chiede prima conferma, per evitare di avviarli per sbaglio.
 
+## Lavorare su una sola cartella
+
+Fai clic su una cartella nell'elenco **Cartelle monitorate**: da quel momento Gestione File mostra e gestisce **solo i file di quella cartella** (comprese le sue sottocartelle). Si restringono a quella cartella:
+
+- le **Categorie** con i loro conteggi e l'**elenco dei file**;
+- la **ricerca**, anche quella nel contenuto;
+- **Prodotti e versioni**, **Cloni e pulizia** (la ricerca dei cloni va rilanciata) e **Driver e periferiche**;
+- la **Panoramica**;
+- **Aggiorna** (F5) e **Scansione completa** (Ctrl+F5), che rileggono solo quella cartella.
+
+Sotto il titolo **Categorie** compare "Solo la cartella: …" per ricordarti che stai vedendo una parte dei file. Per tornare a tutte le cartelle premi **Tutte le cartelle**, accanto a quell'avviso. All'avvio si parte sempre da tutte le cartelle.
+
 ## Impostazioni e personalizzazione
 
 Apri **Strumenti → Impostazioni** (o **Ctrl+,**). La finestra ha cinque schede (Generale, Colonne, Regole, Dati e registro, Categorie); le modifiche si applicano con **Salva** e vengono ricordate ai successivi avvii.

@@ -90,6 +90,8 @@ public sealed partial class MainViewModel
         {
             var match = matcher.Match(ids, file.Version);
             matches[file.Id] = match;
+            if (ScopeRootId is { } scope && file.RootId != scope)
+                continue; // si sta lavorando su una sola cartella: gli altri driver non si elencano
             if (match.Devices.Count == 0)
             {
                 unneeded.Add(new DriverFileRow(file, DriverState.NonServe, null));
