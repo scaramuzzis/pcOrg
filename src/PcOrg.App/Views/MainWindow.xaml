@@ -114,6 +114,9 @@
                 <MenuItem Header="_Colonne dell'elenco…" Click="ColumnsSettings_Click">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Columns}" /></MenuItem.Icon>
                 </MenuItem>
+                <MenuItem Header="Ca_tegorie da mostrare…" Click="CategoriesSettings_Click">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Tag}" /></MenuItem.Icon>
+                </MenuItem>
                 <MenuItem Header="Pannello _anteprima immagini" IsCheckable="True" IsChecked="{Binding ShowPreviewPanel}" />
                 <MenuItem Header="Pannello _dettagli del file" IsCheckable="True" IsChecked="{Binding ShowDetailsPanel}" />
                 <Separator />

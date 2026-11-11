@@ -203,6 +203,8 @@ public partial class MainWindow : Window
 
     private void ColumnsSettings_Click(object sender, RoutedEventArgs e) => OpenSettings(SettingsWindow.ColumnsTab);
 
+    private void CategoriesSettings_Click(object sender, RoutedEventArgs e) => OpenSettings(SettingsWindow.CategoriesTab);
+
     /// <summary>Apre la finestra Impostazioni, eventualmente su una scheda e una griglia precise.</summary>
     public void OpenSettings(int tab = 0, string? grid = null)
     {

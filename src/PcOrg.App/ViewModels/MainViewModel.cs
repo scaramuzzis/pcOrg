@@ -582,8 +582,8 @@ public sealed partial class MainViewModel : ObservableObject
         foreach (var category in Enum.GetValues<FileCategory>().OrderBy(c => c.DisplayName()))
         {
             var stat = stats.FirstOrDefault(s => s.Category == category);
-            if (stat is null)
-                continue;
+            if (stat is null || IsCategoryHidden(category))
+                continue; // nessun file, oppure categoria nascosta dalle Impostazioni
             Categories.Add(new CategoryItem(category, category.DisplayName(), stat.Count, stat.TotalSize));
 
             var subcategories = Subcategories.For(category).ToList();

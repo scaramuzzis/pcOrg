@@ -343,7 +343,7 @@ Anche i menu si usano da tastiera: premi **Alt** e la lettera sottolineata (per 
 
 ## Impostazioni e personalizzazione
 
-Apri **Strumenti → Impostazioni** (o **Ctrl+,**). La finestra ha quattro schede (Generale, Colonne, Regole, Dati e registro); le modifiche si applicano con **Salva** e vengono ricordate ai successivi avvii.
+Apri **Strumenti → Impostazioni** (o **Ctrl+,**). La finestra ha cinque schede (Generale, Colonne, Regole, Dati e registro, Categorie); le modifiche si applicano con **Salva** e vengono ricordate ai successivi avvii.
 
 **Generale**
 
@@ -352,6 +352,10 @@ Apri **Strumenti → Impostazioni** (o **Ctrl+,**). La finestra ha quattro sched
 - **Aggiornamento rapido a ogni avvio**: l'elenco salvato compare subito e in background vengono rilette solo le cartelle cambiate.
 - **Verifica le firme digitali**: garantisce che i programmi non siano stati modificati, ma legge ogni programma per intero; disattivala se l'aggiornamento è lento.
 - **Pannelli**: mostra o nascondi l'anteprima delle immagini e i dettagli del file.
+
+**Categorie**
+
+Nella scheda **Categorie** (raggiungibile anche da **Visualizza → Categorie da mostrare…**) spunti le categorie che vuoi vedere nel pannello **Categorie** a sinistra. Quelle senza spunta vengono solo nascoste dall'elenco, insieme alle loro sottocategorie: i file restano indicizzati e si trovano sempre con **Tutti** e con la ricerca. **Tutte** rimette tutte le spunte. La scelta viene ricordata ai successivi avvii.
 
 **Colonne**
 

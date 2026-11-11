@@ -215,6 +215,36 @@
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
+
+            <!-- ======================================================= Categorie -->
+            <TabItem Header="Categorie">
+                <Grid Margin="8,16,8,8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.ColumnSpan="2" Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="0,0,0,10"
+                               Text="Spunta le categorie da mostrare nel pannello Categorie. Quelle senza spunta vengono solo nascoste dall'elenco: i loro file restano indicizzati e si trovano sempre con Tutti e con la ricerca." />
+                    <ListBox x:Name="CategoryList" Grid.Row="1" ItemContainerStyle="{StaticResource CompactItem}"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <CheckBox Content="{Binding Key}" IsChecked="{Binding Visible}" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="12,0,0,0">
+                        <c:IconButton Glyph="{x:Static inf:Glyphs.Success}" Label="Tutte" Click="AllCategories_Click" HorizontalAlignment="Stretch" Margin="0,0,0,6"
+                                      ToolTip="Mostra tutte le categorie" />
+                        <c:IconButton Glyph="{x:Static inf:Glyphs.Undo}" Label="Nessuna" Click="NoCategories_Click" HorizontalAlignment="Stretch"
+                                      ToolTip="Togli tutte le spunte" />
+                    </StackPanel>
+                </Grid>
+            </TabItem>
         </TabControl>
 
         <Border Grid.Row="2" Margin="0,16,0,0" Padding="24,14" Background="{DynamicResource LayerFillColorAltBrush}"

@@ -6,6 +6,7 @@ per categoria e li trova all'istante mentre scrivi. Sei tu a decidere se e dove 
 vedi un'anteprima, e ogni spostamento si può annullare.
 
 ## Cosa fa oggi (v1.0)
+- **Categorie a scelta (1.1)**: da Impostazioni → Categorie decidi quali categorie mostrare nel pannello.
 - **Nuovo nome (1.0)**: l'applicazione si chiama ora Gestione File (`GestioneFile.exe`); archivio dati e
   impostazioni restano quelli di prima.
 - **Meno memoria (0.15.2)**: cache del database ridotta e con tetto complessivo, documenti letti uno alla

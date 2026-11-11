@@ -23,6 +23,7 @@ public partial class SettingsWindow : Window
     public const int ColumnsTab = 1;
     public const int RulesTab = MainViewModel.RulesTabIndex;
     public const int DataTab = 3;
+    public const int CategoriesTab = 4;
 
     /// <summary>Una riga dell'elenco colonne: nome, visibilità e se può essere nascosta.</summary>
     public sealed partial class ColumnRow : ObservableObject
@@ -43,6 +44,9 @@ public partial class SettingsWindow : Window
 
     /// <summary>Copia di lavoro delle colonne di ogni elenco: diventa effettiva solo con "Salva".</summary>
     private readonly Dictionary<string, ObservableCollection<ColumnRow>> _columns = [];
+
+    /// <summary>Categorie con la spunta "mostra nel pannello": diventa effettiva solo con "Salva".</summary>
+    private readonly List<(FileCategory Category, ColumnRow Row)> _categories = [];
 
     public SettingsWindow(MainViewModel vm, MainWindow main, IReadOnlyDictionary<string, DataGrid> grids, int tab = GeneralTab, string? grid = null)
     {
@@ -66,6 +70,11 @@ public partial class SettingsWindow : Window
         CheckUpdates.IsChecked = settings.CheckUpdatesOnStartup;
         ShowPreview.IsChecked = vm.ShowPreviewPanel;
         ShowDetails.IsChecked = vm.ShowDetailsPanel;
+
+        // Categorie: una riga per categoria, in ordine alfabetico come nel pannello
+        foreach (var category in Enum.GetValues<FileCategory>().OrderBy(c => c.DisplayName()))
+            _categories.Add((category, new ColumnRow { Key = category.DisplayName(), CanHide = true, Visible = !vm.IsCategoryHidden(category) }));
+        CategoryList.ItemsSource = _categories.Select(c => c.Row).ToList();
 
         // Colonne: si parte dallo stato attuale delle griglie, nell'ordine in cui sono mostrate
         foreach (var (name, dataGrid) in grids)
@@ -258,6 +267,12 @@ public partial class SettingsWindow : Window
         _ = _vm.RebuildIndexAsync();
     }
 
+    // ------------------------------------------------------------------ Categorie
+
+    private void AllCategories_Click(object sender, RoutedEventArgs e) => _categories.ForEach(c => c.Row.Visible = true);
+
+    private void NoCategories_Click(object sender, RoutedEventArgs e) => _categories.ForEach(c => c.Row.Visible = false);
+
     // ------------------------------------------------------------------ Salva
 
     private void Save_Click(object sender, RoutedEventArgs e)
@@ -265,6 +280,7 @@ public partial class SettingsWindow : Window
         var theme = ThemeDark.IsChecked == true ? "Scuro" : ThemeLight.IsChecked == true ? "Chiaro" : "Sistema";
         ApplyColumns();
         _vm.SetRules(_rules);
+        _vm.SetHiddenCategories(_categories.Where(c => !c.Row.Visible).Select(c => c.Category));
         var level = Enum.TryParse<LogLevel>((LogLevelChooser.SelectedItem as ComboBoxItem)?.Tag as string, out var l) ? l : LogLevel.Info;
         _vm.ApplyOptions(new MainViewModel.Options(theme,
             ScanOnStartup: ScanOnStartup.IsChecked == true,

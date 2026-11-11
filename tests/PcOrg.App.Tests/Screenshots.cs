@@ -276,7 +276,8 @@ public class Screenshots
         };
         foreach (var (tab, file) in new[] { (SettingsWindow.GeneralTab, "18-impostazioni-generale.png"),
                                            (SettingsWindow.ColumnsTab, "19-impostazioni-colonne.png"),
-                                           (SettingsWindow.DataTab, "20-impostazioni-dati.png") })
+                                           (SettingsWindow.DataTab, "20-impostazioni-dati.png"),
+                                           (SettingsWindow.CategoriesTab, "31-impostazioni-categorie.png") })
         {
             var settings = new SettingsWindow(vm, window, grids, tab) { Owner = window };
             Show(settings);
