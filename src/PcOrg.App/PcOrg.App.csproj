@@ -11,7 +11,7 @@
     <AssemblyName>PcOrg</AssemblyName>
     <RootNamespace>PcOrg.App</RootNamespace>
     <Product>pcOrg</Product>
-    <Version>0.15.1</Version>
+    <Version>0.15.2</Version>
     <NeutralLanguage>it-IT</NeutralLanguage>
     <!-- ThemeMode (tema Fluent) è ancora marcato come sperimentale -->
     <NoWarn>$(NoWarn);WPF0001</NoWarn>
@@ -27,6 +27,18 @@
                                all'avvio estrae la libreria del database in una cartella temporanea.
     Le impostazioni valgono solo in pubblicazione, così i test possono referenziare il progetto.
   -->
+  <!--
+    Memoria: il garbage collector privilegia un'occupazione bassa rispetto alla velocità pura
+    (ConserveMemory) e non tiene da parte la memoria liberata (RetainVM).
+  -->
+  <PropertyGroup>
+    <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
+    <RetainVMGarbageCollection>false</RetainVMGarbageCollection>
+    <TieredPGO>false</TieredPGO>
+  </PropertyGroup>
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="System.GC.ConserveMemory" Value="6" />
+  </ItemGroup>
   <PropertyGroup>
     <Pacchetto Condition="'$(Pacchetto)' == ''">Portatile</Pacchetto>
   </PropertyGroup>

@@ -47,10 +47,13 @@ public sealed partial class FileIndex
         var conn = new SqliteConnection(_connectionString);
         conn.Open();
         // synchronous=NORMAL: con il journal WAL resta sicuro contro la corruzione ma evita di forzare la
-        // scrittura su disco a ogni salvataggio (molto più veloce nelle scansioni). Cache di 64 MB e
-        // tabelle temporanee in memoria accelerano ordinamenti e raggruppamenti.
+        // scrittura su disco a ogni salvataggio (molto più veloce nelle scansioni).
+        // Memoria: ogni connessione ha la propria cache e più operazioni lavorano insieme (ricerca,
+        // scansione, lettura dei documenti), quindi la cache è di 12 MB ciascuna e l'insieme di tutte le
+        // connessioni non supera i 96 MB (soft_heap_limit vale per l'intero programma). Le tabelle
+        // temporanee dei grandi ordinamenti vanno su disco invece che in memoria.
         Exec(conn, "PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000; PRAGMA synchronous = NORMAL; " +
-                   "PRAGMA temp_store = MEMORY; PRAGMA cache_size = -65536;");
+                   "PRAGMA cache_size = -12288; PRAGMA soft_heap_limit = 100663296;");
         return conn;
     }
 

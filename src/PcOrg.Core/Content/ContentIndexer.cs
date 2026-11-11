@@ -15,17 +15,22 @@ public static class ContentIndexer
         while (true)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var batch = index.GetFilesNeedingContent(50);
+            var batch = index.GetFilesNeedingContent(20);
             if (batch.Count == 0)
                 break;
             var texts = new string?[batch.Count];
-            // Due file alla volta: l'estrazione dei PDF usa molta memoria.
-            Parallel.For(0, batch.Count, new ParallelOptions { MaxDegreeOfParallelism = 2, CancellationToken = cancellationToken },
-                i => texts[i] = ContentExtractor.Extract(batch[i].Path));
+            // Un file alla volta: l'estrazione di un PDF grande può occupare centinaia di MB, e due
+            // insieme raddoppiavano il picco di memoria.
+            for (var i = 0; i < batch.Count; i++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                texts[i] = ContentExtractor.Extract(batch[i].Path);
+            }
             // Si salva anche chi non ha testo, così non viene riletto finché non cambia.
             index.SaveContent(batch.Select((file, i) => (file, texts[i])));
             done += batch.Count;
             progress?.Report((done, Math.Max(total, done)));
+            GC.Collect(); // i documenti appena letti non servono più: non si lascia accumulare la memoria
         }
         return done;
     }
