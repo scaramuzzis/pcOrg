@@ -89,7 +89,19 @@ public partial class App : Application
                 Log.Warn("La sessione precedente non si è chiusa correttamente: avvio in modalità sicura.");
                 viewModel.EnterSafeMode();
             }
+            // Memoria: finita un'operazione pesante, o quando la finestra viene ridotta a icona, si
+            // restituisce al sistema ciò che non serve più.
+            viewModel.PropertyChanged += (_, args) =>
+            {
+                if (args.PropertyName == nameof(MainViewModel.IsBusy) && !viewModel.IsBusy)
+                    _ = Task.Run(MemoryTrim.Run);
+            };
             var window = new MainWindow { DataContext = viewModel };
+            window.StateChanged += (_, _) =>
+            {
+                if (window.WindowState == WindowState.Minimized)
+                    _ = Task.Run(MemoryTrim.Run);
+            };
             MainWindow = window;
             ShutdownMode = ShutdownMode.OnMainWindowClose;
             window.Show();

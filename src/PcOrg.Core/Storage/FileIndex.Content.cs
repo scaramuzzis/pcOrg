@@ -19,7 +19,7 @@ public sealed record PendingContent(long Id, string Path, long Size, long Modifi
 /// </remarks>
 public sealed partial class FileIndex
 {
-    private const long MaxDocumentBytes = 100L * 1024 * 1024;
+    private const long MaxDocumentBytes = 50L * 1024 * 1024;
 
     /// <summary>Schema v8: contenuto, etichette/note, indice dei nomi esteso alle note.</summary>
     private static void CreateContentTables(SqliteConnection conn, SqliteTransaction tx) => Exec(conn, """

@@ -1,7 +1,7 @@
 # pcOrg — eseguibili
 
-Questa cartella contiene la versione **0.15.1** in formato **leggero**, allineata alla Release
-[v0.15.1](https://github.com/scaramuzzis/pcOrg/releases/tag/v0.15.1).
+Questa cartella contiene la versione **0.15.2** in formato **leggero**, allineata alla Release
+[v0.15.2](https://github.com/scaramuzzis/pcOrg/releases/tag/v0.15.2).
 
 | Contenuto | Come si usa |
 |---|---|
