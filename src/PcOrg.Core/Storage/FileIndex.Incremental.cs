@@ -449,17 +449,29 @@ public sealed partial class FileIndex
                             THEN files.category ELSE excluded.category END;
         """, tx);
 
+    private static readonly string[] UpsertParameters = ["$root", "$path", "$name", "$ext", "$folder", "$size", "$mod", "$cat"];
+
+    /// <summary>
+    /// Esegue l'inserimento riusando gli stessi parametri: il comando viene preparato una volta sola e a
+    /// ogni file se ne cambiano solo i valori (molto più veloce che ricrearli per ogni file).
+    /// </summary>
     private static void BindAndRun(SqliteCommand upsert, long rootId, string path, long size, long mtime)
     {
-        upsert.Parameters.Clear();
-        upsert.Parameters.AddWithValue("$root", rootId);
-        upsert.Parameters.AddWithValue("$path", path);
-        upsert.Parameters.AddWithValue("$name", Path.GetFileName(path));
-        upsert.Parameters.AddWithValue("$ext", Path.GetExtension(path).ToLowerInvariant());
-        upsert.Parameters.AddWithValue("$folder", Path.GetDirectoryName(path) ?? "");
-        upsert.Parameters.AddWithValue("$size", size);
-        upsert.Parameters.AddWithValue("$mod", mtime);
-        upsert.Parameters.AddWithValue("$cat", (int)FileClassifier.Classify(path));
+        if (upsert.Parameters.Count == 0)
+        {
+            foreach (var name in UpsertParameters)
+                upsert.Parameters.Add(new SqliteParameter { ParameterName = name });
+            upsert.Prepare();
+        }
+        var p = upsert.Parameters;
+        p[0].Value = rootId;
+        p[1].Value = path;
+        p[2].Value = Path.GetFileName(path);
+        p[3].Value = Path.GetExtension(path).ToLowerInvariant();
+        p[4].Value = Path.GetDirectoryName(path) ?? "";
+        p[5].Value = size;
+        p[6].Value = mtime;
+        p[7].Value = (int)FileClassifier.Classify(path);
         upsert.ExecuteNonQuery();
     }
 

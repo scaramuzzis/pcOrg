@@ -5,7 +5,9 @@ sparsi nel PC. Scegli le cartelle da tenere sotto controllo; pcOrg le indicizza,
 per categoria e li trova all'istante mentre scrivi. Sei tu a decidere se e dove spostarli: prima
 vedi un'anteprima, e ogni spostamento si può annullare.
 
-## Cosa fa oggi (v0.14)
+## Cosa fa oggi (v0.15)
+- **Più veloce (0.15)**: prima scansione circa due volte più rapida, indice più piccolo di circa il 40%,
+  elenchi e statistiche quasi istantanei anche con centinaia di migliaia di file, griglie aggiornate in un colpo solo.
 - **Ricerca nel contenuto**: testo di PDF, Word, PowerPoint, Excel e file di testo, e nomi dei file dentro
   ZIP e ISO (pulsante "Nel contenuto"), con estratto del punto trovato.
 - **Etichette e note** sui file (Ctrl+T): cercabili, seguono il file negli spostamenti.

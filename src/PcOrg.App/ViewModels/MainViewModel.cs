@@ -183,9 +183,9 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void ClearSearch() => SearchText = "";
     public ObservableCollection<CategoryItem> Categories { get; } = [];
-    public ObservableCollection<FileRecord> Results { get; } = [];
+    public BulkObservableCollection<FileRecord> Results { get; } = [];
 
-    public ObservableCollection<ProductGroup> Products { get; } = [];
+    public BulkObservableCollection<ProductGroup> Products { get; } = [];
     public ICollectionView ProductsView { get; }
     public ObservableCollection<ProductFileItem> ProductFiles { get; } = [];
 
@@ -611,9 +611,7 @@ public sealed partial class MainViewModel : ObservableObject
     {
         var selectedKey = SelectedProduct?.Key;
         var groups = await Task.Run(() => ProductCatalog.Build(_index.GetProductFiles()));
-        Products.Clear();
-        foreach (var group in groups)
-            Products.Add(group);
+        Products.ReplaceAll(groups);
         SelectedProduct = Products.FirstOrDefault(p => p.Key == selectedKey);
 
         var multi = groups.Where(g => g.Files.Count > 1).ToList();
@@ -649,9 +647,7 @@ public sealed partial class MainViewModel : ObservableObject
             _forceResultsRefresh = false;
             if (force || !Results.SequenceEqual(results))
             {
-                Results.Clear();
-                foreach (var file in results)
-                    Results.Add(file);
+                Results.ReplaceAll(results); // una sola notifica: la griglia si ridisegna una volta
             }
             if (!IsBusy)
                 Status = results.Count >= query.Limit

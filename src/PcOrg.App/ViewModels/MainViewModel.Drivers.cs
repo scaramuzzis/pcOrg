@@ -51,7 +51,7 @@ public sealed partial class MainViewModel
 {
     private List<DeviceRow> _allDevices = [];
 
-    public ObservableCollection<DeviceRow> DeviceRows { get; } = [];
+    public BulkObservableCollection<DeviceRow> DeviceRows { get; } = [];
     public ObservableCollection<DriverFileRow> DriverFiles { get; } = [];
 
     [ObservableProperty]
@@ -136,9 +136,7 @@ public sealed partial class MainViewModel
     private void ShowDevices()
     {
         var selected = SelectedDevice?.Device;
-        DeviceRows.Clear();
-        foreach (var row in _allDevices.Where(r => !OnlyDevicesWithDrivers || r.DriverCount > 0))
-            DeviceRows.Add(row);
+        DeviceRows.ReplaceAll(_allDevices.Where(r => !OnlyDevicesWithDrivers || r.DriverCount > 0));
         SelectedDevice = DeviceRows.FirstOrDefault(r => r.Device == selected) ?? DeviceRows.FirstOrDefault();
         ShowDriverFiles();
     }

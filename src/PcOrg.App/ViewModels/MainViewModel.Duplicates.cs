@@ -36,7 +36,7 @@ public sealed record KeepRuleOption(KeepRule Rule, string Label);
 /// <summary>Scheda "Cloni": ricerca dei file identici, segni e pulizia (Cestino o spostamento).</summary>
 public sealed partial class MainViewModel
 {
-    public ObservableCollection<DuplicateGroup> DuplicateGroups { get; } = [];
+    public BulkObservableCollection<DuplicateGroup> DuplicateGroups { get; } = [];
     public ObservableCollection<DuplicateFileItem> DuplicateFiles { get; } = [];
 
     /// <summary>Id dei file segnati come doppioni da eliminare (in tutti i gruppi).</summary>
@@ -145,9 +145,7 @@ public sealed partial class MainViewModel
     private void ShowDuplicateGroups(IReadOnlyList<DuplicateGroup> groups)
     {
         var selected = SelectedDuplicateGroup?.Hash;
-        DuplicateGroups.Clear();
-        foreach (var group in groups)
-            DuplicateGroups.Add(group);
+        DuplicateGroups.ReplaceAll(groups);
         var ids = groups.SelectMany(g => g.Files).Select(f => f.Id).ToHashSet();
         _marked.IntersectWith(ids);
         SelectedDuplicateGroup = DuplicateGroups.FirstOrDefault(g => g.Hash == selected) ?? DuplicateGroups.FirstOrDefault();
