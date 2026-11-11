@@ -6,6 +6,8 @@ per categoria e li trova all'istante mentre scrivi. Sei tu a decidere se e dove 
 vedi un'anteprima, e ogni spostamento si può annullare.
 
 ## Cosa fa oggi (v0.15)
+- **Avvio affidabile (0.15.1)**: la finestra compare subito anche quando l'indice va convertito dopo un
+  aggiornamento o una cartella di rete non risponde; ogni errore di avvio viene mostrato e registrato.
 - **Più veloce (0.15)**: prima scansione circa due volte più rapida, indice più piccolo di circa il 40%,
   elenchi e statistiche quasi istantanei anche con centinaia di migliaia di file, griglie aggiornate in un colpo solo.
 - **Ricerca nel contenuto**: testo di PDF, Word, PowerPoint, Excel e file di testo, e nomi dei file dentro

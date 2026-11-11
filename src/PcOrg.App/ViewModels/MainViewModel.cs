@@ -537,7 +537,7 @@ public sealed partial class MainViewModel : ObservableObject
             Roots.Add(new RootItem(root));
         SelectedRoot = Roots.FirstOrDefault(r => r.Id == selected);
         OnPropertyChanged(nameof(HasRoots));
-        _watcher?.Watch(_index.GetRoots());
+        _ = _watcher?.WatchInBackground(_index.GetRoots());
         Fire(CheckAvailabilityAsync(Roots.ToList()), "verifica delle cartelle");
     }
 

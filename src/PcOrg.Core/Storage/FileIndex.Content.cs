@@ -42,9 +42,7 @@ public sealed partial class FileIndex
 
         DROP TABLE files_fts;
         CREATE VIRTUAL TABLE files_fts USING fts5(name, folder, product, company, notes, tokenize='trigram');
-        INSERT INTO files_fts(rowid, name, folder, product, company, notes)
-            SELECT f.id, f.name, f.folder, COALESCE(m.product_name, ''), COALESCE(m.company, ''), ''
-            FROM files f LEFT JOIN file_meta m ON m.file_id = f.id;
+        -- (l'indice dei nomi viene ripopolato dal passo v9, che segue sempre questo)
         DROP TRIGGER files_ai;
         CREATE TRIGGER files_ai AFTER INSERT ON files BEGIN
             INSERT INTO files_fts(rowid, name, folder, product, company, notes)

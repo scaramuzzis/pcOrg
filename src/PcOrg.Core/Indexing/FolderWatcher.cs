@@ -39,11 +39,37 @@ public sealed class FolderWatcher : IDisposable
     public IReadOnlyCollection<long> Watched => _watchers.Keys;
 
     /// <summary>Allinea gli osservatori all'elenco delle cartelle monitorate (aggiunge i nuovi, chiude i vecchi).</summary>
+    /// <remarks>
+    /// Può essere lento: per una cartella di rete non raggiungibile Windows aspetta a lungo prima di
+    /// rispondere. Va quindi chiamato in background (vedi <see cref="WatchInBackground"/>), mai dal
+    /// thread dell'interfaccia.
+    /// </remarks>
     public void Watch(IEnumerable<RootFolder> roots)
+    {
+        var wanted = roots.ToDictionary(r => r.Id);
+        lock (_gate)
+            WatchCore(wanted);
+    }
+
+    /// <summary>Come <see cref="Watch"/>, ma senza far attendere chi chiama.</summary>
+    public Task WatchInBackground(IReadOnlyList<RootFolder> roots) => Task.Run(() =>
+    {
+        try
+        {
+            Watch(roots);
+        }
+        catch (Exception ex)
+        {
+            Log.Warn("Attivazione dell'osservazione delle cartelle non riuscita.", ex);
+        }
+    });
+
+    private readonly object _gate = new();
+
+    private void WatchCore(Dictionary<long, RootFolder> wanted)
     {
         if (_disposed)
             return;
-        var wanted = roots.ToDictionary(r => r.Id);
         foreach (var id in _watchers.Keys.Where(id => !wanted.ContainsKey(id)).ToList())
         {
             _watchers[id].Dispose();
@@ -112,9 +138,12 @@ public sealed class FolderWatcher : IDisposable
     public void Dispose()
     {
         _disposed = true;
-        foreach (var watcher in _watchers.Values)
-            watcher.Dispose();
-        _watchers.Clear();
+        lock (_gate)
+        {
+            foreach (var watcher in _watchers.Values)
+                watcher.Dispose();
+            _watchers.Clear();
+        }
         _timer.Dispose();
     }
 }
