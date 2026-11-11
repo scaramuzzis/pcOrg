@@ -1,7 +1,7 @@
 # Gestione File — eseguibili
 
-Questa cartella contiene la versione **1.0.0** in formato **leggero**, allineata alla Release
-[v1.0.0](https://github.com/scaramuzzis/pcOrg/releases/tag/v1.0.0).
+Questa cartella contiene la versione **1.1.0** in formato **leggero**, allineata alla Release
+[v1.1.0](https://github.com/scaramuzzis/pcOrg/releases/tag/v1.1.0).
 
 | Contenuto | Come si usa |
 |---|---|
