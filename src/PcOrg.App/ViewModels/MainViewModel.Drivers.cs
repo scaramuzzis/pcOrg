@@ -122,6 +122,7 @@ public sealed partial class MainViewModel
               (updates > 0 ? $"Per {updates:N0} periferiche c'è un driver più recente di quello installato." : "Nessun aggiornamento disponibile.");
         Log.Info($"Driver: {devices.Count} periferiche, {packages.Count} pacchetti, {useful} utili, {updates} aggiornamenti disponibili.");
         ShowDevices();
+        UpdateDashboard();
     }
 
     private static DriverState StateFor(string? archive, string? installed)

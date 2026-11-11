@@ -95,6 +95,27 @@ public class UiSmokeTests
         var vm = (MainViewModel)window.DataContext;
         Assert.Equal(6, vm.Results.Count);
 
+        // Panoramica: si apre per prima, con i quattro riquadri e le barre per categoria
+        Assert.Equal(MainViewModel.OverviewTab, window.Tabs.SelectedIndex);
+        Assert.Equal(4, vm.DashboardCards.Count);
+        Assert.Equal("6", vm.DashboardCards[0].Value);
+        Assert.NotEmpty(vm.CategoryBars);
+        vm.OpenCategoryCommand.Execute(vm.CategoryBars.First(b => b.Category == PcOrg.Core.Classification.FileCategory.Testo));
+        Pump(TimeSpan.FromMilliseconds(500));
+        Assert.Equal(MainViewModel.FilesTab, window.Tabs.SelectedIndex);
+        Assert.Equal("nota.txt", Assert.Single(vm.Results).Name);
+        vm.SelectedCategory = vm.Categories[0];
+        Pump(TimeSpan.FromMilliseconds(500));
+
+        // Cambiando scheda la selezione non resta quella della scheda precedente
+        window.ResultsGrid.SelectedItem = vm.Results.First(r => r.Name == "nota.txt");
+        Assert.Single(vm.SelectedFiles);
+        window.Tabs.SelectedIndex = MainViewModel.DriversTab;
+        Assert.Empty(vm.SelectedFiles);
+        window.Tabs.SelectedIndex = MainViewModel.FilesTab;
+        Assert.Single(vm.SelectedFiles);
+        window.ResultsGrid.SelectedItem = null;
+
         // Anteprima: compare per le immagini, sparisce per gli altri file.
         vm.SelectedFiles = [vm.Results.First(r => r.Name == "foto.png")];
         Pump(TimeSpan.FromSeconds(1));
@@ -113,15 +134,15 @@ public class UiSmokeTests
 
         // Seleziona un file (pannello dettagli) e passa alla scheda prodotti.
         vm.SelectedFiles = [vm.Results.First(r => r.Name == "host-1.exe")];
-        window.Tabs.SelectedIndex = 1;
+        window.Tabs.SelectedIndex = 2;
         vm.SelectedProduct = vm.Products.First(p => p.Files.Count == 2);
         Pump(TimeSpan.FromSeconds(1));
         Assert.Equal(2, vm.ProductFiles.Count);
 
         // Menu: scheda, pannelli, tema, esportazione
-        vm.ShowTabCommand.Execute("0");
+        vm.ShowTabCommand.Execute("1");
         Pump(TimeSpan.FromMilliseconds(300));
-        Assert.Equal(0, window.Tabs.SelectedIndex);
+        Assert.Equal(MainViewModel.FilesTab, window.Tabs.SelectedIndex);
         vm.ShowPreviewPanel = false;
         Assert.False(vm.PreviewPanelVisible);
         vm.ShowPreviewPanel = true;
@@ -177,7 +198,7 @@ public class UiSmokeTests
         history.Close();
 
         // Cloni: host-1.exe e host-2.exe sono copie identiche
-        window.Tabs.SelectedIndex = 2;
+        window.Tabs.SelectedIndex = 3;
         vm.SelectedSizeOption = vm.SizeOptions[0];
         await_(vm.FindDuplicatesCommand.ExecuteAsync(null));
         Assert.Single(vm.DuplicateGroups);
@@ -197,7 +218,7 @@ public class UiSmokeTests
         {
             PcOrg.Core.Moving.RecycleBin.SendToRecycleBin = originalRecycle;
         }
-        window.Tabs.SelectedIndex = 0;
+        window.Tabs.SelectedIndex = 1;
 
         // Regole di archiviazione: i file di testo vanno in Archivio\Testi\{Anno}
         vm.SetRules([new PcOrg.Core.Rules.ArchiveRule
@@ -217,14 +238,14 @@ public class UiSmokeTests
         await_(vm.RefreshInstalledAsync());
 
         // Driver e periferiche: il driver della stampante che non c'è va fra quelli che non servono
-        window.Tabs.SelectedIndex = 3;
+        window.Tabs.SelectedIndex = 4;
         Pump(TimeSpan.FromMilliseconds(400));
         Assert.Contains("periferiche presenti", vm.DriversSummary);
         vm.SelectUnneededDriversCommand.Execute(null);
         Assert.Contains(vm.SelectedFiles, f => f.Name == "stampante.inf");
         Assert.Contains(vm.DriverFiles, d => d.State == PcOrg.Core.Drivers.DriverState.NonServe);
         vm.ShowUnneededDrivers = false;
-        window.Tabs.SelectedIndex = 0;
+        window.Tabs.SelectedIndex = 1;
         window.ResultsGrid.Columns.First(c => (string)c.Header == "Sul PC").Visibility = Visibility.Visible;
         Pump(TimeSpan.FromMilliseconds(300));
 

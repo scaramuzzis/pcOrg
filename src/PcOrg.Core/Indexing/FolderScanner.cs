@@ -12,8 +12,9 @@ public static class FolderScanner
     {
         RecurseSubdirectories = true,
         IgnoreInaccessible = true,
-        // Salta file di sistema e collegamenti a cartelle (evita cicli e duplicati).
-        AttributesToSkip = FileAttributes.System | FileAttributes.ReparsePoint,
+        // Salta i file di sistema. I "reparse point" non si scartano (i file di OneDrive lo sono):
+        // i collegamenti a cartelle vengono esclusi in ShouldRecursePredicate.
+        AttributesToSkip = FileAttributes.System,
         ReturnSpecialDirectories = false,
     };
 
@@ -25,6 +26,9 @@ public static class FolderScanner
             Options)
         {
             ShouldIncludePredicate = (ref FileSystemEntry e) => !e.IsDirectory,
+            // Non si entra nei collegamenti a cartelle (junction, link simbolici): cicli e doppioni.
+            ShouldRecursePredicate = (ref FileSystemEntry e) =>
+                (e.Attributes & FileAttributes.ReparsePoint) == 0 || e.ToFileSystemInfo().LinkTarget is null,
         };
 
         foreach (var file in enumerable)

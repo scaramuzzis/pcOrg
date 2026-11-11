@@ -34,6 +34,8 @@ public static class ImagePreview
             var info = new FileInfo(path);
             if (!info.Exists)
                 return new(null, 0, 0, "Il file non esiste più.");
+            if (Core.CloudFiles.IsOnlineOnly(info.Attributes))
+                return new(null, 0, 0, "File disponibile solo online (es. OneDrive): l'anteprima lo farebbe scaricare. Aprilo per scaricarlo.");
             if (info.Length > MaxFileBytes)
                 return new(null, 0, 0, "Immagine troppo grande per l'anteprima.");
 

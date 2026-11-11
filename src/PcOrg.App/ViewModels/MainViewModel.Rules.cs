@@ -144,6 +144,7 @@ public sealed partial class MainViewModel
                 DriversSummary = "Non è stato possibile leggere le periferiche: dettagli nel registro attività.";
             }
         }
+        _forceResultsRefresh = true;
         await RefreshAsync(); // ridisegna gli elenchi con lo stato aggiornato
     }
 

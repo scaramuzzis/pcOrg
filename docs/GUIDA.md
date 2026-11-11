@@ -18,6 +18,8 @@ Nei pacchetti a cartella tieni insieme tutti i file: `PcOrg.exe` da solo non fun
 
 **Avviso di Windows.** Al primo avvio Windows potrebbe mostrare "PC protetto da Windows", perché il programma non ha una firma digitale commerciale. Clicca **Ulteriori informazioni** e poi **Esegui comunque**: l'avviso non comparirà più.
 
+**Una sola finestra.** Se avvii pcOrg mentre è già aperto, viene portata in primo piano la finestra esistente: due copie aperte insieme lavorerebbero sugli stessi dati.
+
 **Modalità sicura.** Se pcOrg si era bloccato o era stato chiuso a forza, all'avvio successivo parte in **modalità sicura**: mostra l'elenco salvato ma salta l'aggiornamento automatico e la lettura delle periferiche, così si apre comunque. Puoi aggiornare a mano con **F5**; la volta dopo riparte normalmente. Il registro attività indica cosa era successo.
 
 **Schermata di benvenuto.** Finché non aggiungi una cartella vedi una schermata di benvenuto con il pulsante **Aggiungi la prima cartella**. Da lì in poi la finestra principale mostra le tue cartelle, le categorie e l'elenco dei file.
@@ -41,6 +43,17 @@ In basso la **barra di stato** indica cosa sta facendo pcOrg (per esempio "Scans
 
 Passando con il mouse su un pulsante compare un suggerimento che spiega cosa fa.
 
+## Panoramica
+
+All'apertura pcOrg mostra la scheda **Panoramica** (**Ctrl+0**), il colpo d'occhio sulla situazione:
+
+- **File in ordine** — quanti file sono indicizzati, lo spazio totale e le cartelle (con l'avviso se qualcuna non è raggiungibile);
+- **Versioni vecchie** — lo spazio occupato dalle versioni superate dei programmi;
+- **File identici** — lo spazio recuperabile eliminando i cloni (dopo aver eseguito la ricerca);
+- **Driver** — quanti aggiornamenti sono disponibili nell'archivio e quanti pacchetti non servono a questo PC.
+
+Un clic su un riquadro apre la scheda di dettaglio. Sotto trovi le **azioni rapide** (aggiungi cartella, aggiorna, cerca i cloni, organizza con le regole, esporta, guida) e lo **spazio per categoria**: una barra per ogni categoria, dalla più pesante; un clic su una barra mostra i file di quella categoria.
+
 ## Le cartelle monitorate
 
 Le cartelle monitorate sono quelle che pcOrg tiene in ordine: tipicamente **Download**, **Desktop**, una cartella di installer o driver, un disco esterno o una cartella su un NAS.
@@ -52,6 +65,10 @@ Le cartelle monitorate sono quelle che pcOrg tiene in ordine: tipicamente **Down
 **Cartelle una dentro l'altra.** Se aggiungi una cartella che contiene cartelle già monitorate, queste vengono unite nella nuova. Non è invece possibile aggiungere una cartella che è già contenuta in un'altra monitorata: è già inclusa.
 
 Sotto ogni cartella sono indicati il percorso completo e la data dell'ultimo aggiornamento.
+
+**Cartelle di OneDrive.** Le cartelle sincronizzate con OneDrive (spesso Desktop e Documenti) vengono indicizzate normalmente. I file **disponibili solo online** (con la nuvoletta) compaiono nell'elenco ma pcOrg **non li apre**, per non farli scaricare: non ne legge versione e firma, non ne mostra l'anteprima e non li confronta nella ricerca dei cloni. Nei dettagli compare "Disponibile solo online".
+
+**Collegamenti a cartelle.** I collegamenti (junction e link simbolici) non vengono seguiti, per non mostrare due volte gli stessi file.
 
 ## Cartelle di rete
 
@@ -74,6 +91,8 @@ pcOrg tiene l'elenco aggiornato in tre modi, pensati per essere veloci anche con
 **1. Rilevamento automatico (mentre pcOrg è aperto).** Ogni file che scarichi, copi, rinomini o elimini in una cartella monitorata viene registrato subito, in pochi millisecondi, senza nessuna scansione: la barra di stato mostra per esempio "Modifiche rilevate: 1 file nuovo". Funziona anche con le cartelle di rete che supportano le notifiche di modifica (la maggior parte dei NAS).
 
 **2. Aggiornamento rapido (F5 e a ogni avvio).** Trova ciò che è cambiato mentre pcOrg era chiuso. pcOrg ricorda la data di modifica di ogni cartella: Windows la aggiorna quando nella cartella viene aggiunto, tolto o rinominato qualcosa. Le cartelle non cambiate non vengono rilette; si rileggono solo quelle cambiate e nell'indice si scrivono solo le differenze. Con 100.000 file in 1.000 cartelle, un aggiornamento senza modifiche richiede circa un centesimo di secondo.
+
+Su chiavette e schede di memoria formattate **FAT32 o exFAT** Windows non aggiorna la data delle cartelle: per quelle pcOrg esegue automaticamente la scansione completa, così non perde nessun file.
 
 **3. Scansione completa (Ctrl+F5 o File → Scansione completa).** Rilegge tutte le cartelle. Serve raramente: per esempio se un file è stato *modificato nel contenuto* (non aggiunto o rinominato) mentre pcOrg era chiuso, perché in quel caso la data della cartella non cambia.
 
@@ -294,6 +313,7 @@ Usi tipici: un inventario dei driver da conservare, l'elenco degli installer da 
 | Sposta in… | **Ctrl+M** |
 | Sposta nel Cestino | **Canc** |
 | Cronologia spostamenti | **Ctrl+H** |
+| Scheda Panoramica | **Ctrl+0** |
 | Schede File / Prodotti / Cloni / Driver | **Ctrl+1** / **Ctrl+2** / **Ctrl+3** / **Ctrl+4** |
 | Impostazioni | **Ctrl+,** |
 | Guida | **F1** |

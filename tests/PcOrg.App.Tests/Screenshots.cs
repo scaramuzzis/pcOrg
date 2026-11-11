@@ -116,6 +116,8 @@ public class Screenshots
         var window = new MainWindow { DataContext = vm };
         app.MainWindow = window;
         Show(window);
+        window.Tabs.SelectedIndex = MainViewModel.FilesTab;
+        Pump(500);
         var exe = vm.Results.Where(r => r.Meta?.Signer is not null).OrderByDescending(r => r.Name.StartsWith("python")).FirstOrDefault()
                   ?? vm.Results.First();
         Select(window, vm, exe);
@@ -156,7 +158,7 @@ public class Screenshots
         Pump(600);
 
         // 6b. Cloni e pulizia
-        window.Tabs.SelectedIndex = 2;
+        window.Tabs.SelectedIndex = 3;
         vm.SelectedSizeOption = vm.SizeOptions[0];
         var find = vm.FindDuplicatesCommand.ExecuteAsync(null);
         while (!find.IsCompleted)
@@ -164,23 +166,23 @@ public class Screenshots
         vm.MarkDoublesCommand.Execute(null);
         Pump(600);
         Capture(window, output, "23-cloni-e-pulizia.png");
-        window.Tabs.SelectedIndex = 0;
+        window.Tabs.SelectedIndex = 1;
         Pump(300);
 
         // 6c. Driver e periferiche (dopo la lettura di periferiche e programmi installati)
         await_(vm.RefreshInstalledAsync());
-        window.Tabs.SelectedIndex = 3;
+        window.Tabs.SelectedIndex = 4;
         Pump(800);
         Capture(window, output, "27-driver-e-periferiche.png");
         vm.ShowUnneededDrivers = true;
         Pump(500);
         Capture(window, output, "28-driver-che-non-servono.png");
         vm.ShowUnneededDrivers = false;
-        window.Tabs.SelectedIndex = 0;
+        window.Tabs.SelectedIndex = 1;
         Pump(300);
 
         // 6. Prodotti e versioni
-        window.Tabs.SelectedIndex = 1;
+        window.Tabs.SelectedIndex = 2;
         vm.SelectedProduct = vm.Products.OrderByDescending(p => p.Files.Count).FirstOrDefault();
         Pump(800);
         Capture(window, output, "06-prodotti-e-versioni.png");
@@ -196,7 +198,7 @@ public class Screenshots
         preview.Close();
 
         // 8. Notifica dopo lo spostamento (spostamento reale, così la cronologia ha dati)
-        window.Tabs.SelectedIndex = 0;
+        window.Tabs.SelectedIndex = 1;
         var moved = new MoveService(index).Execute(plan, $"{plan.Count(p => p.WillMove)} file in {Path.Combine(archive, "Programmi")}");
         vm.ShowToast($"{moved.Moved} file spostati in Programmi", ToastKind.Success, "Annulla", () => Task.CompletedTask);
         Pump(700);
@@ -282,11 +284,11 @@ public class Screenshots
 
         // 26. Prodotti con lo stato "Sul PC"
         await_(vm.RefreshInstalledAsync());
-        window.Tabs.SelectedIndex = 1;
+        window.Tabs.SelectedIndex = 2;
         vm.OnlyMultipleVersions = false;
         Pump(800);
         Capture(window, output, "26-prodotti-sul-pc.png");
-        window.Tabs.SelectedIndex = 0;
+        window.Tabs.SelectedIndex = 1;
         vm.OnlyMultipleVersions = true;
 
         // 15. Informazioni su pcOrg
@@ -304,6 +306,13 @@ public class Screenshots
         Pump(500);
         Capture(history, output, "10-cronologia.png");
         history.Close();
+
+        // 00. Panoramica (alla fine, così i riquadri di cloni e driver hanno già i dati)
+        window.Tabs.SelectedIndex = MainViewModel.OverviewTab;
+        Pump(800);
+        Capture(window, output, "00-panoramica.png");
+        window.Tabs.SelectedIndex = MainViewModel.FilesTab;
+        Pump(400);
 
         // 11. Tema scuro
         app.ThemeMode = ThemeMode.Dark;

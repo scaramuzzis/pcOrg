@@ -5,7 +5,12 @@ sparsi nel PC. Scegli le cartelle da tenere sotto controllo; pcOrg le indicizza,
 per categoria e li trova all'istante mentre scrivi. Sei tu a decidere se e dove spostarli: prima
 vedi un'anteprima, e ogni spostamento si può annullare.
 
-## Cosa fa oggi (v0.12)
+## Cosa fa oggi (v0.13)
+- **Panoramica** (Ctrl+0): riquadri con file indicizzati, spazio delle versioni vecchie, cloni recuperabili
+  e stato dei driver; azioni rapide; spazio per categoria.
+- **Revisione 0.13**: cartelle di OneDrive indicizzate (i file solo online non vengono scaricati), chiavette
+  FAT/exFAT sempre con scansione completa, una sola istanza, esportazione CSV protetta dalle formule,
+  selezione coerente tra le schede.
 - **Driver e periferiche** (Ctrl+4): legge i file `.inf` dei pacchetti driver (classe, fornitore, versione,
   identificativi hardware) e li confronta con le periferiche presenti (SetupAPI, come Gestione dispositivi):
   aggiornamenti disponibili, driver già installati, driver che non servono più a questo PC.

@@ -15,6 +15,10 @@ public static partial class MetadataExtractor
     /// <summary>Restituisce null se il file non è leggibile o non è un formato riconosciuto.</summary>
     public static FileMeta? Extract(string path, bool verifySignature = true)
     {
+        // File solo online (OneDrive): aprirlo lo farebbe scaricare. Lo si segnala senza leggerlo.
+        if (CloudFiles.IsOnlineOnly(path))
+            return new FileMeta { FileDescription = "Disponibile solo online: non letto per non scaricarlo" };
+
         var ext = Path.GetExtension(path);
         if (RemoteConnectionReader.SupportedExtensions.Contains(ext))
             return RemoteConnectionReader.Read(path);

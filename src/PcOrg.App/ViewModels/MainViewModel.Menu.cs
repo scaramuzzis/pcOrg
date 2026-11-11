@@ -120,7 +120,7 @@ public sealed partial class MainViewModel
     [NotifyPropertyChangedFor(nameof(DetailsPanelVisible))]
     private bool _showDetailsPanel = true;
 
-    /// <summary>Scheda attiva: 0 = File, 1 = Prodotti e versioni.</summary>
+    /// <summary>Scheda attiva: 0 = Panoramica, 1 = File, 2 = Prodotti, 3 = Cloni, 4 = Driver.</summary>
     [ObservableProperty]
     private int _selectedTabIndex;
 

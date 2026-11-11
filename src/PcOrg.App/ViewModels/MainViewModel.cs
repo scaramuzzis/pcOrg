@@ -423,13 +423,17 @@ public sealed partial class MainViewModel : ObservableObject
                     offline.Add(root.Path);
                     continue;
                 }
+                // Su FAT32/exFAT (chiavette) la data delle cartelle non segnala i file nuovi: scansione completa.
+                var fullForRoot = full || !FileIndex.SupportsQuickUpdate(root.Path);
+                if (fullForRoot && !full)
+                    Log.Info($"{root.Path}: disco senza date di cartella affidabili (FAT/exFAT), scansione completa.");
                 var progress = new Progress<ScanResult>(p => Status =
                     $"{kind} di {root.Path}: {p.DirectoriesVisited:N0} cartelle controllate, {p.DirectoriesChanged:N0} rilette, " +
                     $"{p.FilesChanged:N0} file cambiati…");
                 try
                 {
                     total += await Task.Run(
-                        () => _index.UpdateRoot(root.Id, root.Path, full, progress, token,
+                        () => _index.UpdateRoot(root.Id, root.Path, fullForRoot, progress, token,
                             isStillAvailable: () => Directory.Exists(root.Path)), token);
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -553,6 +557,7 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task RefreshCoreAsync()
     {
         var stats = await Task.Run(_index.GetCategoryStats);
+        _lastStats = stats;
         var selected = SelectedCategory;
         await RefreshProductsAsync();
 
@@ -583,6 +588,7 @@ public sealed partial class MainViewModel : ObservableObject
         SelectedCategory = Categories.FirstOrDefault(c => c.Category == selected?.Category && c.Name == selected?.Name)
             ?? Categories.FirstOrDefault(c => c.Category == selected?.Category && !c.IsSubcategory)
             ?? Categories[0];
+        UpdateDashboard();
     }
 
     private async Task RefreshProductsAsync()
@@ -600,6 +606,9 @@ public sealed partial class MainViewModel : ObservableObject
             + $"Le versioni vecchie occupano {FileSizeConverter.Format(reclaimable)}.";
     }
 
+    /// <summary>Ricarica l'elenco anche se i file sono gli stessi (es. è cambiato lo stato "Sul PC").</summary>
+    private bool _forceResultsRefresh;
+
     private async Task RefreshResultsAsync(bool debounce)
     {
         _searchCts?.Cancel();
@@ -614,9 +623,16 @@ public sealed partial class MainViewModel : ObservableObject
             if (cts.IsCancellationRequested)
                 return;
 
-            Results.Clear();
-            foreach (var file in results)
-                Results.Add(file);
+            // Se l'elenco non è cambiato non lo si ricarica: così un aggiornamento in background
+            // (es. un file arrivato in un'altra categoria) non fa perdere selezione e posizione.
+            var force = _forceResultsRefresh;
+            _forceResultsRefresh = false;
+            if (force || !Results.SequenceEqual(results))
+            {
+                Results.Clear();
+                foreach (var file in results)
+                    Results.Add(file);
+            }
             if (!IsBusy)
                 Status = results.Count >= query.Limit
                     ? $"Mostrati i primi {results.Count:N0} risultati ({stopwatch.ElapsedMilliseconds} ms): affina la ricerca"

@@ -248,6 +248,24 @@ public partial class MainWindow : Window
 
     // ------------------------------------------------------------------ Selezione e azioni sulle griglie
 
+    /// <summary>
+    /// Cambiando scheda, i "file selezionati" diventano quelli dell'elenco della nuova scheda. Senza questo,
+    /// Sposta o Cestino premuti in una scheda agirebbero sui file selezionati in quella precedente.
+    /// </summary>
+    private void Tabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!ReferenceEquals(e.OriginalSource, Tabs) || ViewModel is not { } vm)
+            return; // l'evento arriva anche dagli elenchi dentro le schede
+        vm.SelectedFiles = Tabs.SelectedIndex switch
+        {
+            MainViewModel.FilesTab => ResultsGrid.SelectedItems.OfType<FileRecord>().ToList(),
+            MainViewModel.ProductsTab => ProductFilesGrid.SelectedItems.OfType<ProductFileItem>().Select(i => i.File).ToList(),
+            MainViewModel.DuplicatesTab => DuplicateFilesGrid.SelectedItems.OfType<DuplicateFileItem>().Select(i => i.File).ToList(),
+            MainViewModel.DriversTab => DriverFilesGrid.SelectedItems.OfType<DriverFileRow>().Select(i => i.File).ToList(),
+            _ => [],
+        };
+    }
+
     private void FileGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (ViewModel is { } vm)
@@ -301,7 +319,13 @@ public partial class MainWindow : Window
 
     private void SelectAll_Click(object sender, RoutedEventArgs e)
     {
-        var grid = ViewModel?.SelectedTabIndex switch { 1 => ProductFilesGrid, 2 => DuplicateFilesGrid, 3 => DriverFilesGrid, _ => ResultsGrid };
+        var grid = ViewModel?.SelectedTabIndex switch
+        {
+            MainViewModel.ProductsTab => ProductFilesGrid,
+            MainViewModel.DuplicatesTab => DuplicateFilesGrid,
+            MainViewModel.DriversTab => DriverFilesGrid,
+            _ => ResultsGrid,
+        };
         grid.SelectAll();
         grid.Focus();
     }
