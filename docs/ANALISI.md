@@ -1,4 +1,4 @@
-# pcOrg — Analisi di fattibilità e piano di sviluppo
+# Gestione File — Analisi di fattibilità e piano di sviluppo
 
 ## 1. Il problema
 Nel tempo si accumulano in Download, Desktop e dischi esterni centinaia di
@@ -55,7 +55,7 @@ PcOrg.sln
 │  │  ├─ Indexing/         enumerazione veloce delle cartelle
 │  │  ├─ Storage/          database, ricerca, log degli spostamenti
 │  │  └─ Moving/           piano di spostamento (anteprima) ed esecuzione/annullamento
-│  └─ PcOrg.App         # interfaccia WPF (MVVM con CommunityToolkit.Mvvm), produce PcOrg.exe
+│  └─ PcOrg.App         # interfaccia WPF (MVVM con CommunityToolkit.Mvvm), produce GestioneFile.exe
 └─ tests/
    └─ PcOrg.Core.Tests  # xUnit, girano anche su Linux
 ```

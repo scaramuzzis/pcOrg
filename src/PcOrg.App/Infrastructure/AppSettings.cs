@@ -80,6 +80,12 @@ public sealed class AppSettings
     /// <summary>Regole di archiviazione, nell'ordine in cui vengono provate.</summary>
     public List<ArchiveRule> Rules { get; set; } = [];
 
+    /// <summary>
+    /// Categorie che l'utente ha scelto di non vedere nel pannello "Categorie" (nomi di
+    /// <c>FileCategory</c>). Vuoto = si vedono tutte. I file restano indicizzati e ricercabili.
+    /// </summary>
+    public List<string> HiddenCategories { get; set; } = [];
+
     /// <summary>Colonne di ogni griglia, per nome della griglia ("file", "prodotti", "fileProdotto").</summary>
     public Dictionary<string, List<ColumnSetting>> Columns { get; set; } = [];
 

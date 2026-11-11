@@ -158,8 +158,8 @@ public sealed partial class MainViewModel
     {
         _safeMode = true;
         _scanOnStartup = false;
-        DriversSummary = "Modalità sicura: le periferiche non sono state lette. Riavvia pcOrg per tornare alla modalità normale.";
-        ShowToast("L'ultima volta pcOrg non si è chiuso correttamente: avvio in modalità sicura, senza aggiornamento automatico. " +
+        DriversSummary = "Modalità sicura: le periferiche non sono state lette. Riavvia Gestione File per tornare alla modalità normale.";
+        ShowToast("L'ultima volta Gestione File non si è chiuso correttamente: avvio in modalità sicura, senza aggiornamento automatico. " +
                   "Dettagli nel registro attività.", ToastKind.Warning);
     }
 }

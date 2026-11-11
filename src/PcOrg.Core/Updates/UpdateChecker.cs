@@ -20,7 +20,7 @@ public sealed record UpdateInfo(UpdateStatus Status, string? LatestVersion, stri
 
 /// <summary>
 /// Controlla sulla pagina Releases del progetto se esiste una versione più recente.
-/// È l'unica funzione di pcOrg che usa internet: parte solo su richiesta, o all'avvio se l'utente
+/// È l'unica funzione di Gestione File che usa internet: parte solo su richiesta, o all'avvio se l'utente
 /// la attiva nelle Impostazioni. Non invia alcun dato: legge soltanto l'ultima versione pubblicata.
 /// </summary>
 public static class UpdateChecker
@@ -35,7 +35,7 @@ public static class UpdateChecker
         try
         {
             using var request = new HttpRequestMessage(HttpMethod.Get, LatestReleaseApi);
-            request.Headers.UserAgent.Add(new ProductInfoHeaderValue("pcOrg", currentVersion));
+            request.Headers.UserAgent.Add(new ProductInfoHeaderValue("GestioneFile", currentVersion));
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
             using var response = await client.SendAsync(request, cancellationToken).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)

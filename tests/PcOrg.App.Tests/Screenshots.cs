@@ -276,7 +276,8 @@ public class Screenshots
         };
         foreach (var (tab, file) in new[] { (SettingsWindow.GeneralTab, "18-impostazioni-generale.png"),
                                            (SettingsWindow.ColumnsTab, "19-impostazioni-colonne.png"),
-                                           (SettingsWindow.DataTab, "20-impostazioni-dati.png") })
+                                           (SettingsWindow.DataTab, "20-impostazioni-dati.png"),
+                                           (SettingsWindow.CategoriesTab, "31-impostazioni-categorie.png") })
         {
             var settings = new SettingsWindow(vm, window, grids, tab) { Owner = window };
             Show(settings);
@@ -316,7 +317,7 @@ public class Screenshots
         window.Tabs.SelectedIndex = 1;
         vm.OnlyMultipleVersions = true;
 
-        // 15. Informazioni su pcOrg
+        // 15. Informazioni su Gestione File
         var about = new AboutWindow { Owner = window };
         Show(about);
         Capture(about, output, "15-informazioni.png");

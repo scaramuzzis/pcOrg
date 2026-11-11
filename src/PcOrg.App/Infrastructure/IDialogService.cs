@@ -16,7 +16,7 @@ public interface IDialogService
     /// <summary>Chiede etichette e nota per i file selezionati. Null se l'utente annulla.</summary>
     (string Tags, string Note)? EditNotes(string title, string tags, string note, IReadOnlyList<string> knownTags);
 
-    /// <summary>Finestra "Informazioni su pcOrg".</summary>
+    /// <summary>Finestra "Informazioni su Gestione File".</summary>
     void ShowAbout();
 
     /// <summary>Chiede il percorso di una cartella di rete (es. \\NAS\Foto). Null se l'utente annulla.</summary>

@@ -8,10 +8,10 @@
     <UseWPF>true</UseWPF>
     <!-- Permette di compilare anche da Linux/macOS (CI e sviluppo) -->
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
-    <AssemblyName>PcOrg</AssemblyName>
+    <AssemblyName>GestioneFile</AssemblyName>
     <RootNamespace>PcOrg.App</RootNamespace>
-    <Product>pcOrg</Product>
-    <Version>0.15.2</Version>
+    <Product>Gestione File</Product>
+    <Version>1.1.0</Version>
     <NeutralLanguage>it-IT</NeutralLanguage>
     <!-- ThemeMode (tema Fluent) è ancora marcato come sperimentale -->
     <NoWarn>$(NoWarn);WPF0001</NoWarn>
@@ -20,10 +20,10 @@
 
   <!--
     Pacchetti di distribuzione (dotnet publish -c Release -p:Pacchetto=...):
-      Portatile (predefinito): cartella con PcOrg.exe e le librerie, .NET incluso, codice precompilato
+      Portatile (predefinito): cartella con GestioneFile.exe e le librerie, .NET incluso, codice precompilato
                                (ReadyToRun). Nessuna estrazione all'avvio: è il più veloce e il più stabile.
       Leggero:                 cartella di pochi MB che usa il .NET 10 Desktop Runtime installato sul PC.
-      FileUnico:               un solo PcOrg.exe compresso con tutto dentro (il più comodo, ma il più lento ad avviarsi):
+      FileUnico:               un solo GestioneFile.exe compresso con tutto dentro (il più comodo, ma il più lento ad avviarsi):
                                all'avvio estrae la libreria del database in una cartella temporanea.
     Le impostazioni valgono solo in pubblicazione, così i test possono referenziare il progetto.
   -->

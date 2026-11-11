@@ -349,7 +349,7 @@ public sealed partial class MainViewModel : ObservableObject
                 $"Non riesco a raggiungere \"{path}\".\n\n" +
                 "• Controlla che il computer o il NAS sia acceso e collegato alla rete.\n" +
                 "• Controlla il nome della condivisione (es. \\\\NAS\\Foto).\n" +
-                "• Se servono nome utente e password, apri prima la cartella da Esplora risorse e accedi: pcOrg userà lo stesso accesso.",
+                "• Se servono nome utente e password, apri prima la cartella da Esplora risorse e accedi: Gestione File userà lo stesso accesso.",
                 "Cartella di rete non raggiungibile");
             return;
         }
@@ -372,7 +372,7 @@ public sealed partial class MainViewModel : ObservableObject
         if (SelectedRoot?.Root is not { } root)
             return;
         if (!_dialogs.Confirm(
-                $"pcOrg smetterà di tenere in ordine \"{root.Path}\".\n\nI file restano dove sono: vengono solo tolti dall'elenco.",
+                $"Gestione File smetterà di tenere in ordine \"{root.Path}\".\n\nI file restano dove sono: vengono solo tolti dall'elenco.",
                 "Rimuovere la cartella?", "Rimuovi"))
             return;
         _index.RemoveRoot(root.Id);
@@ -582,8 +582,8 @@ public sealed partial class MainViewModel : ObservableObject
         foreach (var category in Enum.GetValues<FileCategory>().OrderBy(c => c.DisplayName()))
         {
             var stat = stats.FirstOrDefault(s => s.Category == category);
-            if (stat is null)
-                continue;
+            if (stat is null || IsCategoryHidden(category))
+                continue; // nessun file, oppure categoria nascosta dalle Impostazioni
             Categories.Add(new CategoryItem(category, category.DisplayName(), stat.Count, stat.TotalSize));
 
             var subcategories = Subcategories.For(category).ToList();

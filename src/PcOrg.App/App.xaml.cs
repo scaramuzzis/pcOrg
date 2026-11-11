@@ -35,15 +35,15 @@ public partial class App : Application
         Log.Initialize(AppPaths.LogFolder);
 
         // Una sola istanza per cartella dei dati: due copie aperte insieme scriverebbero sullo stesso
-        // indice e sulle stesse preferenze. Se pcOrg è già aperto si porta in primo piano quello.
+        // indice e sulle stesse preferenze. Se Gestione File è già aperto si porta in primo piano quello.
         _instance = new Mutex(true, SingleInstance.MutexName(AppPaths.DataFolder), out var first);
         if (!first)
         {
-            Log.Info("Avvio ignorato: pcOrg è già in esecuzione.");
+            Log.Info("Avvio ignorato: Gestione File è già in esecuzione.");
             if (!SingleInstance.ActivateRunning())
-                MessageBox.Show("pcOrg è già in esecuzione e sta ancora preparando i dati.\n\n" +
+                MessageBox.Show("Gestione File è già in esecuzione e sta ancora preparando i dati.\n\n" +
                                 "Attendi che compaia la sua finestra. Se non compare dopo alcuni minuti, chiudi il processo " +
-                                "\"PcOrg\" da Gestione attività e riavvia.", "pcOrg", MessageBoxButton.OK, MessageBoxImage.Information);
+                                "\"GestioneFile\" da Gestione attività e riavvia.", "Gestione File", MessageBoxButton.OK, MessageBoxImage.Information);
             Shutdown(0);
             return;
         }
@@ -57,7 +57,7 @@ public partial class App : Application
         FrameworkElement.LanguageProperty.OverrideMetadata(
             typeof(FrameworkElement), new FrameworkPropertyMetadata(XmlLanguage.GetLanguage(culture.IetfLanguageTag)));
 
-        Log.Info($"=== Avvio di pcOrg {AboutWindow.AppVersion} — dati in {AppPaths.DataFolder} ===");
+        Log.Info($"=== Avvio di Gestione File {AboutWindow.AppVersion} — dati in {AppPaths.DataFolder} ===");
 
         DispatcherUnhandledException += OnUnhandledException;
         AppDomain.CurrentDomain.UnhandledException += (_, args) =>
@@ -113,9 +113,9 @@ public partial class App : Application
             // Qualsiasi errore di avvio viene mostrato: il programma non deve mai restare aperto senza finestre.
             Log.Error("Avvio non riuscito.", ex);
             splash.Close();
-            MessageBox.Show($"pcOrg non è riuscito ad avviarsi.\n\n{ex.Message}\n\n" +
+            MessageBox.Show($"Gestione File non è riuscito ad avviarsi.\n\n{ex.Message}\n\n" +
                             $"Archivio dati: {AppPaths.DatabaseFile}\nIl dettaglio è nel registro: {Log.FilePath}",
-                "pcOrg", MessageBoxButton.OK, MessageBoxImage.Error);
+                "Gestione File", MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown(1);
         }
     }
@@ -125,7 +125,7 @@ public partial class App : Application
         if (_sessionStarted)
         {
             SessionGuard.End();
-            Log.Info("=== Chiusura di pcOrg ===");
+            Log.Info("=== Chiusura di Gestione File ===");
         }
         _instance?.Dispose();
         base.OnExit(e);

@@ -28,7 +28,7 @@ public sealed class FolderWatcher : IDisposable
     /// <summary>Modifiche raccolte (cartella monitorata, percorso). Viene chiamato su un thread in background.</summary>
     public event Action<IReadOnlyList<(long RootId, string Path)>>? ChangesReady;
 
-    /// <param name="ignore">Percorsi da non segnalare (es. i file dei dati di pcOrg stesso).</param>
+    /// <param name="ignore">Percorsi da non segnalare (es. i file dei dati di Gestione File stesso).</param>
     public FolderWatcher(Func<string, bool>? ignore = null)
     {
         _ignore = ignore ?? (_ => false);

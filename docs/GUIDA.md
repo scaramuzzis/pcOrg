@@ -1,32 +1,32 @@
-# Guida di pcOrg
+# Guida di Gestione File
 
-pcOrg mette ordine tra i file che si accumulano sul PC: installer, driver, programmi, documenti, foto, archivi e immagini disco. Analizza le cartelle che scegli, divide i file per categoria, legge versione, produttore e firma digitale di programmi e installer, e te li fa trovare all'istante. Sei sempre tu a decidere se e dove spostare i file: pcOrg non cancella e non sovrascrive nulla, e ogni spostamento si può annullare.
+Gestione File mette ordine tra i file che si accumulano sul PC: installer, driver, programmi, documenti, foto, archivi e immagini disco. Analizza le cartelle che scegli, divide i file per categoria, legge versione, produttore e firma digitale di programmi e installer, e te li fa trovare all'istante. Sei sempre tu a decidere se e dove spostare i file: Gestione File non cancella e non sovrascrive nulla, e ogni spostamento si può annullare.
 
-Questa guida spiega in dettaglio ogni funzione e come usarla al meglio. Puoi aprirla in qualsiasi momento con **F1** o dal menu **? → Guida di pcOrg**.
+Questa guida spiega in dettaglio ogni funzione e come usarla al meglio. Puoi aprirla in qualsiasi momento con **F1** o dal menu **? → Guida di Gestione File**.
 
 ## Primo avvio
 
-pcOrg non richiede installazione. Dalla pagina **Releases** del progetto scegli uno di questi pacchetti:
+Gestione File non richiede installazione. Dalla pagina **Releases** del progetto scegli uno di questi pacchetti:
 
 | Pacchetto | Quando sceglierlo |
 |---|---|
-| **pcOrg-portatile-win-x64.zip** (consigliato) | Contiene tutto il necessario. Estrai la cartella `pcOrg` dove preferisci (per esempio in `C:\Programmi` o su una chiavetta) e avvia `PcOrg.exe`. È il più veloce ad avviarsi e il più stabile. |
-| **pcOrg-leggero-win-x64.zip** | Solo 2–3 MB. Richiede il **.NET 10 Desktop Runtime** di Microsoft: se manca, al primo avvio Windows propone di scaricarlo. Ideale se lo hai già o se distribuisci pcOrg su più PC. |
-| **PcOrg.exe** (file unico) | Un solo file da copiare. È il più comodo ma il più lento ad avviarsi, perché ogni volta deve decomprimersi; alcuni antivirus lo controllano più a lungo. |
+| **GestioneFile-portatile-win-x64.zip** (consigliato) | Contiene tutto il necessario. Estrai la cartella `GestioneFile` dove preferisci (per esempio in `C:\Programmi` o su una chiavetta) e avvia `GestioneFile.exe`. È il più veloce ad avviarsi e il più stabile. |
+| **GestioneFile-leggero-win-x64.zip** | Solo 2–3 MB. Richiede il **.NET 10 Desktop Runtime** di Microsoft: se manca, al primo avvio Windows propone di scaricarlo. Ideale se lo hai già o se distribuisci Gestione File su più PC. |
+| **GestioneFile.exe** (file unico) | Un solo file da copiare. È il più comodo ma il più lento ad avviarsi, perché ogni volta deve decomprimersi; alcuni antivirus lo controllano più a lungo. |
 
-Nei pacchetti a cartella tieni insieme tutti i file: `PcOrg.exe` da solo non funziona senza le sue librerie. Per comodità puoi creare un collegamento sul Desktop (tasto destro su `PcOrg.exe` → **Mostra altre opzioni → Invia a → Desktop**).
+Nei pacchetti a cartella tieni insieme tutti i file: `GestioneFile.exe` da solo non funziona senza le sue librerie. Per comodità puoi creare un collegamento sul Desktop (tasto destro su `GestioneFile.exe` → **Mostra altre opzioni → Invia a → Desktop**).
 
 **Avviso di Windows.** Al primo avvio Windows potrebbe mostrare "PC protetto da Windows", perché il programma non ha una firma digitale commerciale. Clicca **Ulteriori informazioni** e poi **Esegui comunque**: l'avviso non comparirà più.
 
-**Una sola finestra.** Se avvii pcOrg mentre è già aperto, viene portata in primo piano la finestra esistente: due copie aperte insieme lavorerebbero sugli stessi dati.
+**Una sola finestra.** Se avvii Gestione File mentre è già aperto, viene portata in primo piano la finestra esistente: due copie aperte insieme lavorerebbero sugli stessi dati.
 
-**Modalità sicura.** Se pcOrg si era bloccato o era stato chiuso a forza, all'avvio successivo parte in **modalità sicura**: mostra l'elenco salvato ma salta l'aggiornamento automatico e la lettura delle periferiche, così si apre comunque. Puoi aggiornare a mano con **F5**; la volta dopo riparte normalmente. Il registro attività indica cosa era successo.
+**Modalità sicura.** Se Gestione File si era bloccato o era stato chiuso a forza, all'avvio successivo parte in **modalità sicura**: mostra l'elenco salvato ma salta l'aggiornamento automatico e la lettura delle periferiche, così si apre comunque. Puoi aggiornare a mano con **F5**; la volta dopo riparte normalmente. Il registro attività indica cosa era successo.
 
 **Schermata di benvenuto.** Finché non aggiungi una cartella vedi una schermata di benvenuto con il pulsante **Aggiungi la prima cartella**. Da lì in poi la finestra principale mostra le tue cartelle, le categorie e l'elenco dei file.
 
 **Dove vengono salvati i dati.** L'elenco dei file (chiamato indice), la cronologia degli spostamenti e le preferenze sono salvati in `%LOCALAPPDATA%\pcOrg`. Per aprire questa cartella usa **Strumenti → Apri la cartella dei dati**.
 
-> **Modalità portatile.** Per usare pcOrg da una chiavetta USB crea una cartella chiamata `pcOrg-dati` accanto a `PcOrg.exe`: i dati verranno salvati lì e viaggeranno con la chiavetta.
+> **Modalità portatile.** Per usare Gestione File da una chiavetta USB crea una cartella chiamata `pcOrg-dati` accanto a `GestioneFile.exe`: i dati verranno salvati lì e viaggeranno con la chiavetta.
 
 ## La finestra principale
 
@@ -39,13 +39,13 @@ La finestra è divisa in quattro zone:
 | **Pannello di sinistra** | Le **cartelle monitorate** e le **categorie** con il numero di file e lo spazio occupato. |
 | **Area centrale** | Le schede **File** e **Prodotti e versioni**, i pulsanti di comando, l'elenco dei file, i dettagli del file selezionato e l'anteprima delle immagini. |
 
-In basso la **barra di stato** indica cosa sta facendo pcOrg (per esempio "Scansione di C:\Download: 12.500 file…") e quanti file sono mostrati. Durante le operazioni lunghe compare una sottile barra di avanzamento sotto l'intestazione e il pulsante **Interrompi**.
+In basso la **barra di stato** indica cosa sta facendo Gestione File (per esempio "Scansione di C:\Download: 12.500 file…") e quanti file sono mostrati. Durante le operazioni lunghe compare una sottile barra di avanzamento sotto l'intestazione e il pulsante **Interrompi**.
 
 Passando con il mouse su un pulsante compare un suggerimento che spiega cosa fa.
 
 ## Panoramica
 
-All'apertura pcOrg mostra la scheda **Panoramica** (**Ctrl+0**), il colpo d'occhio sulla situazione:
+All'apertura Gestione File mostra la scheda **Panoramica** (**Ctrl+0**), il colpo d'occhio sulla situazione:
 
 - **File in ordine** — quanti file sono indicizzati, lo spazio totale e le cartelle (con l'avviso se qualcuna non è raggiungibile);
 - **Versioni vecchie** — lo spazio occupato dalle versioni superate dei programmi;
@@ -56,51 +56,51 @@ Un clic su un riquadro apre la scheda di dettaglio. Sotto trovi le **azioni rapi
 
 ## Le cartelle monitorate
 
-Le cartelle monitorate sono quelle che pcOrg tiene in ordine: tipicamente **Download**, **Desktop**, una cartella di installer o driver, un disco esterno o una cartella su un NAS.
+Le cartelle monitorate sono quelle che Gestione File tiene in ordine: tipicamente **Download**, **Desktop**, una cartella di installer o driver, un disco esterno o una cartella su un NAS.
 
-**Aggiungere una cartella.** Usa il pulsante **+** nel pannello di sinistra, il menu **File → Aggiungi cartella** oppure **Ctrl+O**. pcOrg esamina subito la cartella e tutte le sottocartelle.
+**Aggiungere una cartella.** Usa il pulsante **+** nel pannello di sinistra, il menu **File → Aggiungi cartella** oppure **Ctrl+O**. Gestione File esamina subito la cartella e tutte le sottocartelle.
 
-**Rimuovere una cartella.** Selezionala e usa il pulsante con il cestino o **File → Rimuovi la cartella selezionata**. I file **restano dove sono**: vengono solo tolti dall'elenco di pcOrg.
+**Rimuovere una cartella.** Selezionala e usa il pulsante con il cestino o **File → Rimuovi la cartella selezionata**. I file **restano dove sono**: vengono solo tolti dall'elenco di Gestione File.
 
 **Cartelle una dentro l'altra.** Se aggiungi una cartella che contiene cartelle già monitorate, queste vengono unite nella nuova. Non è invece possibile aggiungere una cartella che è già contenuta in un'altra monitorata: è già inclusa.
 
 Sotto ogni cartella sono indicati il percorso completo e la data dell'ultimo aggiornamento.
 
-**Cartelle di OneDrive.** Le cartelle sincronizzate con OneDrive (spesso Desktop e Documenti) vengono indicizzate normalmente. I file **disponibili solo online** (con la nuvoletta) compaiono nell'elenco ma pcOrg **non li apre**, per non farli scaricare: non ne legge versione e firma, non ne mostra l'anteprima e non li confronta nella ricerca dei cloni. Nei dettagli compare "Disponibile solo online".
+**Cartelle di OneDrive.** Le cartelle sincronizzate con OneDrive (spesso Desktop e Documenti) vengono indicizzate normalmente. I file **disponibili solo online** (con la nuvoletta) compaiono nell'elenco ma Gestione File **non li apre**, per non farli scaricare: non ne legge versione e firma, non ne mostra l'anteprima e non li confronta nella ricerca dei cloni. Nei dettagli compare "Disponibile solo online".
 
 **Collegamenti a cartelle.** I collegamenti (junction e link simbolici) non vengono seguiti, per non mostrare due volte gli stessi file.
 
 ## Cartelle di rete
 
-pcOrg può tenere in ordine anche cartelle condivise su un **NAS** o su un **altro computer** della rete.
+Gestione File può tenere in ordine anche cartelle condivise su un **NAS** o su un **altro computer** della rete.
 
-**Aggiungere una cartella di rete.** Usa il pulsante con l'icona di rete accanto al **+**, il menu **File → Aggiungi cartella di rete** oppure **Ctrl+Maiusc+O**. Scrivi il percorso nella forma `\\NOME-NAS\Condivisione\Cartella` (per esempio `\\NAS\Foto`) oppure sceglilo con **Sfoglia…**. Prima di aggiungerla pcOrg controlla che sia raggiungibile.
+**Aggiungere una cartella di rete.** Usa il pulsante con l'icona di rete accanto al **+**, il menu **File → Aggiungi cartella di rete** oppure **Ctrl+Maiusc+O**. Scrivi il percorso nella forma `\\NOME-NAS\Condivisione\Cartella` (per esempio `\\NAS\Foto`) oppure sceglilo con **Sfoglia…**. Prima di aggiungerla Gestione File controlla che sia raggiungibile.
 
-**Unità di rete (Z:, Y:…).** Se scegli una cartella su un'unità di rete collegata a una lettera, pcOrg la salva con il suo percorso di rete vero: così continua a funzionare anche se la lettera cambia o non è collegata all'avvio.
+**Unità di rete (Z:, Y:…).** Se scegli una cartella su un'unità di rete collegata a una lettera, Gestione File la salva con il suo percorso di rete vero: così continua a funzionare anche se la lettera cambia o non è collegata all'avvio.
 
-**Nome utente e password.** Se la condivisione richiede un accesso, aprila prima da Esplora risorse ed effettua l'accesso (spuntando "Memorizza credenziali"): pcOrg userà lo stesso accesso.
+**Nome utente e password.** Se la condivisione richiede un accesso, aprila prima da Esplora risorse ed effettua l'accesso (spuntando "Memorizza credenziali"): Gestione File userà lo stesso accesso.
 
 **Quando la cartella non è raggiungibile** (NAS spento, PC portatile fuori casa) compare in grigio con la scritta **Non raggiungibile**. I suoi file restano nell'elenco e si possono cercare con i dati dell'ultimo aggiornamento; vengono aggiornati appena la cartella torna disponibile. Se la rete cade durante una scansione, l'elenco di quella cartella resta com'era: non si perde nulla.
 
-> Sui file in rete pcOrg legge chi ha firmato un programma ma non verifica la firma, perché la verifica richiederebbe di leggere ogni file per intero attraverso la rete. Per questo la firma compare con il simbolo **?**.
+> Sui file in rete Gestione File legge chi ha firmato un programma ma non verifica la firma, perché la verifica richiederebbe di leggere ogni file per intero attraverso la rete. Per questo la firma compare con il simbolo **?**.
 
 ## Aggiornare l'indice
 
-pcOrg tiene l'elenco aggiornato in tre modi, pensati per essere veloci anche con milioni di file.
+Gestione File tiene l'elenco aggiornato in tre modi, pensati per essere veloci anche con milioni di file.
 
-**1. Rilevamento automatico (mentre pcOrg è aperto).** Ogni file che scarichi, copi, rinomini o elimini in una cartella monitorata viene registrato subito, in pochi millisecondi, senza nessuna scansione: la barra di stato mostra per esempio "Modifiche rilevate: 1 file nuovo". Funziona anche con le cartelle di rete che supportano le notifiche di modifica (la maggior parte dei NAS).
+**1. Rilevamento automatico (mentre Gestione File è aperto).** Ogni file che scarichi, copi, rinomini o elimini in una cartella monitorata viene registrato subito, in pochi millisecondi, senza nessuna scansione: la barra di stato mostra per esempio "Modifiche rilevate: 1 file nuovo". Funziona anche con le cartelle di rete che supportano le notifiche di modifica (la maggior parte dei NAS).
 
-**2. Aggiornamento rapido (F5 e a ogni avvio).** Trova ciò che è cambiato mentre pcOrg era chiuso. pcOrg ricorda la data di modifica di ogni cartella: Windows la aggiorna quando nella cartella viene aggiunto, tolto o rinominato qualcosa. Le cartelle non cambiate non vengono rilette; si rileggono solo quelle cambiate e nell'indice si scrivono solo le differenze. Con 100.000 file in 1.000 cartelle, un aggiornamento senza modifiche richiede circa un centesimo di secondo.
+**2. Aggiornamento rapido (F5 e a ogni avvio).** Trova ciò che è cambiato mentre Gestione File era chiuso. Gestione File ricorda la data di modifica di ogni cartella: Windows la aggiorna quando nella cartella viene aggiunto, tolto o rinominato qualcosa. Le cartelle non cambiate non vengono rilette; si rileggono solo quelle cambiate e nell'indice si scrivono solo le differenze. Con 100.000 file in 1.000 cartelle, un aggiornamento senza modifiche richiede circa un centesimo di secondo.
 
-Su chiavette e schede di memoria formattate **FAT32 o exFAT** Windows non aggiorna la data delle cartelle: per quelle pcOrg esegue automaticamente la scansione completa, così non perde nessun file.
+Su chiavette e schede di memoria formattate **FAT32 o exFAT** Windows non aggiorna la data delle cartelle: per quelle Gestione File esegue automaticamente la scansione completa, così non perde nessun file.
 
-**3. Scansione completa (Ctrl+F5 o File → Scansione completa).** Rilegge tutte le cartelle. Serve raramente: per esempio se un file è stato *modificato nel contenuto* (non aggiunto o rinominato) mentre pcOrg era chiuso, perché in quel caso la data della cartella non cambia.
+**3. Scansione completa (Ctrl+F5 o File → Scansione completa).** Rilegge tutte le cartelle. Serve raramente: per esempio se un file è stato *modificato nel contenuto* (non aggiunto o rinominato) mentre Gestione File era chiuso, perché in quel caso la data della cartella non cambia.
 
-Dopo l'aggiornamento pcOrg legge **versioni e firme** dei programmi e degli installer nuovi o modificati (`.exe`, `.msi`, `.sys`) e l'indirizzo delle connessioni remote (`.vnc`, `.rdp`). La prima volta può richiedere qualche minuto, perché la verifica della firma legge ogni programma per intero; le volte successive vengono letti solo i file nuovi.
+Dopo l'aggiornamento Gestione File legge **versioni e firme** dei programmi e degli installer nuovi o modificati (`.exe`, `.msi`, `.sys`) e l'indirizzo delle connessioni remote (`.vnc`, `.rdp`). La prima volta può richiedere qualche minuto, perché la verifica della firma legge ogni programma per intero; le volte successive vengono letti solo i file nuovi.
 
-Puoi continuare a usare pcOrg durante l'aggiornamento. Il pulsante **Interrompi** nella barra di stato ferma l'operazione: riprenderà dal punto in cui si era fermata al prossimo aggiornamento.
+Puoi continuare a usare Gestione File durante l'aggiornamento. Il pulsante **Interrompi** nella barra di stato ferma l'operazione: riprenderà dal punto in cui si era fermata al prossimo aggiornamento.
 
-**I dati restano salvati.** Tutto ciò che pcOrg trova viene registrato man mano nel file dell'indice (`indice.db`): chiudendo e riaprendo l'applicazione l'elenco ricompare subito, anche se avevi interrotto un aggiornamento a metà. Se chiudi la finestra mentre un aggiornamento è in corso, pcOrg te lo segnala, salva il lavoro fatto e poi si chiude.
+**I dati restano salvati.** Tutto ciò che Gestione File trova viene registrato man mano nel file dell'indice (`indice.db`): chiudendo e riaprendo l'applicazione l'elenco ricompare subito, anche se avevi interrotto un aggiornamento a metà. Se chiudi la finestra mentre un aggiornamento è in corso, Gestione File te lo segnala, salva il lavoro fatto e poi si chiude.
 
 Rilevamento automatico e aggiornamento all'avvio si possono disattivare da **Strumenti → Impostazioni → Generale**.
 
@@ -175,7 +175,7 @@ Selezionando un file, sotto l'elenco compare la scheda con tutti i suoi dettagli
 - **? Nome editore** — firma presente ma non verificata (per esempio sui file in rete).
 - **Non firmato** — il file non ha firma: è normale per molti programmi gratuiti, ma conviene sapere da dove proviene.
 
-**Installato sul PC?** pcOrg legge l'elenco dei programmi installati (lo stesso di **Impostazioni di Windows → App installate**) e lo confronta con installer e driver:
+**Installato sul PC?** Gestione File legge l'elenco dei programmi installati (lo stesso di **Impostazioni di Windows → App installate**) e lo confronta con installer e driver:
 
 - **Non installato** — il programma non è presente su questo PC;
 - **Installato (versione)** — è installata proprio quella versione;
@@ -194,7 +194,7 @@ Seleziona uno o più file e usa **Etichette…** (scheda File), il tasto destro,
 
 - Si trovano con la **ricerca normale**: scrivi il nome dell'etichetta o una parola della nota.
 - Compaiono nei **dettagli** del file e nelle colonne facoltative **Etichette** e **Nota**.
-- **Seguono il file** quando lo sposti con pcOrg e restano anche se ricostruisci l'indice.
+- **Seguono il file** quando lo sposti con Gestione File e restano anche se ricostruisci l'indice.
 - Per toglierle, lascia vuoti i campi.
 
 ## Anteprima delle immagini
@@ -224,7 +224,7 @@ Il pulsante **Seleziona le versioni vecchie** le seleziona tutte in un clic: poi
 
 Chi conserva i driver accumula negli anni pacchetti per schede, stampanti e periferiche che non ha più. La scheda **Driver e periferiche** (**Ctrl+4**) confronta i driver del tuo archivio con le **periferiche presenti su questo PC** e ti dice quali servono, quali sono **più recenti** di quelli installati e quali **non servono più**.
 
-**Come funziona.** Ogni pacchetto driver contiene un file `.inf` che elenca gli **identificativi hardware** delle periferiche supportate (per esempio `PCI\VEN_10DE&DEV_2484` per una scheda video NVIDIA). pcOrg legge questi identificativi, la versione e il fornitore del driver; poi legge le periferiche presenti, con i loro identificativi e la versione del driver installato, dalla stessa fonte di **Gestione dispositivi** di Windows, e li confronta.
+**Come funziona.** Ogni pacchetto driver contiene un file `.inf` che elenca gli **identificativi hardware** delle periferiche supportate (per esempio `PCI\VEN_10DE&DEV_2484` per una scheda video NVIDIA). Gestione File legge questi identificativi, la versione e il fornitore del driver; poi legge le periferiche presenti, con i loro identificativi e la versione del driver installato, dalla stessa fonte di **Gestione dispositivi** di Windows, e li confronta.
 
 **Le periferiche.** In alto c'è l'elenco delle periferiche di questo PC con classe, driver installato, fornitore, quanti driver dell'archivio le riguardano e lo stato:
 
@@ -238,11 +238,11 @@ Togli la spunta da **Solo periferiche con driver nell'archivio** per vedere tutt
 
 Lo stato compare anche nella colonna **Sul PC** (scheda Prodotti e colonna facoltativa dell'elenco file) per i file `.inf` e per gli altri file dello stesso pacchetto (`.sys`, `.cat`, `.dll`).
 
-> I driver forniti solo come programma di installazione (per esempio un unico `.exe` di NVIDIA) non contengono un `.inf` leggibile finché non vengono estratti: per quelli pcOrg mostra versione e produttore, ma non può confrontarli con le periferiche. Per installare un driver usa sempre il programma del produttore o Gestione dispositivi.
+> I driver forniti solo come programma di installazione (per esempio un unico `.exe` di NVIDIA) non contengono un `.inf` leggibile finché non vengono estratti: per quelli Gestione File mostra versione e produttore, ma non può confrontarli con le periferiche. Per installare un driver usa sempre il programma del produttore o Gestione dispositivi.
 
 ## Regole di archiviazione
 
-Le regole dicono a pcOrg **dove archiviare** i file, così non devi spostarli uno a uno. Una regola è fatta di **condizioni** (categoria, produttore, nome del file) e di una **cartella di destinazione**; per esempio:
+Le regole dicono a Gestione File **dove archiviare** i file, così non devi spostarli uno a uno. Una regola è fatta di **condizioni** (categoria, produttore, nome del file) e di una **cartella di destinazione**; per esempio:
 
 | Regola | Condizioni | Destinazione |
 |---|---|---|
@@ -260,7 +260,7 @@ L'**ordine conta**: ogni file va nella cartella della **prima** regola che lo ri
 
 Spesso lo stesso file è presente più volte: lo stesso installer scaricato due volte (`setup.exe` e `setup (1).exe`), una foto copiata in un'altra cartella, un backup duplicato. La scheda **Cloni e pulizia** (**Ctrl+3**) trova i file con **contenuto identico**, anche se hanno nomi diversi o stanno in cartelle diverse, e ti aiuta a liberare spazio in sicurezza.
 
-**Cercare i cloni.** Scegli la dimensione minima (per esempio *Più grandi di 1 MB*, per concentrarti sui file che pesano davvero) e premi **Cerca i cloni**. Per essere veloce anche con milioni di file pcOrg confronta per gradi:
+**Cercare i cloni.** Scegli la dimensione minima (per esempio *Più grandi di 1 MB*, per concentrarti sui file che pesano davvero) e premi **Cerca i cloni**. Per essere veloce anche con milioni di file Gestione File confronta per gradi:
 
 1. considera solo i file che hanno un altro file della **stessa dimensione**;
 2. per questi calcola un'**impronta veloce** leggendo solo l'inizio e la fine del file;
@@ -278,7 +278,7 @@ Le impronte vengono ricordate: la ricerca successiva rilegge solo i file nuovi o
 
 Poi usa **Sposta nel Cestino** oppure **Sposta in…** (per esempio in una cartella "Doppioni" da controllare con calma).
 
-> **Sicurezza.** pcOrg non permette di eliminare **tutte** le copie di un file: se in un gruppo le hai segnate tutte, te lo segnala e non procede. Prima di spostare nel Cestino controlla che ogni file esista ancora e non sia cambiato dall'ultimo aggiornamento. I file vanno nel **Cestino di Windows**, da cui puoi sempre ripristinarli.
+> **Sicurezza.** Gestione File non permette di eliminare **tutte** le copie di un file: se in un gruppo le hai segnate tutte, te lo segnala e non procede. Prima di spostare nel Cestino controlla che ogni file esista ancora e non sia cambiato dall'ultimo aggiornamento. I file vanno nel **Cestino di Windows**, da cui puoi sempre ripristinarli.
 
 **Cestino anche dalle altre schede.** Nelle schede **File** e **Prodotti e versioni** puoi spostare nel Cestino i file selezionati con il tasto **Canc**, con il menu **Modifica → Sposta nel Cestino** o con il tasto destro. Utile, per esempio, dopo aver selezionato le **versioni vecchie** di un programma.
 
@@ -293,7 +293,7 @@ Seleziona uno o più file (con **Ctrl** o **Maiusc** per selezionarne più di un
    - **Già nella destinazione** o **File non trovato** — verrà ignorato.
 3. **Conferma** con il pulsante **Sposta N file**.
 
-pcOrg **non sovrascrive mai** un file esistente e **non cancella nulla**. Se la cartella di destinazione non è monitorata, l'anteprima propone di aggiungerla, così i file spostati restano cercabili.
+Gestione File **non sovrascrive mai** un file esistente e **non cancella nulla**. Se la cartella di destinazione non è monitorata, l'anteprima propone di aggiungerla, così i file spostati restano cercabili.
 
 Al termine compare una notifica in basso a destra con il pulsante **Annulla**, che riporta subito i file dov'erano.
 
@@ -339,19 +339,23 @@ Usi tipici: un inventario dei driver da conservare, l'elenco degli installer da 
 
 Anche i menu si usano da tastiera: premi **Alt** e la lettera sottolineata (per esempio **Alt+F** per il menu File). Con il tasto destro sull'elenco dei file compare un menu con le azioni più comuni.
 
-**Apri** esegue il file con il programma predefinito. Per programmi, installer, driver e script pcOrg chiede prima conferma, per evitare di avviarli per sbaglio.
+**Apri** esegue il file con il programma predefinito. Per programmi, installer, driver e script Gestione File chiede prima conferma, per evitare di avviarli per sbaglio.
 
 ## Impostazioni e personalizzazione
 
-Apri **Strumenti → Impostazioni** (o **Ctrl+,**). La finestra ha quattro schede (Generale, Colonne, Regole, Dati e registro); le modifiche si applicano con **Salva** e vengono ricordate ai successivi avvii.
+Apri **Strumenti → Impostazioni** (o **Ctrl+,**). La finestra ha cinque schede (Generale, Colonne, Regole, Dati e registro, Categorie); le modifiche si applicano con **Salva** e vengono ricordate ai successivi avvii.
 
 **Generale**
 
 - **Tema**: come Windows (segue il tema chiaro o scuro del sistema), chiaro oppure scuro.
-- **Rileva automaticamente file nuovi, modificati o eliminati**: mentre pcOrg è aperto ogni modifica viene registrata subito.
+- **Rileva automaticamente file nuovi, modificati o eliminati**: mentre Gestione File è aperto ogni modifica viene registrata subito.
 - **Aggiornamento rapido a ogni avvio**: l'elenco salvato compare subito e in background vengono rilette solo le cartelle cambiate.
 - **Verifica le firme digitali**: garantisce che i programmi non siano stati modificati, ma legge ogni programma per intero; disattivala se l'aggiornamento è lento.
 - **Pannelli**: mostra o nascondi l'anteprima delle immagini e i dettagli del file.
+
+**Categorie**
+
+Nella scheda **Categorie** (raggiungibile anche da **Visualizza → Categorie da mostrare…**) spunti le categorie che vuoi vedere nel pannello **Categorie** a sinistra. Quelle senza spunta vengono solo nascoste dall'elenco, insieme alle loro sottocategorie: i file restano indicizzati e si trovano sempre con **Tutti** e con la ricerca. **Tutte** rimette tutte le spunte. La scelta viene ricordata ai successivi avvii.
 
 **Colonne**
 
@@ -366,7 +370,7 @@ Le colonne si possono gestire anche direttamente nell'elenco:
 - **fai clic** su un'intestazione per ordinare l'elenco;
 - **tasto destro** su un'intestazione per mostrare o nascondere le colonne, ripristinare quelle predefinite o aprire la configurazione.
 
-pcOrg ricorda posizione, larghezza, visibilità e ordinamento delle colonne, la larghezza del pannello di sinistra (trascina il bordo tra il pannello e l'elenco) e la posizione e dimensione della finestra.
+Gestione File ricorda posizione, larghezza, visibilità e ordinamento delle colonne, la larghezza del pannello di sinistra (trascina il bordo tra il pannello e l'elenco) e la posizione e dimensione della finestra.
 
 **Dati e registro**
 
@@ -377,7 +381,7 @@ Mostra dove sono salvati i dati e quanti file contiene l'indice, e permette di:
 - **compattare l'indice**, per ridurre lo spazio occupato dopo aver rimosso molte cartelle;
 - **ricostruire l'indice**: svuota l'elenco dei file e analizza di nuovo tutte le cartelle (cartelle, cronologia e preferenze restano).
 
-**I file di pcOrg** (nella cartella dei dati):
+**I file di Gestione File** (nella cartella dei dati):
 
 | File | Contenuto |
 |---|---|
@@ -387,9 +391,9 @@ Mostra dove sono salvati i dati e quanti file contiene l'indice, e permette di:
 
 > Se qualcosa non va come previsto, il **registro attività** (Strumenti → Apri il registro attività) indica cosa è successo e quando: è la prima cosa da controllare o da inviare a chi ti assiste.
 
-## Aggiornamenti di pcOrg
+## Aggiornamenti di Gestione File
 
-Dal menu **? → Controlla aggiornamenti** pcOrg verifica se è stata pubblicata una versione più recente e, se c'è, propone di aprire la pagina da cui scaricarla. Puoi anche attivare il controllo a ogni avvio da **Impostazioni → Generale** (è disattivato per impostazione predefinita). pcOrg non si aggiorna da solo: scarichi tu il nuovo pacchetto e sostituisci la cartella; i tuoi dati non vengono toccati.
+Dal menu **? → Controlla aggiornamenti** Gestione File verifica se è stata pubblicata una versione più recente e, se c'è, propone di aprire la pagina da cui scaricarla. Puoi anche attivare il controllo a ogni avvio da **Impostazioni → Generale** (è disattivato per impostazione predefinita). Gestione File non si aggiorna da solo: scarichi tu il nuovo pacchetto e sostituisci la cartella; i tuoi dati non vengono toccati.
 
 ## Consigli per organizzare al meglio
 
@@ -404,9 +408,9 @@ Dal menu **? → Controlla aggiornamenti** pcOrg verifica se è stata pubblicata
 
 ## Domande frequenti
 
-**Ho aggiunto un file ma non lo vedo.** Con il rilevamento automatico attivo compare in pochi istanti; altrimenti premi **F5**. Se il file è stato solo modificato nel contenuto mentre pcOrg era chiuso, usa **Ctrl+F5** (scansione completa).
+**Ho aggiunto un file ma non lo vedo.** Con il rilevamento automatico attivo compare in pochi istanti; altrimenti premi **F5**. Se il file è stato solo modificato nel contenuto mentre Gestione File era chiuso, usa **Ctrl+F5** (scansione completa).
 
-**Chiudendo e riaprendo pcOrg non vedo più i file.** Dalla versione 0.7 i file trovati vengono salvati man mano e l'elenco ricompare subito all'avvio; la barra di stato indica "Indice caricato: N file in M cartelle". Se non succede, apri **Strumenti → Impostazioni → Dati e registro** per controllare dove si trova l'indice e quanti file contiene, e apri il **registro attività** per vedere eventuali errori.
+**Chiudendo e riaprendo Gestione File non vedo più i file.** Dalla versione 0.7 i file trovati vengono salvati man mano e l'elenco ricompare subito all'avvio; la barra di stato indica "Indice caricato: N file in M cartelle". Se non succede, apri **Strumenti → Impostazioni → Dati e registro** per controllare dove si trova l'indice e quanti file contiene, e apri il **registro attività** per vedere eventuali errori.
 
 **Non trovo un file che so di avere.** Controlla che la sua cartella sia tra quelle monitorate, premi **F5** per aggiornare l'indice e verifica che non sia selezionata una categoria diversa da **Tutti**.
 
@@ -420,11 +424,11 @@ Dal menu **? → Controlla aggiornamenti** pcOrg verifica se è stata pubblicata
 
 **Ho spostato dei file per errore.** Usa **Annulla** nella notifica oppure **Strumenti → Cronologia spostamenti → Riporta i file dov'erano**.
 
-**Voglio ricominciare da zero.** Chiudi pcOrg, apri la cartella dei dati (**Strumenti → Apri la cartella dei dati**) e cancella il file `indice.db`. Al successivo avvio ripartirai dalla schermata di benvenuto; i tuoi file non vengono toccati.
+**Voglio ricominciare da zero.** Chiudi Gestione File, apri la cartella dei dati (**Strumenti → Apri la cartella dei dati**) e cancella il file `indice.db`. Al successivo avvio ripartirai dalla schermata di benvenuto; i tuoi file non vengono toccati.
 
 ## Privacy e sicurezza
 
 - Tutte le analisi avvengono **sul tuo PC**, compresa la verifica delle firme digitali e la lettura del contenuto dei documenti. L'unica funzione che usa internet è il **controllo degli aggiornamenti**, che parte solo se lo chiedi (o lo attivi nelle Impostazioni) e legge soltanto il numero dell'ultima versione, senza inviare dati.
-- pcOrg **non cancella definitivamente e non modifica** il contenuto dei file. Le uniche operazioni sui file sono quelle che confermi tu: gli spostamenti, sempre annullabili, e lo spostamento nel **Cestino di Windows**, da cui puoi ripristinare i file.
+- Gestione File **non cancella definitivamente e non modifica** il contenuto dei file. Le uniche operazioni sui file sono quelle che confermi tu: gli spostamenti, sempre annullabili, e lo spostamento nel **Cestino di Windows**, da cui puoi ripristinare i file.
 - Nessun file viene **sovrascritto**: in caso di nomi uguali viene aggiunto un numero, per esempio `setup (2).exe`.
-- I dati di pcOrg (indice, cronologia, preferenze, registro attività) restano nella cartella dei dati sul tuo PC.
+- I dati di Gestione File (indice, cronologia, preferenze, registro attività) restano nella cartella dei dati sul tuo PC.

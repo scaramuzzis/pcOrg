@@ -1,4 +1,4 @@
-# pcOrg — Migliorie proposte
+# Gestione File — Migliorie proposte
 
 Proposte ordinate per **valore per l'utente / costo**. Ogni voce indica il problema, la soluzione e una stima indicativa (giorni di lavoro per una persona).
 
@@ -10,7 +10,7 @@ Proposte ordinate per **valore per l'utente / costo**. Ogni voce indica il probl
 | 2 | ✅ **Sposta nel Cestino** (v0.9) | Per liberare spazio oggi bisogna passare da Esplora risorse. | `Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(..., RecycleOption.SendToRecycleBin)`: mai eliminazione definitiva, sempre con conferma e registro. | 1 |
 | 3 | ✅ **Aggiornamento automatico** delle cartelle (v0.8) | Bisogna premere F5 dopo ogni download. | `FileSystemWatcher` per le cartelle locali (con raggruppamento degli eventi ogni 2 s); per le cartelle di rete controllo periodico leggero. | 2–3 |
 | 4 | ✅ **Regole di archiviazione** (v0.10) | Riordinare a mano Driver e Installer è ripetitivo. | Regole salvate ("Driver di NVIDIA → D:\Archivio\Driver\NVIDIA"), proposte nell'anteprima di spostamento; mai applicate senza conferma. | 3 |
-| 5 | **Firma del codice di PcOrg.exe** | L'avviso "PC protetto da Windows" spaventa chi riceve l'app. | Certificato di firma del codice (OV o EV) e firma nella build di GitHub; in alternativa Microsoft Store/MSIX. | 1 + costo del certificato |
+| 5 | **Firma del codice di GestioneFile.exe** | L'avviso "PC protetto da Windows" spaventa chi riceve l'app. | Certificato di firma del codice (OV o EV) e firma nella build di GitHub; in alternativa Microsoft Store/MSIX. | 1 + costo del certificato |
 
 ## Priorità media
 

@@ -26,7 +26,7 @@ public sealed partial class MainViewModel
         }
         if (_watcher is not null)
             return;
-        // Non si osservano i file di pcOrg stesso (indice, registro), se stanno in una cartella monitorata.
+        // Non si osservano i file di Gestione File stesso (indice, registro), se stanno in una cartella monitorata.
         var dataFolder = AppPaths.DataFolder;
         _watcher = new FolderWatcher(path => Core.PathUtil.IsSameOrUnder(path, dataFolder));
         _watcher.ChangesReady += OnChangesReady;

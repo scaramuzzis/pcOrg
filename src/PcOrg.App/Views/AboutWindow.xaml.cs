@@ -6,7 +6,7 @@ using PcOrg.App.Infrastructure;
 
 namespace PcOrg.App.Views;
 
-/// <summary>Finestra "Informazioni su pcOrg": versione, autore, cartella dei dati.</summary>
+/// <summary>Finestra "Informazioni su Gestione File": versione, autore, cartella dei dati.</summary>
 public partial class AboutWindow : Window
 {
     public AboutWindow()

@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:inf="clr-namespace:PcOrg.App.Infrastructure"
         xmlns:c="clr-namespace:PcOrg.App.Controls"
-        Title="Impostazioni" Icon="pack://application:,,,/PcOrg;component/Assets/pcorg.ico"
+        Title="Impostazioni" Icon="pack://application:,,,/GestioneFile;component/Assets/pcorg.ico"
         Width="720" Height="600" MinWidth="560" MinHeight="460"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
     <Grid>
@@ -39,10 +39,10 @@
                         <TextBlock Text="AGGIORNAMENTO" Style="{StaticResource SectionHeader}" Margin="0,0,0,8" />
                         <CheckBox x:Name="WatchFolders" Content="Rileva automaticamente file nuovi, modificati o eliminati (consigliato)" />
                         <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="28,2,0,12"
-                                   Text="Mentre pcOrg è aperto, ogni file che scarichi, sposti o elimini nelle cartelle monitorate viene registrato subito, senza ripetere la scansione." />
+                                   Text="Mentre Gestione File è aperto, ogni file che scarichi, sposti o elimini nelle cartelle monitorate viene registrato subito, senza ripetere la scansione." />
                         <CheckBox x:Name="ScanOnStartup" Content="Aggiornamento rapido delle cartelle a ogni avvio" />
                         <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="28,2,0,12"
-                                   Text="Trova ciò che è cambiato mentre pcOrg era chiuso. È rapido anche con milioni di file: rilegge solo le cartelle in cui qualcosa è stato aggiunto, tolto o rinominato. Per un controllo totale usa File → Scansione completa (Ctrl+F5)." />
+                                   Text="Trova ciò che è cambiato mentre Gestione File era chiuso. È rapido anche con milioni di file: rilegge solo le cartelle in cui qualcosa è stato aggiunto, tolto o rinominato. Per un controllo totale usa File → Scansione completa (Ctrl+F5)." />
                         <CheckBox x:Name="IndexContent" Content="Leggi il contenuto di documenti e archivi, per poterli cercare" />
                         <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="28,2,0,12"
                                    Text="Indicizza il testo di PDF, Word, PowerPoint, Excel e file di testo, e l'elenco dei file dentro ZIP e ISO. Serve al pulsante &quot;Nel contenuto&quot; della ricerca. Solo cartelle locali; la prima volta può richiedere qualche minuto." />
@@ -51,7 +51,7 @@
                                    Text="Garantisce che il file non sia stato modificato, ma legge ogni programma per intero: disattivala se l'aggiornamento è lento. Sui file in rete la firma non viene mai verificata." />
 
                         <TextBlock Text="AGGIORNAMENTI DI PCORG" Style="{StaticResource SectionHeader}" Margin="0,0,0,8" />
-                        <CheckBox x:Name="CheckUpdates" Content="All'avvio controlla se esiste una nuova versione di pcOrg" />
+                        <CheckBox x:Name="CheckUpdates" Content="All'avvio controlla se esiste una nuova versione di Gestione File" />
                         <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="28,2,0,18"
                                    Text="È l'unica funzione che usa internet: legge soltanto il numero dell'ultima versione pubblicata, senza inviare dati. Puoi sempre controllare a mano dal menu ? → Controlla aggiornamenti." />
 
@@ -214,6 +214,36 @@
                         </WrapPanel>
                     </StackPanel>
                 </ScrollViewer>
+            </TabItem>
+
+            <!-- ======================================================= Categorie -->
+            <TabItem Header="Categorie">
+                <Grid Margin="8,16,8,8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.ColumnSpan="2" Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="0,0,0,10"
+                               Text="Spunta le categorie da mostrare nel pannello Categorie. Quelle senza spunta vengono solo nascoste dall'elenco: i loro file restano indicizzati e si trovano sempre con Tutti e con la ricerca." />
+                    <ListBox x:Name="CategoryList" Grid.Row="1" ItemContainerStyle="{StaticResource CompactItem}"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <CheckBox Content="{Binding Key}" IsChecked="{Binding Visible}" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="12,0,0,0">
+                        <c:IconButton Glyph="{x:Static inf:Glyphs.Success}" Label="Tutte" Click="AllCategories_Click" HorizontalAlignment="Stretch" Margin="0,0,0,6"
+                                      ToolTip="Mostra tutte le categorie" />
+                        <c:IconButton Glyph="{x:Static inf:Glyphs.Undo}" Label="Nessuna" Click="NoCategories_Click" HorizontalAlignment="Stretch"
+                                      ToolTip="Togli tutte le spunte" />
+                    </StackPanel>
+                </Grid>
             </TabItem>
         </TabControl>
 

@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:inf="clr-namespace:PcOrg.App.Infrastructure"
         xmlns:c="clr-namespace:PcOrg.App.Controls"
-        Title="pcOrg" Icon="pack://application:,,,/PcOrg;component/Assets/pcorg.ico"
+        Title="Gestione File" Icon="pack://application:,,,/GestioneFile;component/Assets/pcorg.ico"
         Width="560" SizeToContent="Height" ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
     <Grid>
@@ -46,7 +46,7 @@
                     </Grid>
                 </DockPanel>
                 <TextBlock TextWrapping="Wrap" Margin="0,12,0,0" Style="{StaticResource Secondary}"
-                           Text="Se la cartella richiede nome utente e password, aprila prima da Esplora risorse ed effettua l'accesso: pcOrg userà lo stesso accesso. Quando la cartella non è raggiungibile i suoi file restano nell'elenco e vengono aggiornati appena torna disponibile." />
+                           Text="Se la cartella richiede nome utente e password, aprila prima da Esplora risorse ed effettua l'accesso: Gestione File userà lo stesso accesso. Quando la cartella non è raggiungibile i suoi file restano nell'elenco e vengono aggiornati appena torna disponibile." />
             </StackPanel>
         </Grid>
 

@@ -1,3 +1,4 @@
+using PcOrg.Core.Classification;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
@@ -37,6 +38,24 @@ public sealed partial class MainViewModel
     }
 
     /// <summary>Salva le preferenze su disco (se l'app le ha caricate da file).</summary>
+    /// <summary>Vero se la categoria è stata nascosta dal pannello "Categorie" (Impostazioni → Categorie).</summary>
+    public bool IsCategoryHidden(FileCategory category) =>
+        _settings.HiddenCategories.Contains(category.ToString(), StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Sceglie le categorie da non mostrare nel pannello "Categorie". Nascondere una categoria non tocca
+    /// i file: restano nell'indice e si trovano sempre con "Tutti" e con la ricerca.
+    /// </summary>
+    public void SetHiddenCategories(IEnumerable<FileCategory> hidden)
+    {
+        var names = hidden.Select(c => c.ToString()).Distinct().Order().ToList();
+        if (names.SequenceEqual(_settings.HiddenCategories.Order(), StringComparer.OrdinalIgnoreCase))
+            return;
+        _settings.HiddenCategories = names;
+        SaveSettings();
+        Fire(RefreshAsync(), "aggiornamento delle categorie");
+    }
+
     public void SaveSettings()
     {
         if (_persistSettings)
@@ -174,7 +193,7 @@ public sealed partial class MainViewModel
     private async Task ExportCsvAsync()
     {
         var path = _dialogs.PickSaveFile("Esporta l'elenco dei file",
-            $"pcOrg {DateTime.Now:yyyy-MM-dd}.csv", "File CSV per Excel (*.csv)|*.csv");
+            $"Gestione File {DateTime.Now:yyyy-MM-dd}.csv", "File CSV per Excel (*.csv)|*.csv");
         if (path is null)
             return;
 

@@ -203,6 +203,8 @@ public partial class MainWindow : Window
 
     private void ColumnsSettings_Click(object sender, RoutedEventArgs e) => OpenSettings(SettingsWindow.ColumnsTab);
 
+    private void CategoriesSettings_Click(object sender, RoutedEventArgs e) => OpenSettings(SettingsWindow.CategoriesTab);
+
     /// <summary>Apre la finestra Impostazioni, eventualmente su una scheda e una griglia precise.</summary>
     public void OpenSettings(int tab = 0, string? grid = null)
     {
@@ -233,7 +235,7 @@ public partial class MainWindow : Window
 
         e.Cancel = true;
         var stop = ModernDialog.Show(this, "Uscire durante l'aggiornamento?",
-            "pcOrg sta ancora aggiornando l'indice. I file trovati finora sono già salvati: se esci ora, " +
+            "Gestione File sta ancora aggiornando l'indice. I file trovati finora sono già salvati: se esci ora, " +
             "il prossimo aggiornamento riprenderà da lì.", DialogKind.Question, "Interrompi ed esci", "Continua");
         if (!stop)
             return;

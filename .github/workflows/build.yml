@@ -53,30 +53,30 @@ jobs:
       # Tre pacchetti: portatile (consigliato), leggero (richiede .NET 10 Desktop Runtime), file unico.
       - name: Pubblica i pacchetti
         run: |
-          dotnet publish src/PcOrg.App -c Release -p:Pacchetto=Portatile -o out/portatile/pcOrg
-          dotnet publish src/PcOrg.App -c Release -p:Pacchetto=Leggero -o out/leggero/pcOrg
+          dotnet publish src/PcOrg.App -c Release -p:Pacchetto=Portatile -o out/portatile/GestioneFile
+          dotnet publish src/PcOrg.App -c Release -p:Pacchetto=Leggero -o out/leggero/GestioneFile
           dotnet publish src/PcOrg.App -c Release -p:Pacchetto=FileUnico -o out/fileunico
-          Compress-Archive -Path out/portatile/pcOrg -DestinationPath pcOrg-portatile-win-x64.zip
-          Compress-Archive -Path out/leggero/pcOrg -DestinationPath pcOrg-leggero-win-x64.zip
-          Copy-Item out/fileunico/PcOrg.exe PcOrg.exe
+          Compress-Archive -Path out/portatile/GestioneFile -DestinationPath GestioneFile-portatile-win-x64.zip
+          Compress-Archive -Path out/leggero/GestioneFile -DestinationPath GestioneFile-leggero-win-x64.zip
+          Copy-Item out/fileunico/GestioneFile.exe GestioneFile.exe
 
       # Prova di avvio reale: lancia ogni exe pubblicato (con dati isolati in una copia temporanea)
       # e fallisce se entro 90 secondi non compare la finestra principale. I test dell'interfaccia
       # costruiscono la finestra direttamente e non passano dall'avvio vero del programma.
       - name: Prova di avvio degli eseguibili
         run: |
-          $casi = @{ portatile = 'out/portatile/pcOrg'; leggero = 'out/leggero/pcOrg'; fileunico = 'out/fileunico' }
+          $casi = @{ portatile = 'out/portatile/GestioneFile'; leggero = 'out/leggero/GestioneFile'; fileunico = 'out/fileunico' }
           foreach ($nome in $casi.Keys) {
             $dir = Join-Path $env:RUNNER_TEMP "avvio-$nome"
             Copy-Item $casi[$nome] $dir -Recurse
             New-Item -ItemType Directory (Join-Path $dir 'pcOrg-dati') | Out-Null
-            $p = Start-Process (Join-Path $dir 'PcOrg.exe') -PassThru
+            $p = Start-Process (Join-Path $dir 'GestioneFile.exe') -PassThru
             $ok = $false
             foreach ($i in 1..90) {
               Start-Sleep -Seconds 1
               $p.Refresh()
               if ($p.HasExited) { break }
-              if ($p.MainWindowTitle -like 'pcOrg *') { $ok = $true; break }
+              if ($p.MainWindowTitle -like 'Gestione File *') { $ok = $true; break }
             }
             $titolo = $p.MainWindowTitle
             if (-not $p.HasExited) { Stop-Process -Id $p.Id -Force }
@@ -89,11 +89,11 @@ jobs:
       - name: Carica i pacchetti
         uses: actions/upload-artifact@v5
         with:
-          name: pcOrg-win-x64
+          name: GestioneFile-win-x64
           path: |
-            pcOrg-portatile-win-x64.zip
-            pcOrg-leggero-win-x64.zip
-            PcOrg.exe
+            GestioneFile-portatile-win-x64.zip
+            GestioneFile-leggero-win-x64.zip
+            GestioneFile.exe
 
       # Si pubblica una Release quando si spinge un tag v* oppure quando il messaggio
       # del commit contiene [release] (la versione viene letta da PcOrg.App.csproj).
@@ -111,15 +111,15 @@ jobs:
         with:
           tag_name: ${{ steps.ver.outputs.tag }}
           target_commitish: ${{ github.sha }}
-          name: pcOrg ${{ steps.ver.outputs.tag }}
+          name: Gestione File ${{ steps.ver.outputs.tag }}
           body: |
             ## Quale scaricare
-            - **pcOrg-portatile-win-x64.zip** (consigliato): estrai la cartella `pcOrg` dove vuoi e avvia `PcOrg.exe`. Contiene tutto il necessario, si avvia velocemente.
-            - **pcOrg-leggero-win-x64.zip** (2–3 MB): come il portatile ma richiede il [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0); se manca, Windows propone di scaricarlo.
-            - **PcOrg.exe**: un unico file da copiare, più lento ad avviarsi perché deve decomprimersi.
+            - **GestioneFile-portatile-win-x64.zip** (consigliato): estrai la cartella `GestioneFile` dove vuoi e avvia `GestioneFile.exe`. Contiene tutto il necessario, si avvia velocemente.
+            - **GestioneFile-leggero-win-x64.zip** (2–3 MB): come il portatile ma richiede il [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0); se manca, Windows propone di scaricarlo.
+            - **GestioneFile.exe**: un unico file da copiare, più lento ad avviarsi perché deve decomprimersi.
 
             Se compare "PC protetto da Windows": Ulteriori informazioni → Esegui comunque.
           files: |
-            pcOrg-portatile-win-x64.zip
-            pcOrg-leggero-win-x64.zip
-            PcOrg.exe
+            GestioneFile-portatile-win-x64.zip
+            GestioneFile-leggero-win-x64.zip
+            GestioneFile.exe

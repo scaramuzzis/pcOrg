@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:inf="clr-namespace:PcOrg.App.Infrastructure"
-        Title="Etichette e nota" Icon="pack://application:,,,/PcOrg;component/Assets/pcorg.ico"
+        Title="Etichette e nota" Icon="pack://application:,,,/GestioneFile;component/Assets/pcorg.ico"
         Width="560" SizeToContent="Height" ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
     <Grid>
@@ -29,7 +29,7 @@
             <TextBox x:Name="NoteBox" Padding="6,4" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="80" MaxHeight="160"
                      VerticalScrollBarVisibility="Auto" />
             <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="0,10,0,0"
-                       Text="Etichette e note si trovano con la ricerca normale, seguono il file quando lo sposti con pcOrg e restano anche se ricostruisci l'indice. Lascia vuoti i campi per toglierle." />
+                       Text="Etichette e note si trovano con la ricerca normale, seguono il file quando lo sposti con Gestione File e restano anche se ricostruisci l'indice. Lascia vuoti i campi per toglierle." />
         </StackPanel>
         <Border Grid.Row="1" Padding="24,14" Background="{DynamicResource LayerFillColorAltBrush}"
                 BorderThickness="0,1,0,0" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
