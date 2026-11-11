@@ -368,7 +368,8 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Button Margin="0,0,10,10" Padding="16,14" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+                                        <Button Margin="0,0,10,10" Padding="16,14" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
                                                 Command="{Binding DataContext.ShowTabCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                 CommandParameter="{Binding Tab}" ToolTip="Apri il dettaglio">
                                             <Grid>
@@ -407,9 +408,12 @@
                                 <ItemsControl ItemsSource="{Binding CategoryBars}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Button Style="{StaticResource SubtleIconButton}" HorizontalContentAlignment="Stretch" Padding="8,6"
-                                                    Command="{Binding DataContext.OpenCategoryCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                    CommandParameter="{Binding}" ToolTip="Mostra i file di questa categoria">
+                                            <!-- Riga cliccabile: un Border (non un pulsante) così la griglia occupa tutta la larghezza -->
+                                            <Border Background="Transparent" Padding="8,6" CornerRadius="6" Cursor="Hand" ToolTip="Mostra i file di questa categoria">
+                                                <Border.InputBindings>
+                                                    <MouseBinding MouseAction="LeftClick" CommandParameter="{Binding}"
+                                                                  Command="{Binding DataContext.OpenCategoryCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
+                                                </Border.InputBindings>
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="Auto" />
@@ -428,7 +432,7 @@
                                                     <TextBlock Grid.Column="4" Text="{Binding Count, StringFormat='{}{0:N0} file'}" HorizontalAlignment="Right" VerticalAlignment="Center"
                                                                Style="{StaticResource Secondary}" />
                                                 </Grid>
-                                            </Button>
+                                            </Border>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>

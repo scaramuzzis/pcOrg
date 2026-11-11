@@ -53,7 +53,7 @@ public sealed partial class MainViewModel
             DuplicateGroups.Count > 0 ? $"recuperabili da {DuplicateGroups.Count:N0} gruppi di cloni" : "Apri la scheda e premi \"Cerca i cloni\"",
             Glyphs.Duplicate, CategoryColors.Brush("#DB2777"), DuplicatesTab.ToString()));
         DashboardCards.Add(new StatCard("Driver", updates > 0 ? (updates == 1 ? "1 aggiornamento" : $"{updates:N0} aggiornamenti") : "A posto",
-            _unneeded.Count > 0 ? $"{_unneeded.Count:N0} pacchetti non servono a questo PC" : "Nessun driver superfluo trovato",
+            _unneeded.Count == 1 ? "1 pacchetto non serve a questo PC" : _unneeded.Count > 0 ? $"{_unneeded.Count:N0} pacchetti non servono a questo PC" : "Nessun driver superfluo trovato",
             Glyphs.Device, CategoryColors.Brush("#16A34A"), DriversTab.ToString()));
 
         CategoryBars.Clear();
