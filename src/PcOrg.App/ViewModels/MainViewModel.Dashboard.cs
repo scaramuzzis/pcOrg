@@ -44,7 +44,8 @@ public sealed partial class MainViewModel
 
         DashboardCards.Clear();
         DashboardCards.Add(new StatCard("File in ordine", files.ToString("N0"),
-            $"{FileSizeConverter.Format(bytes)} in {Roots.Count:N0} cartelle" + (offline > 0 ? $" · {offline} non raggiungibili" : ""),
+            HasScope ? $"{FileSizeConverter.Format(bytes)} nella cartella selezionata"
+                : $"{FileSizeConverter.Format(bytes)} in {Roots.Count:N0} cartelle" + (offline > 0 ? $" · {offline} non raggiungibili" : ""),
             Glyphs.Folder, CategoryColors.Brush("#2563EB"), FilesTab.ToString()));
         DashboardCards.Add(new StatCard("Versioni vecchie", oldBytes > 0 ? FileSizeConverter.Format(oldBytes) : "Nessuna",
             multi.Count == 0 ? "Nessun programma in più versioni" : $"{multi.Count:N0} programmi presenti in più versioni",

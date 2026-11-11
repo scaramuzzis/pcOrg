@@ -51,6 +51,9 @@ public sealed record SearchQuery(string? Text, FileCategory? Category = null, in
 
     /// <summary>Cerca anche nel testo dei documenti e nell'elenco dei file di ZIP e ISO.</summary>
     public bool InContent { get; init; }
+
+    /// <summary>Se valorizzato, cerca solo nella cartella monitorata con questo identificativo.</summary>
+    public long? RootId { get; init; }
 }
 
 /// <summary>Numero di file e spazio occupato per estensione.</summary>

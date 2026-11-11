@@ -118,7 +118,7 @@ public sealed partial class MainViewModel
         var stopwatch = Stopwatch.StartNew();
         try
         {
-            var options = new DuplicateOptions(SelectedSizeOption?.Bytes ?? 1, IncludeNetworkInDuplicates);
+            var options = new DuplicateOptions(SelectedSizeOption?.Bytes ?? 1, IncludeNetworkInDuplicates, ScopeRootId);
             var progress = new Progress<DuplicateProgress>(p =>
                 Status = p.Total == 0 ? $"{p.Phase}…" : $"{p.Phase}: {p.Done:N0} di {p.Total:N0} file…");
             var groups = await Task.Run(() => DuplicateFinder.Find(_index, options, progress, token), token);

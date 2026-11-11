@@ -17,7 +17,8 @@ public sealed record DuplicateGroup(string Hash, long Size, IReadOnlyList<FileRe
 public readonly record struct DuplicateProgress(string Phase, int Done, int Total);
 
 /// <summary>Opzioni della ricerca dei cloni.</summary>
-public sealed record DuplicateOptions(long MinSize = 1, bool IncludeNetwork = false);
+/// <param name="RootId">Se valorizzato, cerca i cloni solo dentro quella cartella monitorata (anche se di rete).</param>
+public sealed record DuplicateOptions(long MinSize = 1, bool IncludeNetwork = false, long? RootId = null);
 
 /// <summary>
 /// Trova i file con contenuto identico, anche se hanno nomi diversi o stanno in cartelle diverse.
@@ -47,7 +48,7 @@ public static class DuplicateFinder
     {
         LastComputed = 0;
         _computed = 0;
-        var candidates = index.GetDuplicateCandidates(options.MinSize, root => options.IncludeNetwork || !root.IsNetwork);
+        var candidates = index.GetDuplicateCandidates(options.MinSize, root => options.RootId is { } only ? root.Id == only : options.IncludeNetwork || !root.IsNetwork);
         Log.Info($"Ricerca cloni: {candidates.Count:N0} file con dimensione in comune.");
 
         // Stadio 2: impronta veloce dei candidati (quelle già note si riusano).

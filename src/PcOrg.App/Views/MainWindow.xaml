@@ -271,6 +271,9 @@
 
                     <DockPanel Margin="4,0,0,6">
                         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                            <c:IconButton Glyph="{x:Static inf:Glyphs.Folder}" Label="Tutte" Command="{Binding ShowAllFoldersCommand}" Margin="0,0,6,0"
+                                          Visibility="{Binding HasScope, Converter={StaticResource BoolToVisibility}}"
+                                          ToolTip="Stai lavorando su una sola cartella: fai clic per tornare a vedere i file di tutte" />
                             <c:IconButton Glyph="{x:Static inf:Glyphs.Add}" Style="{StaticResource SubtleIconButton}"
                                           Command="{Binding AddRootCommand}" ToolTip="Aggiungi una cartella da tenere in ordine" />
                             <c:IconButton Glyph="{x:Static inf:Glyphs.NetworkFolder}" Style="{StaticResource SubtleIconButton}"
@@ -283,7 +286,9 @@
                         <TextBlock Text="CARTELLE MONITORATE" Style="{StaticResource SectionHeader}" />
                     </DockPanel>
 
-                    <ListBox Grid.Row="1" ItemsSource="{Binding Roots}" SelectedItem="{Binding SelectedRoot}" ItemContainerStyle="{StaticResource CompactItem}"
+                    <ListBox Grid.Row="1" ItemsSource="{Binding Roots}" SelectedItem="{Binding SelectedRoot}"
+                             ToolTip="Fai clic su una cartella per lavorare solo sui suoi file"
+                             x:Name="RootsList" ItemContainerStyle="{StaticResource CompactItem}"
                              BorderThickness="0" Background="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
@@ -316,7 +321,11 @@
                         </ListBox.ItemTemplate>
                     </ListBox>
 
-                    <TextBlock Grid.Row="2" Text="CATEGORIE" Style="{StaticResource SectionHeader}" Margin="4,14,0,6" />
+                    <StackPanel Grid.Row="2" Margin="4,14,0,6">
+                        <TextBlock Text="CATEGORIE" Style="{StaticResource SectionHeader}" />
+                        <TextBlock Text="{Binding ScopeText}" Style="{StaticResource Secondary}" FontSize="11" TextTrimming="CharacterEllipsis"
+                                   ToolTip="{Binding ScopeText}" Visibility="{Binding HasScope, Converter={StaticResource BoolToVisibility}}" />
+                    </StackPanel>
 
                     <ListBox Grid.Row="3" ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" ItemContainerStyle="{StaticResource CompactItem}"
                              BorderThickness="0" Background="Transparent" HorizontalContentAlignment="Stretch"

@@ -193,6 +193,11 @@ public sealed partial class FileIndex
             sql.Append(" AND f.category = $ccat");
             cmd.Parameters.AddWithValue("$ccat", (int)category);
         }
+        if (query.RootId is { } rootId)
+        {
+            sql.Append(" AND f.root_id = $croot");
+            cmd.Parameters.AddWithValue("$croot", rootId);
+        }
     }
 
     // ------------------------------------------------------------------ Etichette e note

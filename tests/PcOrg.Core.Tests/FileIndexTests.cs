@@ -35,6 +35,25 @@ public class FileIndexTests
     }
 
     [Fact]
+    public void Con_una_cartella_scelta_si_vedono_solo_i_suoi_file()
+    {
+        using var dir = new TempDir();
+        dir.File("Download/setup.msi");
+        dir.File("Download/disco.iso", "1234");
+        dir.File("Archivio/vecchio.iso", "12");
+        var (index, download) = Indexed(dir);
+        var archive = index.AddRoot(dir.Dir("Archivio"));
+        index.SyncRoot(archive.Id, FolderScanner.Enumerate(archive.Path));
+
+        Assert.Equal(3, index.Search(new SearchQuery(null)).Count);
+        Assert.Equal(2, index.Search(new SearchQuery(null) { RootId = download.Id }).Count);
+        Assert.Equal("vecchio.iso", Assert.Single(index.Search(new SearchQuery("iso") { RootId = archive.Id })).Name);
+        Assert.Equal(new CategoryStat(FileCategory.ImmagineDisco, 1, 2), Assert.Single(index.GetCategoryStats(archive.Id)));
+        Assert.Equal(2, index.GetCategoryStats(download.Id).Sum(s => s.Count));
+        Assert.Equal(new ExtensionStat(".iso", 1, 4), Assert.Single(index.GetExtensionStats(FileCategory.ImmagineDisco, download.Id)));
+    }
+
+    [Fact]
     public void Filtro_per_categoria_e_statistiche()
     {
         using var dir = new TempDir();
