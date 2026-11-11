@@ -203,6 +203,28 @@ public partial class MainWindow : Window
 
     private void ColumnsSettings_Click(object sender, RoutedEventArgs e) => OpenSettings(SettingsWindow.ColumnsTab);
 
+    /// <summary>
+    /// Le versioni vecchie si mostrano attenuate. Lo si fa qui, riga per riga, e non con uno stile di riga
+    /// nello XAML: uno stile "basato su quello del tema" resta agganciato al tema attivo quando la finestra
+    /// viene creata, e passando al tema scuro le righe restavano chiare con il testo bianco (illeggibili).
+    /// </summary>
+    private void ProductFilesGrid_LoadingRow(object? sender, DataGridRowEventArgs e) =>
+        e.Row.SetBinding(OpacityProperty, new System.Windows.Data.Binding(nameof(ProductFileItem.IsOld))
+        {
+            Converter = OldRowOpacity.Instance,
+        });
+
+    private sealed class OldRowOpacity : System.Windows.Data.IValueConverter
+    {
+        public static readonly OldRowOpacity Instance = new();
+
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) =>
+            value is true ? 0.7 : 1.0;
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) =>
+            throw new NotSupportedException();
+    }
+
     private void CategoriesSettings_Click(object sender, RoutedEventArgs e) => OpenSettings(SettingsWindow.CategoriesTab);
 
     /// <summary>Apre la finestra Impostazioni, eventualmente su una scheda e una griglia precise.</summary>
