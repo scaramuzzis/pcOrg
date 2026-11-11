@@ -7,7 +7,7 @@
   "targets": {
     ".NETCoreApp,Version=v10.0": {},
     ".NETCoreApp,Version=v10.0/win-x64": {
-      "PcOrg/0.12.0": {
+      "PcOrg/0.14.0": {
         "dependencies": {
           "CommunityToolkit.Mvvm": "8.4.0",
           "PcOrg.Core": "1.0.0"
@@ -39,6 +39,38 @@
           "lib/net8.0/Microsoft.Data.Sqlite.dll": {
             "assemblyVersion": "10.0.14.0",
             "fileVersion": "10.0.1426.52326"
+          }
+        }
+      },
+      "PdfPig/0.1.16": {
+        "runtime": {
+          "lib/net9.0/UglyToad.PdfPig.Core.dll": {
+            "assemblyVersion": "0.1.16.0",
+            "fileVersion": "0.1.16.0"
+          },
+          "lib/net9.0/UglyToad.PdfPig.DocumentLayoutAnalysis.dll": {
+            "assemblyVersion": "0.1.16.0",
+            "fileVersion": "0.1.16.0"
+          },
+          "lib/net9.0/UglyToad.PdfPig.Fonts.dll": {
+            "assemblyVersion": "0.1.16.0",
+            "fileVersion": "0.1.16.0"
+          },
+          "lib/net9.0/UglyToad.PdfPig.Package.dll": {
+            "assemblyVersion": "0.1.16.0",
+            "fileVersion": "0.1.16.0"
+          },
+          "lib/net9.0/UglyToad.PdfPig.Tokenization.dll": {
+            "assemblyVersion": "0.1.16.0",
+            "fileVersion": "0.1.16.0"
+          },
+          "lib/net9.0/UglyToad.PdfPig.Tokens.dll": {
+            "assemblyVersion": "0.1.16.0",
+            "fileVersion": "0.1.16.0"
+          },
+          "lib/net9.0/UglyToad.PdfPig.dll": {
+            "assemblyVersion": "0.1.16.0",
+            "fileVersion": "0.1.16.0"
           }
         }
       },
@@ -91,6 +123,7 @@
       "PcOrg.Core/1.0.0": {
         "dependencies": {
           "Microsoft.Data.Sqlite": "10.0.14",
+          "PdfPig": "0.1.16",
           "System.IO.Hashing": "10.0.0"
         },
         "runtime": {
@@ -103,7 +136,7 @@
     }
   },
   "libraries": {
-    "PcOrg/0.12.0": {
+    "PcOrg/0.14.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -128,6 +161,13 @@
       "sha512": "sha512-1p9rO3Q2X/L/9YrYog3vaDzi8u+WZfJCOkDYoHqmofqYP0DLPLPyZcS2Rnh/79JXAodgbs1AgsaNwLpIvC3Xew==",
       "path": "microsoft.data.sqlite.core/10.0.14",
       "hashPath": "microsoft.data.sqlite.core.10.0.14.nupkg.sha512"
+    },
+    "PdfPig/0.1.16": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-qQcbsNMYVY+K5ELptax2S8thNMk0+rSQq3H/KdYj3LLcko8yTCz8y5KIvsKxIyAuTN0ZYNnfsZkM+0EvxTwHVA==",
+      "path": "pdfpig/0.1.16",
+      "hashPath": "pdfpig.0.1.16.nupkg.sha512"
     },
     "SQLitePCLRaw.bundle_e_sqlite3/2.1.13": {
       "type": "package",
