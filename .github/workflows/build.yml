@@ -60,6 +60,32 @@ jobs:
           Compress-Archive -Path out/leggero/pcOrg -DestinationPath pcOrg-leggero-win-x64.zip
           Copy-Item out/fileunico/PcOrg.exe PcOrg.exe
 
+      # Prova di avvio reale: lancia ogni exe pubblicato (con dati isolati in una copia temporanea)
+      # e fallisce se entro 90 secondi non compare la finestra principale. I test dell'interfaccia
+      # costruiscono la finestra direttamente e non passano dall'avvio vero del programma.
+      - name: Prova di avvio degli eseguibili
+        run: |
+          $casi = @{ portatile = 'out/portatile/pcOrg'; leggero = 'out/leggero/pcOrg'; fileunico = 'out/fileunico' }
+          foreach ($nome in $casi.Keys) {
+            $dir = Join-Path $env:RUNNER_TEMP "avvio-$nome"
+            Copy-Item $casi[$nome] $dir -Recurse
+            New-Item -ItemType Directory (Join-Path $dir 'pcOrg-dati') | Out-Null
+            $p = Start-Process (Join-Path $dir 'PcOrg.exe') -PassThru
+            $ok = $false
+            foreach ($i in 1..90) {
+              Start-Sleep -Seconds 1
+              $p.Refresh()
+              if ($p.HasExited) { break }
+              if ($p.MainWindowTitle -like 'pcOrg *') { $ok = $true; break }
+            }
+            $titolo = $p.MainWindowTitle
+            if (-not $p.HasExited) { Stop-Process -Id $p.Id -Force }
+            $log = Join-Path $dir 'pcOrg-dati/log/pcorg.log'
+            if (Test-Path $log) { Get-Content $log -Encoding UTF8 }
+            if (-not $ok) { throw "Pacchetto ${nome}: la finestra principale non è comparsa (titolo: '$titolo', uscito: $($p.HasExited))." }
+            Write-Host "Pacchetto ${nome}: finestra principale comparsa dopo $i s."
+          }
+
       - name: Carica i pacchetti
         uses: actions/upload-artifact@v5
         with:

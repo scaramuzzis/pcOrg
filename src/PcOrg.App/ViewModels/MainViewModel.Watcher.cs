@@ -30,7 +30,7 @@ public sealed partial class MainViewModel
         var dataFolder = AppPaths.DataFolder;
         _watcher = new FolderWatcher(path => Core.PathUtil.IsSameOrUnder(path, dataFolder));
         _watcher.ChangesReady += OnChangesReady;
-        _watcher.Watch(_index.GetRoots());
+        _ = _watcher.WatchInBackground(_index.GetRoots()); // in background: un NAS spento non deve bloccare l'avvio
     }
 
     /// <summary>Chiamato in background quando l'osservatore ha raccolto delle modifiche.</summary>

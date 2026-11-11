@@ -16,7 +16,8 @@ public static class SingleInstance
     }
 
     /// <summary>Porta in primo piano la finestra dell'istanza già in esecuzione.</summary>
-    public static void ActivateRunning()
+    /// <returns>Falso se l'altra istanza non ha (ancora) una finestra, es. sta preparando i dati.</returns>
+    public static bool ActivateRunning()
     {
         try
         {
@@ -30,7 +31,7 @@ public static class SingleInstance
                     if (IsIconic(process.MainWindowHandle))
                         ShowWindow(process.MainWindowHandle, 9 /* SW_RESTORE */);
                     SetForegroundWindow(process.MainWindowHandle);
-                    return;
+                    return true;
                 }
             }
         }
@@ -38,6 +39,7 @@ public static class SingleInstance
         {
             // Non è stato possibile attivarla: l'utente la troverà nella barra delle applicazioni.
         }
+        return false;
     }
 
     [DllImport("user32.dll")] private static extern bool SetForegroundWindow(IntPtr hwnd);
