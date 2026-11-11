@@ -52,6 +52,13 @@
         </Style>
 
         <!-- Testo delle celle: centrato in verticale e con puntini se troppo lungo -->
+        <!--
+            Riga selezionata nelle tabelle: blu pieno con testo bianco, leggibile sia nel tema chiaro sia in
+            quello scuro. Il colore predefinito del tema scuro è un azzurro chiaro su cui il testo non si legge.
+        -->
+        <SolidColorBrush x:Key="DataGridRowSelectedBackgroundThemeBrush" Color="#2563EB" />
+        <SolidColorBrush x:Key="DataGridRowSelectedForegroundThemeBrush" Color="#FFFFFF" />
+
         <Style x:Key="CellText" TargetType="TextBlock">
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="TextTrimming" Value="CharacterEllipsis" />

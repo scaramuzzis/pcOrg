@@ -752,16 +752,8 @@
                                   inf:GridKeys.DeleteCommand="{Binding RecycleSelectedCommand}"
                                   AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Extended" RowHeight="32"
                                   HeadersVisibility="Column" GridLinesVisibility="None"
+                                  LoadingRow="ProductFilesGrid_LoadingRow"
                                   SelectionChanged="ProductFilesGrid_SelectionChanged" MouseDoubleClick="FileGrid_MouseDoubleClick">
-                            <DataGrid.RowStyle>
-                                <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsOld}" Value="True">
-                                            <Setter Property="Opacity" Value="0.7" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </DataGrid.RowStyle>
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Versione" Binding="{Binding File.Version}" Width="110" MinWidth="82" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTemplateColumn Header="Stato" Width="140" MinWidth="105" SortMemberPath="State">
