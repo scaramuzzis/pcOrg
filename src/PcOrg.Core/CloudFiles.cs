@@ -2,7 +2,7 @@ namespace PcOrg.Core;
 
 /// <summary>
 /// File "solo online" (OneDrive e simili con File su richiesta): compaiono nelle cartelle ma il contenuto
-/// non è sul disco. Leggerli ne provocherebbe lo scaricamento, quindi pcOrg li elenca senza aprirli.
+/// non è sul disco. Leggerli ne provocherebbe lo scaricamento, quindi Gestione File li elenca senza aprirli.
 /// </summary>
 public static class CloudFiles
 {

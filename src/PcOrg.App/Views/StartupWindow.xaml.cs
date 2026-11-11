@@ -5,7 +5,7 @@ namespace PcOrg.App.Views;
 
 /// <summary>
 /// Finestra mostrata subito all'avvio, mentre l'indice viene aperto in background. Così l'utente vede
-/// sempre che pcOrg è partito, anche quando l'apertura richiede tempo (conversione dell'indice dopo un
+/// sempre che Gestione File è partito, anche quando l'apertura richiede tempo (conversione dell'indice dopo un
 /// aggiornamento, disco lento).
 /// </summary>
 public partial class StartupWindow : Window

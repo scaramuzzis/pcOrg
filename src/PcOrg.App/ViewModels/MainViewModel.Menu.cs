@@ -174,7 +174,7 @@ public sealed partial class MainViewModel
     private async Task ExportCsvAsync()
     {
         var path = _dialogs.PickSaveFile("Esporta l'elenco dei file",
-            $"pcOrg {DateTime.Now:yyyy-MM-dd}.csv", "File CSV per Excel (*.csv)|*.csv");
+            $"Gestione File {DateTime.Now:yyyy-MM-dd}.csv", "File CSV per Excel (*.csv)|*.csv");
         if (path is null)
             return;
 

@@ -316,7 +316,7 @@ public class Screenshots
         window.Tabs.SelectedIndex = 1;
         vm.OnlyMultipleVersions = true;
 
-        // 15. Informazioni su pcOrg
+        // 15. Informazioni su Gestione File
         var about = new AboutWindow { Owner = window };
         Show(about);
         Capture(about, output, "15-informazioni.png");

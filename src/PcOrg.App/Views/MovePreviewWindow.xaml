@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:inf="clr-namespace:PcOrg.App.Infrastructure"
         xmlns:c="clr-namespace:PcOrg.App.Controls"
-        Title="Anteprima spostamento" Icon="pack://application:,,,/PcOrg;component/Assets/pcorg.ico" Width="940" Height="560" MinWidth="620" MinHeight="340"
+        Title="Anteprima spostamento" Icon="pack://application:,,,/GestioneFile;component/Assets/pcorg.ico" Width="940" Height="560" MinWidth="620" MinHeight="340"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
     <Grid>
         <Grid.RowDefinitions>

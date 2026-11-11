@@ -1,11 +1,13 @@
-# pcOrg
+# Gestione File
 
 App per Windows che mette ordine tra installer, driver, programmi, archivi e immagini disco
-sparsi nel PC. Scegli le cartelle da tenere sotto controllo; pcOrg le indicizza, divide i file
+sparsi nel PC. Scegli le cartelle da tenere sotto controllo; Gestione File le indicizza, divide i file
 per categoria e li trova all'istante mentre scrivi. Sei tu a decidere se e dove spostarli: prima
 vedi un'anteprima, e ogni spostamento si può annullare.
 
-## Cosa fa oggi (v0.15)
+## Cosa fa oggi (v1.0)
+- **Nuovo nome (1.0)**: l'applicazione si chiama ora Gestione File (`GestioneFile.exe`); archivio dati e
+  impostazioni restano quelli di prima.
 - **Meno memoria (0.15.2)**: cache del database ridotta e con tetto complessivo, documenti letti uno alla
   volta, memoria restituita al sistema a fine operazione e quando la finestra è ridotta a icona.
 - **Avvio affidabile (0.15.1)**: la finestra compare subito anche quando l'indice va convertito dopo un
@@ -90,22 +92,22 @@ Dalla pagina **Releases** scarica uno dei pacchetti:
 
 | Pacchetto | Dimensione | Note |
 |---|---|---|
-| **pcOrg-portatile-win-x64.zip** (consigliato) | ~60 MB | Cartella con `PcOrg.exe` (~200 KB) e le librerie, .NET incluso, codice precompilato: avvio rapido, nessuna estrazione |
-| **pcOrg-leggero-win-x64.zip** | ~2–3 MB | Richiede il [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) |
-| **PcOrg.exe** | ~60 MB | File unico compresso: più lento ad avviarsi |
+| **GestioneFile-portatile-win-x64.zip** (consigliato) | ~60 MB | Cartella con `GestioneFile.exe` (~200 KB) e le librerie, .NET incluso, codice precompilato: avvio rapido, nessuna estrazione |
+| **GestioneFile-leggero-win-x64.zip** | ~2–3 MB | Richiede il [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) |
+| **GestioneFile.exe** | ~60 MB | File unico compresso: più lento ad avviarsi |
 
-Estrai la cartella `pcOrg` dove vuoi e avvia `PcOrg.exe`: non serve installare nulla.
+Estrai la cartella `GestioneFile` dove vuoi e avvia `GestioneFile.exe`: non serve installare nulla.
 
 I dati sono in `%LOCALAPPDATA%\pcOrg`: `indice.db` (cartelle, file, cronologia), `settings.json`
 (preferenze) e `log\pcorg.log` (registro attività). Per la **modalità portatile** (es. su chiavetta)
-crea una cartella `pcOrg-dati` accanto a `PcOrg.exe`: i dati verranno salvati lì.
+crea una cartella `pcOrg-dati` accanto a `GestioneFile.exe`: i dati verranno salvati lì.
 
 Se l'app si era bloccata o era stata chiusa a forza, al riavvio parte in **modalità sicura** (senza
 aggiornamento automatico né lettura delle periferiche) e il registro indica cosa era successo.
 
 ### Dove trovare i pacchetti
-- Ogni push genera l'artifact `pcOrg-win-x64` nella scheda **Actions** del repository.
-- Nel repository, nella cartella **`dist/`**: il pacchetto leggero della versione corrente (`dist/pcOrg-leggero`,
+- Ogni push genera l'artifact `GestioneFile-win-x64` nella scheda **Actions** del repository.
+- Nel repository, nella cartella **`dist/`**: il pacchetto leggero della versione corrente (`dist/GestioneFile-leggero`,
   richiede il .NET 10 Desktop Runtime) e le istruzioni in `dist/LEGGIMI.md`.
 - Le versioni pubblicate sono nella pagina **Releases**. Una nuova Release si crea spingendo un tag `v*`
   oppure con un commit il cui messaggio contiene `[release]` (versione in `src/PcOrg.App/PcOrg.App.csproj`).

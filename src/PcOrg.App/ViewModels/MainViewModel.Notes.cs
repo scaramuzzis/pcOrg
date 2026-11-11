@@ -7,7 +7,7 @@ using PcOrg.Core.Updates;
 
 namespace PcOrg.App.ViewModels;
 
-/// <summary>Ricerca nel contenuto, etichette e note, controllo degli aggiornamenti di pcOrg.</summary>
+/// <summary>Ricerca nel contenuto, etichette e note, controllo degli aggiornamenti di Gestione File.</summary>
 public sealed partial class MainViewModel
 {
     /// <summary>La ricerca guarda anche dentro i file (testo dei documenti, contenuto di ZIP e ISO).</summary>
@@ -46,7 +46,7 @@ public sealed partial class MainViewModel
         ShowToast(files.Count == 1 ? "Etichette e nota salvate" : $"Etichette e nota salvate per {files.Count:N0} file", ToastKind.Success);
     }
 
-    /// <summary>Controlla (su richiesta) se è stata pubblicata una versione più recente di pcOrg.</summary>
+    /// <summary>Controlla (su richiesta) se è stata pubblicata una versione più recente di Gestione File.</summary>
     [RelayCommand]
     private Task CheckUpdates() => CheckUpdatesAsync(silentIfCurrent: false);
 
@@ -57,7 +57,7 @@ public sealed partial class MainViewModel
         switch (info.Status)
         {
             case UpdateStatus.NuovaVersione:
-                ShowToast($"È disponibile pcOrg {info.LatestVersion} (hai la {AboutWindow.AppVersion})", ToastKind.Success, "Apri la pagina",
+                ShowToast($"È disponibile Gestione File {info.LatestVersion} (hai la {AboutWindow.AppVersion})", ToastKind.Success, "Apri la pagina",
                     () =>
                     {
                         Process.Start(new ProcessStartInfo(info.Url ?? UpdateChecker.ReleasesPage) { UseShellExecute = true });

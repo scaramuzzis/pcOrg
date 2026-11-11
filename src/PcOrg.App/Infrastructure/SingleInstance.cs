@@ -5,7 +5,7 @@ using System.Text;
 
 namespace PcOrg.App.Infrastructure;
 
-/// <summary>Garantisce una sola istanza di pcOrg per cartella dei dati e porta in primo piano quella già aperta.</summary>
+/// <summary>Garantisce una sola istanza di Gestione File per cartella dei dati e porta in primo piano quella già aperta.</summary>
 public static class SingleInstance
 {
     /// <summary>Nome del mutex: dipende dalla cartella dei dati, così copie portatili diverse possono convivere.</summary>

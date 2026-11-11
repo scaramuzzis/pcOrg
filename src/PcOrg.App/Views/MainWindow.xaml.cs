@@ -233,7 +233,7 @@ public partial class MainWindow : Window
 
         e.Cancel = true;
         var stop = ModernDialog.Show(this, "Uscire durante l'aggiornamento?",
-            "pcOrg sta ancora aggiornando l'indice. I file trovati finora sono già salvati: se esci ora, " +
+            "Gestione File sta ancora aggiornando l'indice. I file trovati finora sono già salvati: se esci ora, " +
             "il prossimo aggiornamento riprenderà da lì.", DialogKind.Question, "Interrompi ed esci", "Continua");
         if (!stop)
             return;

@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:inf="clr-namespace:PcOrg.App.Infrastructure"
         xmlns:c="clr-namespace:PcOrg.App.Controls"
-        Title="Informazioni su pcOrg" Icon="pack://application:,,,/PcOrg;component/Assets/pcorg.ico"
+        Title="Informazioni su Gestione File" Icon="pack://application:,,,/GestioneFile;component/Assets/pcorg.ico"
         Width="500" SizeToContent="Height" ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
     <Grid>
@@ -13,9 +13,9 @@
         </Grid.RowDefinitions>
 
         <StackPanel Margin="32,28,32,24">
-            <Image Source="pack://application:,,,/PcOrg;component/Assets/pcorg.png" Width="80" Height="80"
+            <Image Source="pack://application:,,,/GestioneFile;component/Assets/pcorg.png" Width="80" Height="80"
                    RenderOptions.BitmapScalingMode="HighQuality" />
-            <TextBlock Text="pcOrg" FontSize="26" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,12,0,0" />
+            <TextBlock Text="Gestione File" FontSize="26" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,12,0,0" />
             <TextBlock x:Name="VersionText" HorizontalAlignment="Center" Style="{StaticResource Secondary}" FontSize="13" />
             <TextBlock HorizontalAlignment="Center" Margin="0,10,0,0" FontSize="14">
                 <Run Text="Sviluppato da" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />

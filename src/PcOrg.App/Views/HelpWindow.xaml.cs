@@ -25,7 +25,7 @@ public partial class HelpWindow : Window
     {
         using var stream = typeof(HelpWindow).Assembly.GetManifestResourceStream("PcOrg.App.GUIDA.md");
         if (stream is null)
-            return "# Guida di pcOrg\n\nLa guida non è disponibile in questa versione.";
+            return "# Guida di Gestione File\n\nLa guida non è disponibile in questa versione.";
         using var reader = new StreamReader(stream);
         return reader.ReadToEnd();
     }

@@ -1,17 +1,17 @@
 <Window x:Class="PcOrg.App.Views.StartupWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="pcOrg" Icon="pack://application:,,,/PcOrg;component/Assets/pcorg.ico"
+        Title="Gestione File" Icon="pack://application:,,,/GestioneFile;component/Assets/pcorg.ico"
         Width="460" SizeToContent="Height" ResizeMode="NoResize" WindowStartupLocation="CenterScreen">
     <StackPanel Margin="32,28,32,28">
-        <Image Source="pack://application:,,,/PcOrg;component/Assets/pcorg.png" Width="72" Height="72"
+        <Image Source="pack://application:,,,/GestioneFile;component/Assets/pcorg.png" Width="72" Height="72"
                RenderOptions.BitmapScalingMode="HighQuality" />
-        <TextBlock Text="pcOrg" FontSize="24" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,10,0,2" />
+        <TextBlock Text="Gestione File" FontSize="24" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,10,0,2" />
         <TextBlock x:Name="StatusText" Text="Avvio in corso…" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"
                    Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
         <ProgressBar IsIndeterminate="True" Height="4" Margin="0,18,0,0" />
         <TextBlock x:Name="DetailText" TextWrapping="Wrap" TextAlignment="Center" Margin="0,14,0,0" FontSize="12" Visibility="Collapsed"
                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                   Text="Sto aggiornando l'indice al nuovo formato. Succede solo al primo avvio dopo un aggiornamento e, con molti file, può richiedere alcuni minuti. Non chiudere pcOrg: i tuoi dati non vengono toccati." />
+                   Text="Sto aggiornando l'indice al nuovo formato. Succede solo al primo avvio dopo un aggiornamento e, con molti file, può richiedere alcuni minuti. Non chiudere Gestione File: i tuoi dati non vengono toccati." />
     </StackPanel>
 </Window>

@@ -12,7 +12,7 @@ public partial class ModernDialog : Window
     internal ModernDialog(string title, string message, DialogKind kind, string primary, string? secondary)
     {
         InitializeComponent();
-        Title = "pcOrg";
+        Title = "Gestione File";
         TitleText.Text = title;
         MessageText.Text = message;
         PrimaryButton.Content = primary;
