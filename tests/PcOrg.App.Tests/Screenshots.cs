@@ -357,6 +357,13 @@ public class Screenshots
         Pump(500);
         Capture(window, output, "11-tema-scuro.png");
 
+        // 33. Prodotti e versioni in tema scuro (le righe dei file del prodotto devono restare leggibili)
+        window.Tabs.SelectedIndex = MainViewModel.ProductsTab;
+        Pump(600);
+        vm.SelectedProduct = vm.Products.FirstOrDefault(p => p.Files.Count > 1) ?? vm.Products.FirstOrDefault();
+        Pump(800);
+        Capture(window, output, "33-prodotti-tema-scuro.png");
+
         window.Close();
         app.Shutdown();
         Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
