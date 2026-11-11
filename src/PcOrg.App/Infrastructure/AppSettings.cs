@@ -47,6 +47,15 @@ public sealed class AppSettings
     /// <summary>Verifica le firme digitali (più lento: legge ogni programma per intero).</summary>
     public bool VerifySignatures { get; set; } = true;
 
+    /// <summary>Indicizza il testo dei documenti e il contenuto di ZIP e ISO, per poterli cercare.</summary>
+    public bool IndexContent { get; set; } = true;
+
+    /// <summary>La ricerca guarda anche dentro i file (pulsante "Nel contenuto").</summary>
+    public bool SearchInContent { get; set; }
+
+    /// <summary>All'avvio controlla su internet se esiste una versione più recente (disattivato di default).</summary>
+    public bool CheckUpdatesOnStartup { get; set; }
+
     /// <summary>Rileva subito file aggiunti, modificati o eliminati mentre l'app è aperta.</summary>
     public bool WatchFolders { get; set; } = true;
 

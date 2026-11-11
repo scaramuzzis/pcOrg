@@ -23,6 +23,15 @@ public sealed record FileRecord(
     FileCategory Category,
     FileMeta? Meta = null)
 {
+    /// <summary>Etichette assegnate dall'utente, separate da virgola.</summary>
+    public string? Tags { get; init; }
+
+    /// <summary>Nota libera dell'utente.</summary>
+    public string? Note { get; init; }
+
+    /// <summary>Estratto del contenuto attorno al testo cercato (solo nella ricerca nel contenuto).</summary>
+    public string? Snippet { get; init; }
+
     public string CategoryName => Category.DisplayName();
     public string? Version => Meta?.DisplayVersion;
     public string? Company => Meta?.CompanyName;
@@ -39,6 +48,9 @@ public sealed record SearchQuery(string? Text, FileCategory? Category = null, in
 {
     /// <summary>Se valorizzato, limita la ricerca a queste estensioni (es. una sottocategoria).</summary>
     public IReadOnlyCollection<string>? Extensions { get; init; }
+
+    /// <summary>Cerca anche nel testo dei documenti e nell'elenco dei file di ZIP e ISO.</summary>
+    public bool InContent { get; init; }
 }
 
 /// <summary>Numero di file e spazio occupato per estensione.</summary>

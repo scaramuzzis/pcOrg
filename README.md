@@ -5,7 +5,11 @@ sparsi nel PC. Scegli le cartelle da tenere sotto controllo; pcOrg le indicizza,
 per categoria e li trova all'istante mentre scrivi. Sei tu a decidere se e dove spostarli: prima
 vedi un'anteprima, e ogni spostamento si può annullare.
 
-## Cosa fa oggi (v0.13)
+## Cosa fa oggi (v0.14)
+- **Ricerca nel contenuto**: testo di PDF, Word, PowerPoint, Excel e file di testo, e nomi dei file dentro
+  ZIP e ISO (pulsante "Nel contenuto"), con estratto del punto trovato.
+- **Etichette e note** sui file (Ctrl+T): cercabili, seguono il file negli spostamenti.
+- **Controllo aggiornamenti** dal menu ? (facoltativo all'avvio).
 - **Panoramica** (Ctrl+0): riquadri con file indicizzati, spazio delle versioni vecchie, cloni recuperabili
   e stato dei driver; azioni rapide; spazio per categoria.
 - **Revisione 0.13**: cartelle di OneDrive indicizzate (i file solo online non vengono scaricati), chiavette

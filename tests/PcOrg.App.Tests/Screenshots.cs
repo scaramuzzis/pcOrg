@@ -28,6 +28,8 @@ public class Screenshots
         public string? AskNetworkFolder() => null;
         public string? PickSaveFile(string title, string defaultName, string filter) => SavePath;
         public void ShowAbout() { }
+        public (string Tags, string Note)? EditNotes(string title, string tags, string note, IReadOnlyList<string> knownTags) => NotesResult;
+        public (string Tags, string Note)? NotesResult { get; set; }
         public void ShowHelp(string? chapter = null) { }
         public string? SavePath { get; set; }
         public bool Confirm(string message, string title, string confirmText = "Conferma") => ConfirmResult;
@@ -100,6 +102,7 @@ public class Screenshots
         Directory.Delete(usb, recursive: true);
 
         MetadataUpdater.Run(index);
+        PcOrg.Core.Content.ContentIndexer.Run(index);
 
         var app = new App();
         app.InitializeComponent();
@@ -154,6 +157,28 @@ public class Screenshots
         if (vm.Results.Count > 0)
             Select(window, vm, vm.Results.First());
         Capture(window, output, "05-ricerca.png");
+        vm.SearchText = "";
+        Pump(600);
+
+        // 5b. Ricerca nel contenuto, con etichette e nota sul file trovato
+        vm.SearchInContent = true;
+        vm.SearchText = "assicurazione";
+        Pump(900);
+        if (vm.Results.Count > 0)
+        {
+            index.SetNotes([vm.Results[0].Path], "condominio, da archiviare", "Portare alla prossima riunione");
+            vm.SearchText = "assicurazione caldaia";
+            Pump(900);
+            if (vm.Results.Count > 0)
+                Select(window, vm, vm.Results.First());
+        }
+        Capture(window, output, "29-ricerca-nel-contenuto.png");
+        var notes = new NotesWindow("Appunti riunione condominio.txt", "condominio, da archiviare", "Portare alla prossima riunione",
+            ["condominio", "da archiviare", "ufficio", "fatture"]) { Owner = window };
+        Show(notes);
+        Capture(notes, output, "30-etichette-e-nota.png");
+        notes.Close();
+        vm.SearchInContent = false;
         vm.SearchText = "";
         Pump(600);
 
@@ -577,6 +602,10 @@ internal static class SampleData
         if (devices.Count > 1)
             Inf("Uguale", devices[1].Class ?? "System", devices[1].DriverProvider ?? "Produttore", devices[1].DriverVersion!, devices[1].Name, devices[1].HardwareIds[0]);
         Inf("Stampante HP LaserJet 1020", "Printer", "HP", "5.0.1.2", "HP LaserJet 1020", @"USBPRINT\Hewlett-PackardHP_LaFDE6");
+
+        // Documento con testo vero, per la ricerca nel contenuto
+        File.WriteAllText(Path.Combine(root, "Appunti riunione condominio.txt"),
+            "Verbale della riunione: si decide di rinnovare l'assicurazione del fabbricato entro marzo e di sostituire la caldaia.");
 
         // Connessioni remote
         File.WriteAllText(Path.Combine(root, "Connessioni", "Ufficio Mario.vnc").Also(p => Directory.CreateDirectory(Path.GetDirectoryName(p)!)),

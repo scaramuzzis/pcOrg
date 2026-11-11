@@ -47,6 +47,9 @@ public static class Glyphs
     public const string Rules = "\uE71C";
     public const string Device = "\uE772";
     public const string Home = "\uE80F";
+    public const string Tag = "\uE8EC";
+    public const string Document = "\uE8A5";
+    public const string Download = "\uE896";
     public const string Edit = "\uE70F";
     public const string Lightbulb = "\uEA80";
 

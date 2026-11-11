@@ -51,7 +51,11 @@ public sealed partial class MainViewModel
 
             // Versioni e firme dei programmi appena arrivati.
             if (result.FilesAdded + result.FilesUpdated > 0)
+            {
                 await Task.Run(() => MetadataUpdater.Run(_index, verifySignatures: _settings.VerifySignatures));
+                if (_settings.IndexContent)
+                    await Task.Run(() => PcOrg.Core.Content.ContentIndexer.Run(_index));
+            }
 
             await _dispatcher.InvokeAsync(async () =>
             {

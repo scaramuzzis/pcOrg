@@ -24,6 +24,8 @@ public class UiSmokeTests
         public string? AskNetworkFolder() => null;
         public string? PickSaveFile(string title, string defaultName, string filter) => SavePath;
         public void ShowAbout() { }
+        public (string Tags, string Note)? EditNotes(string title, string tags, string note, IReadOnlyList<string> knownTags) => NotesResult;
+        public (string Tags, string Note)? NotesResult { get; set; }
         public void ShowHelp(string? chapter = null) { }
         public string? SavePath { get; set; }
         public bool Confirm(string message, string title, string confirmText = "Conferma") => ConfirmResult;
@@ -233,6 +235,36 @@ public class UiSmokeTests
         var archived = Directory.GetFiles(Path.Combine(temp, "Archivio", "Testi"), "nota.txt", SearchOption.AllDirectories);
         Assert.Single(archived);
         Assert.Contains(vm.Roots, r => r.Path.EndsWith("Testi")); // la cartella base della regola ora è monitorata
+
+        // Ricerca nel contenuto: un file di testo trovato da una parola che non è nel nome
+        File.WriteAllText(Path.Combine(folder, "ricetta.txt"), "Ingredienti segreti della nonna");
+        index.UpdateRoot(root.Id, root.Path, full: true);
+        PcOrg.Core.Content.ContentIndexer.Run(index);
+        vm.SearchText = "nonna";
+        Pump(TimeSpan.FromMilliseconds(800));
+        Assert.Empty(vm.Results);
+        vm.SearchInContent = true;
+        Pump(TimeSpan.FromMilliseconds(800));
+        var found = Assert.Single(vm.Results);
+        Assert.Equal("ricetta.txt", found.Name);
+        Assert.Contains("«nonna»", found.Snippet);
+
+        // Etichette e nota sul file trovato
+        window.ResultsGrid.SelectedItem = found;
+        dialogs.NotesResult = ("cucina, famiglia", "Da non perdere");
+        await_(vm.EditNotesCommand.ExecuteAsync(null));
+        dialogs.NotesResult = null;
+        Assert.Equal("cucina, famiglia", Assert.Single(vm.Results).Tags);
+        vm.SearchInContent = false;
+        vm.SearchText = "famiglia"; // le etichette si trovano con la ricerca normale
+        Pump(TimeSpan.FromMilliseconds(800));
+        Assert.Equal("ricetta.txt", Assert.Single(vm.Results).Name);
+        vm.SearchText = "";
+        Pump(TimeSpan.FromMilliseconds(600));
+        var notesWindow = new NotesWindow("ricetta.txt", "cucina", "nota", ["cucina", "famiglia"]) { Owner = window };
+        notesWindow.Show();
+        Pump(TimeSpan.FromMilliseconds(300));
+        notesWindow.Close();
 
         // Colonna "Sul PC" e dettagli: il confronto con i programmi installati non deve fallire
         await_(vm.RefreshInstalledAsync());

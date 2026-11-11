@@ -85,8 +85,10 @@ public sealed partial class MainViewModel : ObservableObject
         await RefreshInstalledAsync();
         if (_scanOnStartup && Roots.Count > 0)
             await ScanRootsAsync(Roots.Select(r => r.Root).ToList());
-        else if (await Task.Run(_index.CountFilesNeedingMetadata) > 0)
+        else if (await Task.Run(() => _index.CountFilesNeedingMetadata() + (_settings.IndexContent ? _index.CountFilesNeedingContent() : 0)) > 0)
             await UpdateMetadataAsync(); // es. indice creato con una versione precedente
+        if (_settings.CheckUpdatesOnStartup && !_safeMode)
+            await CheckUpdatesAsync(silentIfCurrent: true);
     }
 
     /// <summary>
@@ -294,7 +296,8 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ScanCommand), nameof(FullScanCommand), nameof(AddRootCommand), nameof(RemoveRootCommand),
         nameof(MoveSelectedCommand), nameof(CancelScanCommand), nameof(FindDuplicatesCommand),
-        nameof(RecycleMarkedCommand), nameof(MoveMarkedCommand), nameof(RecycleSelectedCommand), nameof(OrganizeWithRulesCommand))]
+        nameof(RecycleMarkedCommand), nameof(MoveMarkedCommand), nameof(RecycleSelectedCommand), nameof(OrganizeWithRulesCommand),
+        nameof(EditNotesCommand))]
     private bool _isBusy;
 
     [ObservableProperty]
@@ -489,6 +492,19 @@ public sealed partial class MainViewModel : ObservableObject
                 Status = $"Lettura di versioni e firme: {p.Done:N0} di {p.Total:N0} file…");
             var count = await Task.Run(() => MetadataUpdater.Run(_index, progress, token, _settings.VerifySignatures), token);
             Status = count == 0 ? "Indice aggiornato." : $"Lette versioni e firme di {count:N0} file.";
+
+            // Testo dei documenti e contenuto di ZIP e ISO, per la ricerca "nel contenuto".
+            if (_settings.IndexContent)
+            {
+                var contentProgress = new Progress<(int Done, int Total)>(p =>
+                    Status = $"Lettura del contenuto di documenti e archivi: {p.Done:N0} di {p.Total:N0} file…");
+                var read = await Task.Run(() => PcOrg.Core.Content.ContentIndexer.Run(_index, contentProgress, token), token);
+                if (read > 0)
+                {
+                    Status = $"Letto il contenuto di {read:N0} documenti e archivi.";
+                    Log.Info($"Contenuto indicizzato: {read:N0} file.");
+                }
+            }
         }
         catch (OperationCanceledException)
         {
@@ -617,7 +633,11 @@ public sealed partial class MainViewModel : ObservableObject
         {
             if (debounce)
                 await Task.Delay(150, cts.Token);
-            var query = new SearchQuery(SearchText, SelectedCategory?.Category) { Extensions = SelectedCategory?.Extensions };
+            var query = new SearchQuery(SearchText, SelectedCategory?.Category)
+            {
+                Extensions = SelectedCategory?.Extensions,
+                InContent = SearchInContent,
+            };
             var stopwatch = Stopwatch.StartNew();
             var results = await Task.Run(() => _index.Search(query), cts.Token);
             if (cts.IsCancellationRequested)

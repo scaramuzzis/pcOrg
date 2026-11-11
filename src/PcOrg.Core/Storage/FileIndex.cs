@@ -14,7 +14,7 @@ namespace PcOrg.Core.Storage;
 /// </summary>
 public sealed partial class FileIndex
 {
-    private const int SchemaVersion = 7;
+    private const int SchemaVersion = 8;
     private readonly string _connectionString;
 
     /// <summary>Percorso completo del file dell'indice (indice.db).</summary>
@@ -77,6 +77,8 @@ public sealed partial class FileIndex
             CreateHashTable(conn, tx);
         if (version < 7)
             CreateDriverTable(conn, tx);
+        if (version < 8)
+            CreateContentTables(conn, tx);
         Exec(conn, $"PRAGMA user_version = {SchemaVersion};", tx);
         tx.Commit();
     }
@@ -467,11 +469,21 @@ public sealed partial class FileIndex
         cmd.Parameters.AddWithValue("$limit", query.Limit);
         cmd.CommandText = sql.ToString();
 
-        using var r = cmd.ExecuteReader();
         var list = new List<FileRecord>();
-        while (r.Read())
-            list.Add(ReadFile(r));
-        return list;
+        using (var r = cmd.ExecuteReader())
+            while (r.Read())
+                list.Add(ReadFile(r));
+        if (!query.InContent)
+            return list;
+
+        // Ricerca anche nel contenuto: i file trovati per il testo interno sostituiscono (portando
+        // l'estratto) quelli già trovati per nome, e gli altri si aggiungono in coda.
+        var byContent = SearchContent(conn, query);
+        var contentIds = byContent.ToDictionary(f => f.Id);
+        var merged = list.Select(f => contentIds.GetValueOrDefault(f.Id) ?? f).ToList();
+        var present = merged.Select(f => f.Id).ToHashSet();
+        merged.AddRange(byContent.Where(f => present.Add(f.Id)));
+        return merged.Count > query.Limit ? merged.GetRange(0, query.Limit) : merged;
     }
 
     /// <summary>
@@ -645,6 +657,13 @@ public sealed partial class FileIndex
         using var conn = Connect();
         using var tx = conn.BeginTransaction();
 
+        // Etichette e note seguono il file nella nuova posizione.
+        using (var notes = Command(conn, "UPDATE OR REPLACE file_notes SET path = $to WHERE path = $from;", tx))
+        {
+            notes.Parameters.AddWithValue("$to", toPath);
+            notes.Parameters.AddWithValue("$from", fromPath);
+            notes.ExecuteNonQuery();
+        }
         using (var clear = Command(conn, "DELETE FROM files WHERE path = $to;", tx))
         {
             clear.Parameters.AddWithValue("$to", toPath);
@@ -747,9 +766,12 @@ public sealed partial class FileIndex
     private const string SelectFiles = """
         SELECT f.id, f.root_id, f.path, f.name, f.ext, f.folder, f.size, f.modified_utc, f.category,
                m.file_id, m.product_name, m.company, m.description, m.file_version, m.product_version,
-               m.original_name, m.arch, m.signer, m.signature, m.installer_type, m.product_key
-        FROM files f LEFT JOIN file_meta m ON m.file_id = f.id
+               m.original_name, m.arch, m.signer, m.signature, m.installer_type, m.product_key,
+               n.tags, n.note
+        FROM files f LEFT JOIN file_meta m ON m.file_id = f.id LEFT JOIN file_notes n ON n.path = f.path
         """;
+
+    private static string? NullIfEmpty(string value) => value.Length == 0 ? null : value;
 
     private static FileRecord ReadFile(SqliteDataReader r)
     {
@@ -771,7 +793,12 @@ public sealed partial class FileIndex
         return new FileRecord(
             r.GetInt64(0), r.GetInt64(1), r.GetString(2), r.GetString(3), r.GetString(4), r.GetString(5),
             r.GetInt64(6), DateTimeOffset.FromUnixTimeSeconds(r.GetInt64(7)).UtcDateTime, (FileCategory)r.GetInt32(8),
-            meta);
+            meta)
+        {
+            Tags = r.IsDBNull(21) ? null : NullIfEmpty(r.GetString(21)),
+            Note = r.IsDBNull(22) ? null : NullIfEmpty(r.GetString(22)),
+            Snippet = r.FieldCount > 23 && !r.IsDBNull(23) ? r.GetString(23).ReplaceLineEndings(" ") : null,
+        };
     }
 
     private static long ToUnixSeconds(DateTime utc) =>

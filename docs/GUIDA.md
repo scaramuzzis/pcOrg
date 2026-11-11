@@ -144,6 +144,13 @@ Scrivi nella barra di ricerca in alto (oppure premi **Ctrl+F**): i risultati com
 
 Vengono mostrati al massimo 2.000 file alla volta: se la barra di stato lo segnala, aggiungi una parola o scegli una categoria per restringere la ricerca. L'esportazione in Excel include invece tutti i file trovati.
 
+**Cercare dentro i file.** Attiva il pulsante **Nel contenuto** accanto alla ricerca per cercare anche:
+
+- nel **testo dei documenti**: PDF, Word (`.docx`, `.odt`), PowerPoint, Excel e file di testo. Trovi una fattura scrivendo il nome del cliente, anche se il file si chiama `scansione0042.pdf`;
+- nel **contenuto degli archivi**: i nomi dei file dentro gli **ZIP** e le immagini **ISO**. Scrivendo `realtek` trovi lo zip che contiene il driver.
+
+Si cerca per parola o inizio di parola, senza distinguere maiuscole e accenti; con più parole devono esserci tutte. Selezionando un risultato, nei dettagli compare **Nel contenuto** con l'estratto del punto trovato, con la parola tra «virgolette». I PDF fatti solo di immagini (scansioni senza testo) non contengono testo da cercare. Il contenuto viene letto in background dopo ogni aggiornamento, solo per le cartelle locali; si disattiva da **Impostazioni → Generale**.
+
 **Ordinare l'elenco.** Fai clic sull'intestazione di una colonna (Nome, Categoria, Versione, Dimensione, Modificato…) per ordinare; un secondo clic inverte l'ordine.
 
 ## Dettagli di un file
@@ -178,6 +185,17 @@ Selezionando un file, sotto l'elenco compare la scheda con tutti i suoi dettagli
 Lo stato compare nei dettagli, nella colonna **Sul PC** della scheda **Prodotti e versioni** e, se la attivi, nella colonna facoltativa **Sul PC** dell'elenco dei file. L'elenco dei programmi installati viene riletto all'avvio e dopo ogni aggiornamento.
 
 Il pannello dettagli si può nascondere da **Visualizza → Pannello dettagli del file**.
+
+## Etichette e note
+
+Puoi assegnare ai file delle **etichette** (per esempio `ufficio`, `stampante`, `da tenere`) e una **nota** libera ("driver della stampante del piano terra"), per ricordare a cosa servono e ritrovarli.
+
+Seleziona uno o più file e usa **Etichette…** (scheda File), il tasto destro, il menu **Modifica → Etichette e nota** oppure **Ctrl+T**. Le etichette si separano con la virgola; quelle già usate compaiono come pulsanti per aggiungerle con un clic. Con più file selezionati, etichette e nota vengono applicate a tutti.
+
+- Si trovano con la **ricerca normale**: scrivi il nome dell'etichetta o una parola della nota.
+- Compaiono nei **dettagli** del file e nelle colonne facoltative **Etichette** e **Nota**.
+- **Seguono il file** quando lo sposti con pcOrg e restano anche se ricostruisci l'indice.
+- Per toglierle, lascia vuoti i campi.
 
 ## Anteprima delle immagini
 
@@ -310,6 +328,7 @@ Usi tipici: un inventario dei driver da conservare, l'elenco degli installer da 
 | Mostra nella cartella | **Ctrl+Maiusc+E** |
 | Copia percorso | **Ctrl+Maiusc+C** |
 | Seleziona tutto | **Ctrl+A** |
+| Etichette e nota | **Ctrl+T** |
 | Sposta in… | **Ctrl+M** |
 | Sposta nel Cestino | **Canc** |
 | Cronologia spostamenti | **Ctrl+H** |
@@ -368,6 +387,10 @@ Mostra dove sono salvati i dati e quanti file contiene l'indice, e permette di:
 
 > Se qualcosa non va come previsto, il **registro attività** (Strumenti → Apri il registro attività) indica cosa è successo e quando: è la prima cosa da controllare o da inviare a chi ti assiste.
 
+## Aggiornamenti di pcOrg
+
+Dal menu **? → Controlla aggiornamenti** pcOrg verifica se è stata pubblicata una versione più recente e, se c'è, propone di aprire la pagina da cui scaricarla. Puoi anche attivare il controllo a ogni avvio da **Impostazioni → Generale** (è disattivato per impostazione predefinita). pcOrg non si aggiorna da solo: scarichi tu il nuovo pacchetto e sostituisci la cartella; i tuoi dati non vengono toccati.
+
 ## Consigli per organizzare al meglio
 
 1. **Parti dalle cartelle più disordinate**: Download, Desktop e i dischi esterni con installer e driver accumulati negli anni.
@@ -401,7 +424,7 @@ Mostra dove sono salvati i dati e quanti file contiene l'indice, e permette di:
 
 ## Privacy e sicurezza
 
-- pcOrg **non si collega a internet**: tutte le analisi avvengono sul tuo PC, compresa la verifica delle firme digitali.
+- Tutte le analisi avvengono **sul tuo PC**, compresa la verifica delle firme digitali e la lettura del contenuto dei documenti. L'unica funzione che usa internet è il **controllo degli aggiornamenti**, che parte solo se lo chiedi (o lo attivi nelle Impostazioni) e legge soltanto il numero dell'ultima versione, senza inviare dati.
 - pcOrg **non cancella definitivamente e non modifica** il contenuto dei file. Le uniche operazioni sui file sono quelle che confermi tu: gli spostamenti, sempre annullabili, e lo spostamento nel **Cestino di Windows**, da cui puoi ripristinare i file.
 - Nessun file viene **sovrascritto**: in caso di nomi uguali viene aggiunto un numero, per esempio `setup (2).exe`.
 - I dati di pcOrg (indice, cronologia, preferenze, registro attività) restano nella cartella dei dati sul tuo PC.
