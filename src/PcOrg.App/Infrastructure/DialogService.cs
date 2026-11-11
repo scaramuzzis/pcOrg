@@ -41,6 +41,14 @@ public sealed class DialogService : IDialogService
         _help.Show();
     }
 
+    public (string Tags, string Note)? EditNotes(string title, string tags, string note, IReadOnlyList<string> knownTags)
+    {
+        var window = new NotesWindow(title, tags, note, knownTags);
+        if (Owner is { IsVisible: true })
+            window.Owner = Owner;
+        return window.ShowDialog() == true ? (window.Tags, window.Note) : null;
+    }
+
     public void ShowAbout()
     {
         var window = new AboutWindow();

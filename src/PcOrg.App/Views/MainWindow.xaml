@@ -25,11 +25,13 @@
         <KeyBinding Key="C" Modifiers="Control+Shift" Command="{Binding CopyPathCommand}" />
         <KeyBinding Key="M" Modifiers="Control" Command="{Binding MoveSelectedCommand}" />
         <KeyBinding Key="H" Modifiers="Control" Command="{Binding ShowHistoryCommand}" />
-        <KeyBinding Key="D1" Modifiers="Control" Command="{Binding ShowTabCommand}" CommandParameter="0" />
-        <KeyBinding Key="D2" Modifiers="Control" Command="{Binding ShowTabCommand}" CommandParameter="1" />
-        <KeyBinding Key="D3" Modifiers="Control" Command="{Binding ShowTabCommand}" CommandParameter="2" />
-        <KeyBinding Key="D4" Modifiers="Control" Command="{Binding ShowTabCommand}" CommandParameter="3" />
+        <KeyBinding Key="D0" Modifiers="Control" Command="{Binding ShowTabCommand}" CommandParameter="0" />
+        <KeyBinding Key="D1" Modifiers="Control" Command="{Binding ShowTabCommand}" CommandParameter="1" />
+        <KeyBinding Key="D2" Modifiers="Control" Command="{Binding ShowTabCommand}" CommandParameter="2" />
+        <KeyBinding Key="D3" Modifiers="Control" Command="{Binding ShowTabCommand}" CommandParameter="3" />
+        <KeyBinding Key="D4" Modifiers="Control" Command="{Binding ShowTabCommand}" CommandParameter="4" />
         <KeyBinding Key="F1" Command="{Binding ShowHelpCommand}" />
+        <KeyBinding Key="T" Modifiers="Control" Command="{Binding EditNotesCommand}" />
         <KeyBinding Key="OemComma" Modifiers="Control" Command="{x:Static vm:FocusCommands.OpenSettings}" />
     </Window.InputBindings>
 
@@ -78,6 +80,9 @@
                 <MenuItem Header="_Sposta in…" Command="{Binding MoveSelectedCommand}" InputGestureText="Ctrl+M">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Move}" /></MenuItem.Icon>
                 </MenuItem>
+                <MenuItem Header="_Etichette e nota…" Command="{Binding EditNotesCommand}" InputGestureText="Ctrl+T">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Tag}" /></MenuItem.Icon>
+                </MenuItem>
                 <MenuItem Header="Sposta nel Ce_stino…" Command="{Binding RecycleSelectedCommand}" InputGestureText="Canc">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Delete}" /></MenuItem.Icon>
                 </MenuItem>
@@ -90,16 +95,19 @@
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="_Visualizza">
-                <MenuItem Header="_File" Command="{Binding ShowTabCommand}" CommandParameter="0" InputGestureText="Ctrl+1">
+                <MenuItem Header="Pa_noramica" Command="{Binding ShowTabCommand}" CommandParameter="0" InputGestureText="Ctrl+0">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Home}" /></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_File" Command="{Binding ShowTabCommand}" CommandParameter="1" InputGestureText="Ctrl+1">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Folder}" /></MenuItem.Icon>
                 </MenuItem>
-                <MenuItem Header="_Prodotti e versioni" Command="{Binding ShowTabCommand}" CommandParameter="1" InputGestureText="Ctrl+2">
+                <MenuItem Header="_Prodotti e versioni" Command="{Binding ShowTabCommand}" CommandParameter="2" InputGestureText="Ctrl+2">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Package}" /></MenuItem.Icon>
                 </MenuItem>
-                <MenuItem Header="C_loni e pulizia" Command="{Binding ShowTabCommand}" CommandParameter="2" InputGestureText="Ctrl+3">
+                <MenuItem Header="C_loni e pulizia" Command="{Binding ShowTabCommand}" CommandParameter="3" InputGestureText="Ctrl+3">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Duplicate}" /></MenuItem.Icon>
                 </MenuItem>
-                <MenuItem Header="_Driver e periferiche" Command="{Binding ShowTabCommand}" CommandParameter="3" InputGestureText="Ctrl+4">
+                <MenuItem Header="_Driver e periferiche" Command="{Binding ShowTabCommand}" CommandParameter="4" InputGestureText="Ctrl+4">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Device}" /></MenuItem.Icon>
                 </MenuItem>
                 <Separator />
@@ -158,6 +166,9 @@
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Question}" /></MenuItem.Icon>
                 </MenuItem>
                 <Separator />
+                <MenuItem Header="Controlla _aggiornamenti…" Command="{Binding CheckUpdatesCommand}">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Download}" /></MenuItem.Icon>
+                </MenuItem>
                 <MenuItem Header="_Informazioni su pcOrg" Command="{Binding ShowAboutCommand}">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Info}" /></MenuItem.Icon>
                 </MenuItem>
@@ -218,6 +229,13 @@
                 </Grid>
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <ToggleButton IsChecked="{Binding SearchInContent}" Margin="0,0,8,0" Padding="10,5"
+                                  ToolTip="Cerca anche dentro i file: testo di PDF, Word e documenti, e file contenuti in ZIP e ISO">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Document}" FontSize="15" Margin="0,0,8,0" />
+                            <TextBlock Text="Nel contenuto" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ToggleButton>
                     <c:IconButton Glyph="{x:Static inf:Glyphs.Refresh}" Label="Aggiorna" Command="{Binding ScanCommand}" Margin="0,0,8,0"
                                   ToolTip="Aggiornamento rapido: rilegge solo le cartelle in cui qualcosa è cambiato (F5). Scansione completa: Ctrl+F5" />
                     <c:IconButton Glyph="{x:Static inf:Glyphs.History}" Label="Cronologia" Command="{Binding ShowHistoryCommand}"
@@ -343,7 +361,100 @@
 
             <!-- Pannello destro: schede File / Prodotti -->
             <TabControl x:Name="Tabs" x:FieldModifier="public" Grid.Column="2" SelectedIndex="{Binding SelectedTabIndex}"
+                        SelectionChanged="Tabs_SelectionChanged"
                         Visibility="{Binding HasRoots, Converter={StaticResource BoolToVisibility}}">
+                <!-- Scheda Panoramica -->
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Home}" FontSize="14" Margin="0,0,8,0" />
+                            <TextBlock Text="Panoramica" />
+                        </StackPanel>
+                    </TabItem.Header>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,10,0,0">
+                        <StackPanel>
+                            <!-- Riquadri: un clic porta alla scheda di dettaglio -->
+                            <ItemsControl ItemsSource="{Binding DashboardCards}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Columns="2" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Margin="0,0,10,10" Padding="16,14" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
+                                                Command="{Binding DataContext.ShowTabCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding Tab}" ToolTip="Apri il dettaglio">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <Border Width="46" Height="46" CornerRadius="12" Background="{Binding Accent}" VerticalAlignment="Center" Margin="0,0,14,0">
+                                                    <TextBlock Style="{StaticResource Icon}" Text="{Binding Glyph}" FontSize="20" Foreground="White" HorizontalAlignment="Center" />
+                                                </Border>
+                                                <StackPanel Grid.Column="1">
+                                                    <TextBlock Text="{Binding Title}" Style="{StaticResource Secondary}" FontSize="13" />
+                                                    <TextBlock Text="{Binding Value}" FontSize="24" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Text="{Binding Detail}" Style="{StaticResource Secondary}" TextWrapping="Wrap" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <!-- Azioni rapide -->
+                            <TextBlock Text="AZIONI RAPIDE" Style="{StaticResource SectionHeader}" Margin="2,8,0,8" />
+                            <WrapPanel Margin="0,0,0,6">
+                                <c:IconButton Glyph="{x:Static inf:Glyphs.Add}" Label="Aggiungi cartella" Command="{Binding AddRootCommand}" Margin="0,0,8,8" />
+                                <c:IconButton Glyph="{x:Static inf:Glyphs.Refresh}" Label="Aggiorna" Command="{Binding ScanCommand}" Margin="0,0,8,8" />
+                                <c:IconButton Glyph="{x:Static inf:Glyphs.Duplicate}" Label="Cerca i cloni" Command="{Binding FindDuplicatesCommand}" Margin="0,0,8,8" />
+                                <c:IconButton Glyph="{x:Static inf:Glyphs.Rules}" Label="Organizza con le regole" Command="{Binding OrganizeWithRulesCommand}" Margin="0,0,8,8" />
+                                <c:IconButton Glyph="{x:Static inf:Glyphs.Export}" Label="Esporta in Excel" Command="{Binding ExportCsvCommand}" Margin="0,0,8,8" />
+                                <c:IconButton Glyph="{x:Static inf:Glyphs.Help}" Label="Guida" Command="{Binding ShowHelpCommand}" Margin="0,0,8,8" />
+                            </WrapPanel>
+
+                            <!-- Spazio per categoria -->
+                            <TextBlock Text="SPAZIO PER CATEGORIA" Style="{StaticResource SectionHeader}" Margin="2,8,0,8" />
+                            <Border Style="{StaticResource Card}" Margin="0,0,10,10" Padding="8">
+                                <ItemsControl ItemsSource="{Binding CategoryBars}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <!-- Riga cliccabile: un Border (non un pulsante) così la griglia occupa tutta la larghezza -->
+                                            <Border Background="Transparent" Padding="8,6" CornerRadius="6" Cursor="Hand" ToolTip="Mostra i file di questa categoria">
+                                                <Border.InputBindings>
+                                                    <MouseBinding MouseAction="LeftClick" CommandParameter="{Binding}"
+                                                                  Command="{Binding DataContext.OpenCategoryCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
+                                                </Border.InputBindings>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="150" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="80" />
+                                                        <ColumnDefinition Width="80" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Border Width="24" Height="24" CornerRadius="6" Background="{Binding Accent}" Margin="0,0,10,0">
+                                                        <TextBlock Style="{StaticResource Icon}" Text="{Binding Glyph}" FontSize="12" Foreground="White" HorizontalAlignment="Center" />
+                                                    </Border>
+                                                    <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                    <ProgressBar Grid.Column="2" Value="{Binding Percent, Mode=OneWay}" Maximum="100" Height="8" Foreground="{Binding Accent}"
+                                                                 VerticalAlignment="Center" Margin="8,0" />
+                                                    <TextBlock Grid.Column="3" Text="{Binding SizeText}" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold" />
+                                                    <TextBlock Grid.Column="4" Text="{Binding Count, StringFormat='{}{0:N0} file'}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                                               Style="{StaticResource Secondary}" />
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
                 <!-- Scheda File -->
                 <TabItem>
                     <TabItem.Header>
@@ -373,6 +484,8 @@
                                               ToolTip="Apri Esplora risorse con il file già selezionato" />
                                 <c:IconButton Glyph="{x:Static inf:Glyphs.Copy}" Label="Copia percorso" Command="{Binding CopyPathCommand}" Margin="0,0,6,0"
                                               ToolTip="Copia negli appunti il percorso dei file selezionati" />
+                                <c:IconButton Glyph="{x:Static inf:Glyphs.Tag}" Label="Etichette…" Command="{Binding EditNotesCommand}" Margin="0,0,6,0"
+                                              ToolTip="Assegna etichette e una nota ai file selezionati, per ritrovarli con la ricerca (Ctrl+T)" />
                                 <c:IconButton Glyph="{x:Static inf:Glyphs.Rules}" Label="Organizza con le regole" Command="{Binding OrganizeWithRulesCommand}" Margin="0,0,6,0"
                                               ToolTip="Applica le regole di archiviazione ai file selezionati (o a tutto l'elenco): prima vedrai l'anteprima" />
                                 <c:IconButton Glyph="{x:Static inf:Glyphs.Move}" Label="Sposta in…" Command="{Binding MoveSelectedCommand}" Margin="0,0,6,0"
@@ -398,6 +511,9 @@
                                         </MenuItem>
                                         <MenuItem Header="Copia percorso" Command="{Binding CopyPathCommand}">
                                             <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Copy}" /></MenuItem.Icon>
+                                        </MenuItem>
+                                        <MenuItem Header="Etichette e nota…" Command="{Binding EditNotesCommand}" InputGestureText="Ctrl+T">
+                                            <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Tag}" /></MenuItem.Icon>
                                         </MenuItem>
                                         <Separator />
                                         <MenuItem Header="Sposta in…" Command="{Binding MoveSelectedCommand}">
@@ -445,6 +561,8 @@
                                     <DataGridTextColumn Header="Tipo di installer" Binding="{Binding Meta.InstallerType}" Width="150" MinWidth="80" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
                                     <DataGridTextColumn Header="Sul PC" Binding="{Binding Converter={x:Static inf:InstallStateConverter.Instance}}" Width="230" MinWidth="100" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
                                     <DataGridTextColumn Header="Estensione" Binding="{Binding Extension}" Width="85" MinWidth="60" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
+                                    <DataGridTextColumn Header="Etichette" Binding="{Binding Tags}" Width="150" MinWidth="80" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
+                                    <DataGridTextColumn Header="Nota" Binding="{Binding Note}" Width="200" MinWidth="80" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
                                     <DataGridTextColumn Header="Percorso completo" Binding="{Binding Path}" Width="320" MinWidth="120" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
                                 </DataGrid.Columns>
                             </DataGrid>
@@ -467,6 +585,7 @@
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
                                     <Grid.Resources>
                                         <Style TargetType="TextBlock">
@@ -475,7 +594,7 @@
                                         </Style>
                                     </Grid.Resources>
 
-                                    <Border Grid.RowSpan="6" Width="48" Height="48" CornerRadius="10" VerticalAlignment="Top" Margin="0,0,14,0"
+                                    <Border Grid.RowSpan="7" Width="48" Height="48" CornerRadius="10" VerticalAlignment="Top" Margin="0,0,14,0"
                                             Background="{Binding Category, Converter={x:Static inf:CategoryBrushConverter.Instance}}">
                                         <TextBlock Style="{StaticResource Icon}" FontSize="22" Foreground="White" HorizontalAlignment="Center" Margin="0"
                                                    Text="{Binding Category, Converter={x:Static inf:CategoryGlyphConverter.Instance}}" />
@@ -511,6 +630,19 @@
                                     <TextBlock Grid.Row="5" Grid.Column="2" Text="{Binding Size, Converter={StaticResource FileSize}}" />
                                     <TextBlock Grid.Row="5" Grid.Column="3" Style="{StaticResource Secondary}" Text="Modificato" />
                                     <TextBlock Grid.Row="5" Grid.Column="4" Text="{Binding ModifiedUtc, StringFormat=g, Converter={x:Static vm:UtcToLocalConverter.Instance}}" />
+
+                                    <!-- Etichette, nota ed estratto del testo trovato: compaiono solo se presenti -->
+                                    <StackPanel Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="4">
+                                        <TextBlock TextWrapping="Wrap" Visibility="{Binding Tags, Converter={x:Static inf:EmptyToCollapsedConverter.Instance}}">
+                                            <Run Text="Etichette: " Foreground="{DynamicResource TextFillColorSecondaryBrush}" /><Run Text="{Binding Tags, Mode=OneWay}" FontWeight="SemiBold" />
+                                        </TextBlock>
+                                        <TextBlock TextWrapping="Wrap" MaxHeight="40" Visibility="{Binding Note, Converter={x:Static inf:EmptyToCollapsedConverter.Instance}}">
+                                            <Run Text="Nota: " Foreground="{DynamicResource TextFillColorSecondaryBrush}" /><Run Text="{Binding Note, Mode=OneWay}" />
+                                        </TextBlock>
+                                        <TextBlock TextWrapping="Wrap" MaxHeight="40" Visibility="{Binding Snippet, Converter={x:Static inf:EmptyToCollapsedConverter.Instance}}">
+                                            <Run Text="Nel contenuto: " Foreground="{DynamicResource TextFillColorSecondaryBrush}" /><Run Text="{Binding Snippet, Mode=OneWay}" />
+                                        </TextBlock>
+                                    </StackPanel>
                                 </Grid>
                             </Border>
                         </Grid>

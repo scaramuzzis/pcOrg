@@ -28,6 +28,8 @@ public class Screenshots
         public string? AskNetworkFolder() => null;
         public string? PickSaveFile(string title, string defaultName, string filter) => SavePath;
         public void ShowAbout() { }
+        public (string Tags, string Note)? EditNotes(string title, string tags, string note, IReadOnlyList<string> knownTags) => NotesResult;
+        public (string Tags, string Note)? NotesResult { get; set; }
         public void ShowHelp(string? chapter = null) { }
         public string? SavePath { get; set; }
         public bool Confirm(string message, string title, string confirmText = "Conferma") => ConfirmResult;
@@ -100,6 +102,7 @@ public class Screenshots
         Directory.Delete(usb, recursive: true);
 
         MetadataUpdater.Run(index);
+        PcOrg.Core.Content.ContentIndexer.Run(index);
 
         var app = new App();
         app.InitializeComponent();
@@ -116,6 +119,8 @@ public class Screenshots
         var window = new MainWindow { DataContext = vm };
         app.MainWindow = window;
         Show(window);
+        window.Tabs.SelectedIndex = MainViewModel.FilesTab;
+        Pump(500);
         var exe = vm.Results.Where(r => r.Meta?.Signer is not null).OrderByDescending(r => r.Name.StartsWith("python")).FirstOrDefault()
                   ?? vm.Results.First();
         Select(window, vm, exe);
@@ -155,8 +160,30 @@ public class Screenshots
         vm.SearchText = "";
         Pump(600);
 
+        // 5b. Ricerca nel contenuto, con etichette e nota sul file trovato
+        vm.SearchInContent = true;
+        vm.SearchText = "assicurazione";
+        Pump(900);
+        if (vm.Results.Count > 0)
+        {
+            index.SetNotes([vm.Results[0].Path], "condominio, da archiviare", "Portare alla prossima riunione");
+            vm.SearchText = "assicurazione caldaia";
+            Pump(900);
+            if (vm.Results.Count > 0)
+                Select(window, vm, vm.Results.First());
+        }
+        Capture(window, output, "29-ricerca-nel-contenuto.png");
+        var notes = new NotesWindow("Appunti riunione condominio.txt", "condominio, da archiviare", "Portare alla prossima riunione",
+            ["condominio", "da archiviare", "ufficio", "fatture"]) { Owner = window };
+        Show(notes);
+        Capture(notes, output, "30-etichette-e-nota.png");
+        notes.Close();
+        vm.SearchInContent = false;
+        vm.SearchText = "";
+        Pump(600);
+
         // 6b. Cloni e pulizia
-        window.Tabs.SelectedIndex = 2;
+        window.Tabs.SelectedIndex = 3;
         vm.SelectedSizeOption = vm.SizeOptions[0];
         var find = vm.FindDuplicatesCommand.ExecuteAsync(null);
         while (!find.IsCompleted)
@@ -164,23 +191,23 @@ public class Screenshots
         vm.MarkDoublesCommand.Execute(null);
         Pump(600);
         Capture(window, output, "23-cloni-e-pulizia.png");
-        window.Tabs.SelectedIndex = 0;
+        window.Tabs.SelectedIndex = 1;
         Pump(300);
 
         // 6c. Driver e periferiche (dopo la lettura di periferiche e programmi installati)
         await_(vm.RefreshInstalledAsync());
-        window.Tabs.SelectedIndex = 3;
+        window.Tabs.SelectedIndex = 4;
         Pump(800);
         Capture(window, output, "27-driver-e-periferiche.png");
         vm.ShowUnneededDrivers = true;
         Pump(500);
         Capture(window, output, "28-driver-che-non-servono.png");
         vm.ShowUnneededDrivers = false;
-        window.Tabs.SelectedIndex = 0;
+        window.Tabs.SelectedIndex = 1;
         Pump(300);
 
         // 6. Prodotti e versioni
-        window.Tabs.SelectedIndex = 1;
+        window.Tabs.SelectedIndex = 2;
         vm.SelectedProduct = vm.Products.OrderByDescending(p => p.Files.Count).FirstOrDefault();
         Pump(800);
         Capture(window, output, "06-prodotti-e-versioni.png");
@@ -196,7 +223,7 @@ public class Screenshots
         preview.Close();
 
         // 8. Notifica dopo lo spostamento (spostamento reale, così la cronologia ha dati)
-        window.Tabs.SelectedIndex = 0;
+        window.Tabs.SelectedIndex = 1;
         var moved = new MoveService(index).Execute(plan, $"{plan.Count(p => p.WillMove)} file in {Path.Combine(archive, "Programmi")}");
         vm.ShowToast($"{moved.Moved} file spostati in Programmi", ToastKind.Success, "Annulla", () => Task.CompletedTask);
         Pump(700);
@@ -282,11 +309,11 @@ public class Screenshots
 
         // 26. Prodotti con lo stato "Sul PC"
         await_(vm.RefreshInstalledAsync());
-        window.Tabs.SelectedIndex = 1;
+        window.Tabs.SelectedIndex = 2;
         vm.OnlyMultipleVersions = false;
         Pump(800);
         Capture(window, output, "26-prodotti-sul-pc.png");
-        window.Tabs.SelectedIndex = 0;
+        window.Tabs.SelectedIndex = 1;
         vm.OnlyMultipleVersions = true;
 
         // 15. Informazioni su pcOrg
@@ -304,6 +331,13 @@ public class Screenshots
         Pump(500);
         Capture(history, output, "10-cronologia.png");
         history.Close();
+
+        // 00. Panoramica (alla fine, così i riquadri di cloni e driver hanno già i dati)
+        window.Tabs.SelectedIndex = MainViewModel.OverviewTab;
+        Pump(800);
+        Capture(window, output, "00-panoramica.png");
+        window.Tabs.SelectedIndex = MainViewModel.FilesTab;
+        Pump(400);
 
         // 11. Tema scuro
         app.ThemeMode = ThemeMode.Dark;
@@ -568,6 +602,10 @@ internal static class SampleData
         if (devices.Count > 1)
             Inf("Uguale", devices[1].Class ?? "System", devices[1].DriverProvider ?? "Produttore", devices[1].DriverVersion!, devices[1].Name, devices[1].HardwareIds[0]);
         Inf("Stampante HP LaserJet 1020", "Printer", "HP", "5.0.1.2", "HP LaserJet 1020", @"USBPRINT\Hewlett-PackardHP_LaFDE6");
+
+        // Documento con testo vero, per la ricerca nel contenuto
+        File.WriteAllText(Path.Combine(root, "Appunti riunione condominio.txt"),
+            "Verbale della riunione: si decide di rinnovare l'assicurazione del fabbricato entro marzo e di sostituire la caldaia.");
 
         // Connessioni remote
         File.WriteAllText(Path.Combine(root, "Connessioni", "Ufficio Mario.vnc").Also(p => Directory.CreateDirectory(Path.GetDirectoryName(p)!)),

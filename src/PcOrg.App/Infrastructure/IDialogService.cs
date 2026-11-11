@@ -13,6 +13,9 @@ public interface IDialogService
     /// <summary>Apre la guida, eventualmente al capitolo indicato.</summary>
     void ShowHelp(string? chapter = null);
 
+    /// <summary>Chiede etichette e nota per i file selezionati. Null se l'utente annulla.</summary>
+    (string Tags, string Note)? EditNotes(string title, string tags, string note, IReadOnlyList<string> knownTags);
+
     /// <summary>Finestra "Informazioni su pcOrg".</summary>
     void ShowAbout();
 

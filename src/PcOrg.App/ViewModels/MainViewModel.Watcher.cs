@@ -36,6 +36,10 @@ public sealed partial class MainViewModel
     /// <summary>Chiamato in background quando l'osservatore ha raccolto delle modifiche.</summary>
     private async void OnChangesReady(IReadOnlyList<(long RootId, string Path)> changes)
     {
+        // Durante una scansione o uno spostamento l'indice è già impegnato in scrittura: si aspetta,
+        // così le modifiche rilevate non vanno perse per un blocco del database.
+        while (IsBusy)
+            await Task.Delay(500);
         await _watchGate.WaitAsync();
         try
         {
@@ -47,7 +51,11 @@ public sealed partial class MainViewModel
 
             // Versioni e firme dei programmi appena arrivati.
             if (result.FilesAdded + result.FilesUpdated > 0)
+            {
                 await Task.Run(() => MetadataUpdater.Run(_index, verifySignatures: _settings.VerifySignatures));
+                if (_settings.IndexContent)
+                    await Task.Run(() => PcOrg.Core.Content.ContentIndexer.Run(_index));
+            }
 
             await _dispatcher.InvokeAsync(async () =>
             {

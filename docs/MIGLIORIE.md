@@ -18,10 +18,10 @@ Proposte ordinate per **valore per l'utente / costo**. Ogni voce indica il probl
 |---|---|---|---|---|
 | 6 | ✅ **Driver vs periferiche presenti** (v0.11) | Capire quali driver servono ancora a questo PC. | Lettura dei file `.inf` (Class, Provider, DriverVer, HardwareID) e confronto con le periferiche via SetupAPI/`pnputil /enum-devices`. | 3–4 |
 | 7 | ✅ **Installato / non installato** (v0.10) | Sapere se un installer è già stato usato. | Incrocio con le chiavi `Uninstall` del registro (HKLM, WOW6432Node, HKCU) e le app MSIX. | 2 |
-| 8 | **Contenuto di ZIP/ISO** | Gli installer dentro gli archivi non vengono analizzati. | Indice delle voci di zip/7z/rar (SharpCompress) e delle ISO; ricerca anche dentro. | 3 |
-| 9 | **Etichette e note** | Ricordare perché si tiene un file ("driver stampante ufficio"). | Tabella `tags` nell'indice, ricerca per etichetta, colonna facoltativa. | 2 |
+| 8 | ✅ **Contenuto di ZIP/ISO** (v0.14) | Gli installer dentro gli archivi non vengono analizzati. | Indice delle voci di zip/7z/rar (SharpCompress) e delle ISO; ricerca anche dentro. | 3 |
+| 9 | ✅ **Etichette e note** (v0.14) | Ricordare perché si tiene un file ("driver stampante ufficio"). | Tabella `tags` nell'indice, ricerca per etichetta, colonna facoltativa. | 2 |
 | 10 | **Controllo aggiornamenti dei programmi** | Sapere se esiste una versione più nuova. | Confronto con i manifest pubblici di winget per i prodotti riconosciuti (opzionale, unica funzione con accesso a internet). | 3 |
-| 11 | **Ricerca nel contenuto dei documenti** | Trovare un PDF o un Word da una parola del testo. | Estrazione testo (iFilter di Windows o librerie PDF/OpenXML) in una tabella FTS dedicata, solo per le cartelle scelte. | 4–5 |
+| 11 | ✅ **Ricerca nel contenuto dei documenti** (v0.14) | Trovare un PDF o un Word da una parola del testo. | Estrazione testo (iFilter di Windows o librerie PDF/OpenXML) in una tabella FTS dedicata, solo per le cartelle scelte. | 4–5 |
 
 ## Qualità e manutenzione
 

@@ -62,6 +62,8 @@ public partial class SettingsWindow : Window
         LogLevelChooser.SelectedItem = LogLevelChooser.Items.OfType<ComboBoxItem>()
             .FirstOrDefault(i => (string)i.Tag == settings.LogLevel.ToString()) ?? LogLevelChooser.Items[2];
         VerifySignatures.IsChecked = settings.VerifySignatures;
+        IndexContent.IsChecked = settings.IndexContent;
+        CheckUpdates.IsChecked = settings.CheckUpdatesOnStartup;
         ShowPreview.IsChecked = vm.ShowPreviewPanel;
         ShowDetails.IsChecked = vm.ShowDetailsPanel;
 
@@ -271,7 +273,9 @@ public partial class SettingsWindow : Window
             ShowPreview: ShowPreview.IsChecked == true,
             ShowDetails: ShowDetails.IsChecked == true,
             LogEnabled: LogEnabled.IsChecked == true,
-            LogLevel: level));
+            LogLevel: level,
+            IndexContent: IndexContent.IsChecked == true,
+            CheckUpdatesOnStartup: CheckUpdates.IsChecked == true));
         _main.SaveLayout();
         DialogResult = true;
     }

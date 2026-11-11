@@ -17,9 +17,24 @@ namespace PcOrg.App;
 /// </summary>
 public partial class App : Application
 {
+    private Mutex? _instance;
+    private bool _sessionStarted;
+
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        // Una sola istanza per cartella dei dati: due copie aperte insieme scriverebbero sullo stesso
+        // indice e sulle stesse preferenze. Se pcOrg è già aperto si porta in primo piano quello.
+        _instance = new Mutex(true, SingleInstance.MutexName(AppPaths.DataFolder), out var first);
+        if (!first)
+        {
+            SingleInstance.ActivateRunning();
+            Shutdown(0);
+            return;
+        }
+        // Se Windows si spegne o l'utente si disconnette, la sessione si considera chiusa regolarmente.
+        SessionEnding += (_, _) => SessionGuard.End();
 
         // Interfaccia solo in italiano: date e numeri in formato italiano anche nei binding.
         var culture = CultureInfo.GetCultureInfo("it-IT");
@@ -59,6 +74,7 @@ public partial class App : Application
         // questa volta si saltano le operazioni automatiche pesanti, così l'app si apre comunque.
         var safeMode = SessionGuard.PreviousSessionCrashed();
         SessionGuard.Begin();
+        _sessionStarted = true;
 
         var viewModel = new MainViewModel(index, new DialogService());
         viewModel.UseSettings(AppSettings.Load());
@@ -74,8 +90,12 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
-        SessionGuard.End();
-        Log.Info("=== Chiusura di pcOrg ===");
+        if (_sessionStarted)
+        {
+            SessionGuard.End();
+            Log.Info("=== Chiusura di pcOrg ===");
+        }
+        _instance?.Dispose();
         base.OnExit(e);
     }
 

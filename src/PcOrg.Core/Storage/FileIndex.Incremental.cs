@@ -53,9 +53,50 @@ public sealed partial class FileIndex
     {
         RecurseSubdirectories = false,
         IgnoreInaccessible = true,
-        AttributesToSkip = FileAttributes.System | FileAttributes.ReparsePoint,
+        // Non si scartano i "reparse point": i file di OneDrive lo sono. I collegamenti a cartelle
+        // (junction, link simbolici) vengono esclusi più sotto per evitare cicli e doppioni.
+        AttributesToSkip = FileAttributes.System,
         ReturnSpecialDirectories = false,
     };
+
+    /// <summary>
+    /// Vero se la cartella è un collegamento a un'altra cartella (junction o link simbolico): non va
+    /// percorsa, altrimenti gli stessi file comparirebbero due volte o si creerebbero cicli.
+    /// Le cartelle di OneDrive hanno l'attributo "reparse point" ma non sono collegamenti.
+    /// </summary>
+    private static bool IsDirectoryLink(FileSystemInfo entry)
+    {
+        if ((entry.Attributes & FileAttributes.ReparsePoint) == 0)
+            return false;
+        try
+        {
+            return entry.LinkTarget is not null;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return true; // nel dubbio non si segue
+        }
+    }
+
+    /// <summary>
+    /// Vero se per la cartella vale l'aggiornamento rapido. Su FAT32 ed exFAT (chiavette, schede SD)
+    /// Windows non aggiorna la data della cartella quando cambia il suo contenuto: lì serve sempre la
+    /// scansione completa, altrimenti i file nuovi non verrebbero trovati.
+    /// </summary>
+    public static bool SupportsQuickUpdate(string path)
+    {
+        if (!OperatingSystem.IsWindows() || NetworkPaths.IsUnc(path))
+            return true;
+        try
+        {
+            var format = new DriveInfo(Path.GetPathRoot(path)!).DriveFormat;
+            return format.Equals("NTFS", StringComparison.OrdinalIgnoreCase) || format.Equals("ReFS", StringComparison.OrdinalIgnoreCase);
+        }
+        catch (Exception ex) when (ex is IOException or ArgumentException or UnauthorizedAccessException)
+        {
+            return true;
+        }
+    }
 
     /// <summary>Tabella delle cartelle conosciute con la loro data di modifica (schema v5).</summary>
     private static void CreateDirectoryTable(SqliteConnection conn, SqliteTransaction tx) => Exec(conn, """
@@ -81,17 +122,20 @@ public sealed partial class FileIndex
         using var conn = Connect();
 
         // Cartelle già conosciute sotto il punto di partenza, con le relative sottocartelle.
+        // Il filtro per prefisso è fatto dal database: con centinaia di migliaia di cartelle, aggiornare
+        // una sola sottocartella (es. una modifica rilevata) non deve esaminarle tutte una per una.
         var known = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
-        using (var cmd = Command(conn, "SELECT path, mtime FROM dirs WHERE root_id = $r;"))
+        var prefix = startPath.EndsWith(Path.DirectorySeparatorChar) ? startPath : startPath + Path.DirectorySeparatorChar;
+        using (var cmd = Command(conn,
+                   "SELECT path, mtime FROM dirs WHERE root_id = $r AND (path = $p OR substr(path, 1, $n) = $prefix COLLATE NOCASE);"))
         {
             cmd.Parameters.AddWithValue("$r", rootId);
+            cmd.Parameters.AddWithValue("$p", startPath);
+            cmd.Parameters.AddWithValue("$n", prefix.Length);
+            cmd.Parameters.AddWithValue("$prefix", prefix);
             using var r = cmd.ExecuteReader();
             while (r.Read())
-            {
-                var path = r.GetString(0);
-                if (PathUtil.IsSameOrUnder(path, startPath))
-                    known[path] = r.GetInt64(1);
-            }
+                known[r.GetString(0)] = r.GetInt64(1);
         }
         var children = known.Keys
             .Where(p => !string.Equals(p, startPath, StringComparison.OrdinalIgnoreCase))
@@ -157,7 +201,7 @@ public sealed partial class FileIndex
                     {
                         if (entry is FileInfo f)
                             files.Add(f);
-                        else
+                        else if (!IsDirectoryLink(entry))
                             subdirs.Add(entry.FullName);
                     }
                 }

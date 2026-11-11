@@ -85,8 +85,10 @@ public sealed partial class MainViewModel : ObservableObject
         await RefreshInstalledAsync();
         if (_scanOnStartup && Roots.Count > 0)
             await ScanRootsAsync(Roots.Select(r => r.Root).ToList());
-        else if (await Task.Run(_index.CountFilesNeedingMetadata) > 0)
+        else if (await Task.Run(() => _index.CountFilesNeedingMetadata() + (_settings.IndexContent ? _index.CountFilesNeedingContent() : 0)) > 0)
             await UpdateMetadataAsync(); // es. indice creato con una versione precedente
+        if (_settings.CheckUpdatesOnStartup && !_safeMode)
+            await CheckUpdatesAsync(silentIfCurrent: true);
     }
 
     /// <summary>
@@ -294,7 +296,8 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ScanCommand), nameof(FullScanCommand), nameof(AddRootCommand), nameof(RemoveRootCommand),
         nameof(MoveSelectedCommand), nameof(CancelScanCommand), nameof(FindDuplicatesCommand),
-        nameof(RecycleMarkedCommand), nameof(MoveMarkedCommand), nameof(RecycleSelectedCommand), nameof(OrganizeWithRulesCommand))]
+        nameof(RecycleMarkedCommand), nameof(MoveMarkedCommand), nameof(RecycleSelectedCommand), nameof(OrganizeWithRulesCommand),
+        nameof(EditNotesCommand))]
     private bool _isBusy;
 
     [ObservableProperty]
@@ -423,13 +426,17 @@ public sealed partial class MainViewModel : ObservableObject
                     offline.Add(root.Path);
                     continue;
                 }
+                // Su FAT32/exFAT (chiavette) la data delle cartelle non segnala i file nuovi: scansione completa.
+                var fullForRoot = full || !FileIndex.SupportsQuickUpdate(root.Path);
+                if (fullForRoot && !full)
+                    Log.Info($"{root.Path}: disco senza date di cartella affidabili (FAT/exFAT), scansione completa.");
                 var progress = new Progress<ScanResult>(p => Status =
                     $"{kind} di {root.Path}: {p.DirectoriesVisited:N0} cartelle controllate, {p.DirectoriesChanged:N0} rilette, " +
                     $"{p.FilesChanged:N0} file cambiati…");
                 try
                 {
                     total += await Task.Run(
-                        () => _index.UpdateRoot(root.Id, root.Path, full, progress, token,
+                        () => _index.UpdateRoot(root.Id, root.Path, fullForRoot, progress, token,
                             isStillAvailable: () => Directory.Exists(root.Path)), token);
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -485,6 +492,19 @@ public sealed partial class MainViewModel : ObservableObject
                 Status = $"Lettura di versioni e firme: {p.Done:N0} di {p.Total:N0} file…");
             var count = await Task.Run(() => MetadataUpdater.Run(_index, progress, token, _settings.VerifySignatures), token);
             Status = count == 0 ? "Indice aggiornato." : $"Lette versioni e firme di {count:N0} file.";
+
+            // Testo dei documenti e contenuto di ZIP e ISO, per la ricerca "nel contenuto".
+            if (_settings.IndexContent)
+            {
+                var contentProgress = new Progress<(int Done, int Total)>(p =>
+                    Status = $"Lettura del contenuto di documenti e archivi: {p.Done:N0} di {p.Total:N0} file…");
+                var read = await Task.Run(() => PcOrg.Core.Content.ContentIndexer.Run(_index, contentProgress, token), token);
+                if (read > 0)
+                {
+                    Status = $"Letto il contenuto di {read:N0} documenti e archivi.";
+                    Log.Info($"Contenuto indicizzato: {read:N0} file.");
+                }
+            }
         }
         catch (OperationCanceledException)
         {
@@ -553,6 +573,7 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task RefreshCoreAsync()
     {
         var stats = await Task.Run(_index.GetCategoryStats);
+        _lastStats = stats;
         var selected = SelectedCategory;
         await RefreshProductsAsync();
 
@@ -583,6 +604,7 @@ public sealed partial class MainViewModel : ObservableObject
         SelectedCategory = Categories.FirstOrDefault(c => c.Category == selected?.Category && c.Name == selected?.Name)
             ?? Categories.FirstOrDefault(c => c.Category == selected?.Category && !c.IsSubcategory)
             ?? Categories[0];
+        UpdateDashboard();
     }
 
     private async Task RefreshProductsAsync()
@@ -600,6 +622,9 @@ public sealed partial class MainViewModel : ObservableObject
             + $"Le versioni vecchie occupano {FileSizeConverter.Format(reclaimable)}.";
     }
 
+    /// <summary>Ricarica l'elenco anche se i file sono gli stessi (es. è cambiato lo stato "Sul PC").</summary>
+    private bool _forceResultsRefresh;
+
     private async Task RefreshResultsAsync(bool debounce)
     {
         _searchCts?.Cancel();
@@ -608,15 +633,26 @@ public sealed partial class MainViewModel : ObservableObject
         {
             if (debounce)
                 await Task.Delay(150, cts.Token);
-            var query = new SearchQuery(SearchText, SelectedCategory?.Category) { Extensions = SelectedCategory?.Extensions };
+            var query = new SearchQuery(SearchText, SelectedCategory?.Category)
+            {
+                Extensions = SelectedCategory?.Extensions,
+                InContent = SearchInContent,
+            };
             var stopwatch = Stopwatch.StartNew();
             var results = await Task.Run(() => _index.Search(query), cts.Token);
             if (cts.IsCancellationRequested)
                 return;
 
-            Results.Clear();
-            foreach (var file in results)
-                Results.Add(file);
+            // Se l'elenco non è cambiato non lo si ricarica: così un aggiornamento in background
+            // (es. un file arrivato in un'altra categoria) non fa perdere selezione e posizione.
+            var force = _forceResultsRefresh;
+            _forceResultsRefresh = false;
+            if (force || !Results.SequenceEqual(results))
+            {
+                Results.Clear();
+                foreach (var file in results)
+                    Results.Add(file);
+            }
             if (!IsBusy)
                 Status = results.Count >= query.Limit
                     ? $"Mostrati i primi {results.Count:N0} risultati ({stopwatch.ElapsedMilliseconds} ms): affina la ricerca"

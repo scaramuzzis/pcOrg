@@ -36,6 +36,14 @@ public static class CsvExporter
     }
 
     /// <summary>Racchiude tra virgolette i valori con ; " o a capo, raddoppiando le virgolette interne.</summary>
-    internal static string Escape(string value) =>
-        value.IndexOfAny([';', '"', '\n', '\r']) >= 0 ? "\"" + value.Replace("\"", "\"\"") + "\"" : value;
+    /// <remarks>
+    /// I valori che iniziano con = + - @ verrebbero interpretati da Excel come formule (un nome di file
+    /// costruito ad arte potrebbe eseguire comandi): si antepone un apostrofo, che Excel non mostra.
+    /// </remarks>
+    internal static string Escape(string value)
+    {
+        if (value.Length > 0 && value[0] is '=' or '+' or '-' or '@' or '\t' or '\r')
+            value = "'" + value;
+        return value.IndexOfAny([';', '"', '\n', '\r']) >= 0 ? "\"" + value.Replace("\"", "\"\"") + "\"" : value;
+    }
 }

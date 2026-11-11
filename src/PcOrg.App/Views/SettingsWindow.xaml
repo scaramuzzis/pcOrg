@@ -43,9 +43,17 @@
                         <CheckBox x:Name="ScanOnStartup" Content="Aggiornamento rapido delle cartelle a ogni avvio" />
                         <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="28,2,0,12"
                                    Text="Trova ciò che è cambiato mentre pcOrg era chiuso. È rapido anche con milioni di file: rilegge solo le cartelle in cui qualcosa è stato aggiunto, tolto o rinominato. Per un controllo totale usa File → Scansione completa (Ctrl+F5)." />
+                        <CheckBox x:Name="IndexContent" Content="Leggi il contenuto di documenti e archivi, per poterli cercare" />
+                        <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="28,2,0,12"
+                                   Text="Indicizza il testo di PDF, Word, PowerPoint, Excel e file di testo, e l'elenco dei file dentro ZIP e ISO. Serve al pulsante &quot;Nel contenuto&quot; della ricerca. Solo cartelle locali; la prima volta può richiedere qualche minuto." />
                         <CheckBox x:Name="VerifySignatures" Content="Verifica le firme digitali dei programmi" />
                         <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="28,2,0,18"
                                    Text="Garantisce che il file non sia stato modificato, ma legge ogni programma per intero: disattivala se l'aggiornamento è lento. Sui file in rete la firma non viene mai verificata." />
+
+                        <TextBlock Text="AGGIORNAMENTI DI PCORG" Style="{StaticResource SectionHeader}" Margin="0,0,0,8" />
+                        <CheckBox x:Name="CheckUpdates" Content="All'avvio controlla se esiste una nuova versione di pcOrg" />
+                        <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="28,2,0,18"
+                                   Text="È l'unica funzione che usa internet: legge soltanto il numero dell'ultima versione pubblicata, senza inviare dati. Puoi sempre controllare a mano dal menu ? → Controlla aggiornamenti." />
 
                         <TextBlock Text="PANNELLI" Style="{StaticResource SectionHeader}" Margin="0,0,0,8" />
                         <CheckBox x:Name="ShowPreview" Content="Mostra l'anteprima delle immagini" Margin="0,0,0,6" />

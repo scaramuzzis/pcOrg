@@ -157,6 +157,7 @@ public sealed partial class MainViewModel
             : $"{groups.Count:N0} gruppi di file identici, {groups.Sum(g => g.Files.Count):N0} file in tutto. " +
               $"Tenendo una sola copia di ciascuno si liberano {FileSizeConverter.Format(wasted)}.";
         UpdateMarkedSummary();
+        UpdateDashboard();
     }
 
     /// <summary>Segna in tutti i gruppi le copie da eliminare, tenendone una secondo la regola scelta.</summary>

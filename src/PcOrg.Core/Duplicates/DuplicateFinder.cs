@@ -119,6 +119,8 @@ public static class DuplicateFinder
     {
         try
         {
+            if (CloudFiles.IsOnlineOnly(path))
+                return null; // non si scaricano i file solo online per confrontarli
             using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete,
                 bufferSize: 1 << 20, FileOptions.SequentialScan);
             if (stream.Length != expectedSize)

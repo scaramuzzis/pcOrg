@@ -30,6 +30,7 @@ public sealed partial class MainViewModel
         _scanOnStartup = settings.ScanOnStartup;
         ShowPreviewPanel = settings.ShowPreviewPanel;
         ShowDetailsPanel = settings.ShowDetailsPanel;
+        SearchInContent = settings.SearchInContent;
         ApplyTheme(settings.Theme, save: false);
         Log.Configure(settings.LogEnabled, settings.LogLevel);
         EnableWatching(settings.WatchFolders);
@@ -44,7 +45,8 @@ public sealed partial class MainViewModel
 
     /// <summary>Opzioni modificabili dalla finestra Impostazioni.</summary>
     public sealed record Options(string Theme, bool ScanOnStartup, bool WatchFolders, bool VerifySignatures,
-        bool ShowPreview, bool ShowDetails, bool LogEnabled, LogLevel LogLevel);
+        bool ShowPreview, bool ShowDetails, bool LogEnabled, LogLevel LogLevel,
+        bool IndexContent = true, bool CheckUpdatesOnStartup = false);
 
     /// <summary>Applica e salva le opzioni scelte nella finestra Impostazioni.</summary>
     public void ApplyOptions(Options o)
@@ -54,6 +56,8 @@ public sealed partial class MainViewModel
         _settings.VerifySignatures = o.VerifySignatures;
         _settings.LogEnabled = o.LogEnabled;
         _settings.LogLevel = o.LogLevel;
+        _settings.IndexContent = o.IndexContent;
+        _settings.CheckUpdatesOnStartup = o.CheckUpdatesOnStartup;
         ShowPreviewPanel = o.ShowPreview;
         ShowDetailsPanel = o.ShowDetails;
         ApplyTheme(o.Theme, save: false);
@@ -120,7 +124,7 @@ public sealed partial class MainViewModel
     [NotifyPropertyChangedFor(nameof(DetailsPanelVisible))]
     private bool _showDetailsPanel = true;
 
-    /// <summary>Scheda attiva: 0 = File, 1 = Prodotti e versioni.</summary>
+    /// <summary>Scheda attiva: 0 = Panoramica, 1 = File, 2 = Prodotti, 3 = Cloni, 4 = Driver.</summary>
     [ObservableProperty]
     private int _selectedTabIndex;
 
@@ -176,6 +180,7 @@ public sealed partial class MainViewModel
 
         var query = new SearchQuery(SearchText, SelectedCategory?.Category, Limit: 1_000_000)
         {
+            InContent = SearchInContent,
             Extensions = SelectedCategory?.Extensions,
         };
         try
