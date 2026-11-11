@@ -14,7 +14,7 @@ namespace PcOrg.Core.Storage;
 /// </summary>
 public sealed partial class FileIndex
 {
-    private const int SchemaVersion = 8;
+    private const int SchemaVersion = 9;
     private readonly string _connectionString;
 
     /// <summary>Percorso completo del file dell'indice (indice.db).</summary>
@@ -46,7 +46,11 @@ public sealed partial class FileIndex
     {
         var conn = new SqliteConnection(_connectionString);
         conn.Open();
-        Exec(conn, "PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;");
+        // synchronous=NORMAL: con il journal WAL resta sicuro contro la corruzione ma evita di forzare la
+        // scrittura su disco a ogni salvataggio (molto più veloce nelle scansioni). Cache di 64 MB e
+        // tabelle temporanee in memoria accelerano ordinamenti e raggruppamenti.
+        Exec(conn, "PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000; PRAGMA synchronous = NORMAL; " +
+                   "PRAGMA temp_store = MEMORY; PRAGMA cache_size = -65536;");
         return conn;
     }
 
@@ -79,9 +83,52 @@ public sealed partial class FileIndex
             CreateDriverTable(conn, tx);
         if (version < 8)
             CreateContentTables(conn, tx);
+        if (version < 9)
+            OptimizeForSpeed(conn, tx);
         Exec(conn, $"PRAGMA user_version = {SchemaVersion};", tx);
         tx.Commit();
     }
+
+    /// <summary>
+    /// Schema v9, ottimizzazioni di velocità e spazio:
+    /// <list type="bullet">
+    /// <item>nell'indice di ricerca la cartella è salvata <b>relativa alla cartella monitorata</b>
+    /// ("Driver\NVIDIA" invece di "D:\Archivio\Driver\NVIDIA"): il prefisso, uguale per tutti i file,
+    /// occupava la maggior parte dell'indice e rallentava la scansione;</item>
+    /// <item>indice per nome, così l'elenco ordinato non deve riordinare tutti i file a ogni apertura;</item>
+    /// <item>indice categoria+dimensione, per calcolare le statistiche senza leggere tutta la tabella.</item>
+    /// </list>
+    /// </summary>
+    private static void OptimizeForSpeed(SqliteConnection conn, SqliteTransaction tx) => Exec(conn, """
+        DROP TABLE files_fts;
+        CREATE VIRTUAL TABLE files_fts USING fts5(name, folder, product, company, notes, tokenize='trigram');
+        INSERT INTO files_fts(rowid, name, folder, product, company, notes)
+            SELECT f.id, f.name, ltrim(substr(f.folder, length(r.path) + 1), '\/'),
+                   COALESCE(m.product_name, ''), COALESCE(m.company, ''),
+                   COALESCE(n.tags || ' ' || n.note, '')
+            FROM files f JOIN roots r ON r.id = f.root_id
+            LEFT JOIN file_meta m ON m.file_id = f.id
+            LEFT JOIN file_notes n ON n.path = f.path;
+
+        DROP TRIGGER IF EXISTS files_ai;
+        CREATE TRIGGER files_ai AFTER INSERT ON files BEGIN
+            INSERT INTO files_fts(rowid, name, folder, product, company, notes)
+            VALUES (new.id, new.name,
+                    COALESCE((SELECT ltrim(substr(new.folder, length(path) + 1), '\/') FROM roots WHERE id = new.root_id), ''),
+                    '', '',
+                    COALESCE((SELECT tags || ' ' || note FROM file_notes WHERE path = new.path), ''));
+        END;
+        DROP TRIGGER IF EXISTS files_au;
+        CREATE TRIGGER files_au AFTER UPDATE OF name, folder, root_id ON files BEGIN
+            UPDATE files_fts SET name = new.name,
+                folder = COALESCE((SELECT ltrim(substr(new.folder, length(path) + 1), '\/') FROM roots WHERE id = new.root_id), '')
+            WHERE rowid = new.id;
+        END;
+
+        CREATE INDEX IF NOT EXISTS ix_files_name ON files(name COLLATE NOCASE);
+        DROP INDEX IF EXISTS ix_files_category;
+        CREATE INDEX ix_files_category ON files(category, name COLLATE NOCASE, size);
+        """, tx);
 
     private static void CreateSchemaV1(SqliteConnection conn, SqliteTransaction tx)
     {

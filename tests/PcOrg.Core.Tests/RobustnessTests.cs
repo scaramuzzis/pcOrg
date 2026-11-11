@@ -115,4 +115,32 @@ public class RobustnessTests
             Log.Initialize(System.IO.Path.Combine(dir.Path, "log2"));
         }
     }
+
+    [Fact]
+    public void La_ricerca_usa_la_cartella_relativa_e_resta_corretta_dopo_spostamenti_e_unione_di_cartelle()
+    {
+        using var dir = new TempDir();
+        dir.File("Archivio/Driver/NVIDIA/setup.exe");
+        dir.File("Archivio/Documenti/nota.txt");
+        var index = FileIndex.Open(System.IO.Path.Combine(dir.Path, "index.db"));
+        var child = index.AddRoot(System.IO.Path.Combine(dir.Path, "Archivio", "Driver"));
+        index.UpdateRoot(child.Id, child.Path);
+
+        // La sottocartella si trova; il nome della cartella monitorata non fa comparire tutti i suoi file
+        Assert.Single(index.Search(new SearchQuery("nvidia")));
+        Assert.Empty(index.Search(new SearchQuery("archivio")));
+
+        // Unendo la cartella in una più grande, la cartella relativa viene ricalcolata
+        var parent = index.AddRoot(System.IO.Path.Combine(dir.Path, "Archivio"));
+        index.UpdateRoot(parent.Id, parent.Path);
+        Assert.Single(index.Search(new SearchQuery("driver nvidia")));
+        Assert.Single(index.Search(new SearchQuery("documenti")));
+
+        // Dopo uno spostamento la ricerca per cartella segue il file
+        var from = System.IO.Path.Combine(parent.Path, "Driver", "NVIDIA", "setup.exe");
+        var target = dir.Dir("Archivio/Vecchi");
+        new PcOrg.Core.Moving.MoveService(index).Execute(PcOrg.Core.Moving.MovePlanner.Plan([from], target), "test");
+        Assert.Empty(index.Search(new SearchQuery("nvidia")));
+        Assert.Equal("setup.exe", Assert.Single(index.Search(new SearchQuery("vecchi"))).Name);
+    }
 }
