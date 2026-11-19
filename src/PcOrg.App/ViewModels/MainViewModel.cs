@@ -350,7 +350,7 @@ public sealed partial class MainViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(ScanCommand), nameof(FullScanCommand), nameof(AddRootCommand), nameof(RemoveRootCommand),
         nameof(MoveSelectedCommand), nameof(CancelScanCommand), nameof(FindDuplicatesCommand),
         nameof(RecycleMarkedCommand), nameof(MoveMarkedCommand), nameof(RecycleSelectedCommand), nameof(OrganizeWithRulesCommand),
-        nameof(EditNotesCommand))]
+        nameof(EditNotesCommand), nameof(CheckProgramUpdatesCommand))]
     private bool _isBusy;
 
     [ObservableProperty]
