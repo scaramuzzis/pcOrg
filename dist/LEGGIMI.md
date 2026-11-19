@@ -1,7 +1,7 @@
 # Gestione File — eseguibili
 
-Questa cartella contiene la versione **1.2.2** in formato **leggero**, allineata alla Release
-[v1.2.2](https://github.com/scaramuzzis/pcOrg/releases/tag/v1.2.2).
+Questa cartella contiene la versione **1.3.0** in formato **leggero**, allineata alla Release
+[v1.3.0](https://github.com/scaramuzzis/pcOrg/releases/tag/v1.3.0).
 
 | Contenuto | Come si usa |
 |---|---|
@@ -12,5 +12,6 @@ scarica i pacchetti dalla pagina della Release:
 
 - **GestioneFile-portatile-win-x64.zip** — cartella con `GestioneFile.exe` e tutte le librerie, avvio rapido
 - **GestioneFile.exe** — un solo file, più lento ad avviarsi
+- **GestioneFile-win-x64.msi** — installazione in Programmi con collegamento nel menu Start
 
 Le versioni complete non sono salvate qui per non appesantire il repository (circa 60 MB ciascuna).
