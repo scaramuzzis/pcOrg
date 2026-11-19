@@ -5,7 +5,7 @@ sparsi nel PC. Scegli le cartelle da tenere sotto controllo; Gestione File le in
 per categoria e li trova all'istante mentre scrivi. Sei tu a decidere se e dove spostarli: prima
 vedi un'anteprima, e ogni spostamento si può annullare.
 
-## Cosa fa oggi (v1.0)
+## Cosa fa oggi (v1.2)
 - **Una cartella alla volta (1.2)**: clic su una cartella monitorata per vedere e gestire solo i suoi file.
 - **Categorie a scelta (1.1)**: da Impostazioni → Categorie decidi quali categorie mostrare nel pannello.
 - **Nuovo nome (1.0)**: l'applicazione si chiama ora Gestione File (`GestioneFile.exe`); archivio dati e
