@@ -63,7 +63,7 @@ public sealed partial class MainViewModel
 
         CategoryBars.Clear();
         var max = _lastStats.Count == 0 ? 0 : _lastStats.Max(s => s.TotalSize);
-        foreach (var stat in _lastStats.OrderByDescending(s => s.TotalSize).ThenByDescending(s => s.Count))
+        foreach (var stat in _lastStats.OrderByDescending(s => s.TotalSize).ThenByDescending(s => s.Count).ThenBy(s => s.Category.DisplayName(), StringComparer.CurrentCultureIgnoreCase))
             CategoryBars.Add(new CategoryBar(stat.Category, stat.Category.DisplayName(), Glyphs.ForCategory(stat.Category),
                 CategoryColors.For(stat.Category), stat.Count, stat.TotalSize, max == 0 ? 0 : 100.0 * stat.TotalSize / max));
     }

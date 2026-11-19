@@ -386,9 +386,13 @@ public class Screenshots
             Pump(1200);
         }
         dialogsForRoots.FolderToPick = null;
+        WaitIdle(vm);
         window.Tabs.SelectedIndex = MainViewModel.OverviewTab;
         Pump(800);
         Capture(window, output, "36-molte-cartelle.png");
+        // Le schermate successive non devono dipendere da notifiche o scorrimenti rimasti da questo passo.
+        if (window.FindName("RootsList") is System.Windows.Controls.ListBox rootsList && vm.Roots.Count > 0)
+            rootsList.ScrollIntoView(vm.Roots[0]);
 
         // 11. Tema scuro
         app.ThemeMode = ThemeMode.Dark;
@@ -405,9 +409,7 @@ public class Screenshots
         Capture(window, output, "33-prodotti-tema-scuro.png");
 
         // Prima di chiudere si attende la fine delle scansioni: altrimenti la finestra chiede conferma.
-        Step("attesa della fine delle scansioni");
-        for (var i = 0; i < 120 && vm.IsWorking; i++)
-            Pump(500);
+        WaitIdle(vm);
         Step("chiusura");
         window.Close();
         app.Shutdown();
@@ -441,6 +443,17 @@ public class Screenshots
     }
 
     // ------------------------------------------------------------------ Cattura
+
+    /// <summary>Attende la fine di scansioni e operazioni e chiude la notifica, per schermate sempre uguali.</summary>
+    private static void WaitIdle(MainViewModel vm)
+    {
+        Step("attesa della fine delle scansioni");
+        for (var i = 0; i < 120 && vm.IsWorking; i++)
+            Pump(500);
+        if (vm.IsToastVisible)
+            vm.DismissToastCommand.Execute(null);
+        Pump(400);
+    }
 
     private static string? _progressFile;
     private static volatile string _lastStep = "(inizio)";
