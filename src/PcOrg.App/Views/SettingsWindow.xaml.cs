@@ -69,6 +69,7 @@ public partial class SettingsWindow : Window
         VerifySignatures.IsChecked = settings.VerifySignatures;
         IndexContent.IsChecked = settings.IndexContent;
         CheckUpdates.IsChecked = settings.CheckUpdatesOnStartup;
+        NotifyNewDisks.IsChecked = settings.NotifyNewDisks;
         SelectSpeed(NetworkSpeedChooser, settings.NetworkScanSpeed);
         SelectSpeed(LocalSpeedChooser, settings.LocalScanSpeed);
         ShowPreview.IsChecked = vm.ShowPreviewPanel;
@@ -296,7 +297,8 @@ public partial class SettingsWindow : Window
             IndexContent: IndexContent.IsChecked == true,
             CheckUpdatesOnStartup: CheckUpdates.IsChecked == true,
             LocalScanSpeed: SelectedSpeed(LocalSpeedChooser, ScanSpeed.Massima),
-            NetworkScanSpeed: SelectedSpeed(NetworkSpeedChooser, ScanSpeed.Normale)));
+            NetworkScanSpeed: SelectedSpeed(NetworkSpeedChooser, ScanSpeed.Normale),
+            NotifyNewDisks: NotifyNewDisks.IsChecked == true));
         _main.SaveLayout();
         DialogResult = true;
     }

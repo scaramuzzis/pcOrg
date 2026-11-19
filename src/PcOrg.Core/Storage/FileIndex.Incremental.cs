@@ -175,12 +175,15 @@ public sealed partial class FileIndex
                 ScanPace.Wait(network, cancellationToken);
                 try
                 {
-                    if (!Directory.Exists(dir))
+                    var checkStart = System.Diagnostics.Stopwatch.GetTimestamp();
+                    var exists = Directory.Exists(dir);
+                    mtime = exists ? ToUnixMilliseconds(Directory.GetLastWriteTimeUtc(dir)) : 0;
+                    Drives.DiskActivity.RecordDirectory(dir, System.Diagnostics.Stopwatch.GetElapsedTime(checkStart));
+                    if (!exists)
                     {
                         visited.Remove(dir); // sparita: verrà tolta come "non visitata"
                         continue;
                     }
-                    mtime = ToUnixMilliseconds(Directory.GetLastWriteTimeUtc(dir));
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                 {
@@ -203,6 +206,7 @@ public sealed partial class FileIndex
                     var info = new DirectoryInfo(dir);
                     files = [];
                     subdirs = [];
+                    var listStart = System.Diagnostics.Stopwatch.GetTimestamp();
                     foreach (var entry in info.EnumerateFileSystemInfos("*", ListOptions))
                     {
                         if (entry is FileInfo f)
@@ -210,6 +214,7 @@ public sealed partial class FileIndex
                         else if (!IsDirectoryLink(entry))
                             subdirs.Add(entry.FullName);
                     }
+                    Drives.DiskActivity.RecordDirectory(dir, System.Diagnostics.Stopwatch.GetElapsedTime(listStart));
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                 {

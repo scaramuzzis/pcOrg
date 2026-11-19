@@ -69,7 +69,7 @@ public sealed partial class MainViewModel
     public sealed record Options(string Theme, bool ScanOnStartup, bool WatchFolders, bool VerifySignatures,
         bool ShowPreview, bool ShowDetails, bool LogEnabled, LogLevel LogLevel,
         bool IndexContent = true, bool CheckUpdatesOnStartup = false,
-        ScanSpeed LocalScanSpeed = ScanSpeed.Massima, ScanSpeed NetworkScanSpeed = ScanSpeed.Normale);
+        ScanSpeed LocalScanSpeed = ScanSpeed.Massima, ScanSpeed NetworkScanSpeed = ScanSpeed.Normale, bool NotifyNewDisks = true);
 
     /// <summary>Applica e salva le opzioni scelte nella finestra Impostazioni.</summary>
     public void ApplyOptions(Options o)
@@ -83,6 +83,7 @@ public sealed partial class MainViewModel
         _settings.CheckUpdatesOnStartup = o.CheckUpdatesOnStartup;
         _settings.LocalScanSpeed = ScanPace.Local = o.LocalScanSpeed;
         _settings.NetworkScanSpeed = ScanPace.Network = o.NetworkScanSpeed;
+        _settings.NotifyNewDisks = o.NotifyNewDisks;
         ShowPreviewPanel = o.ShowPreview;
         ShowDetailsPanel = o.ShowDetails;
         ApplyTheme(o.Theme, save: false);
@@ -150,9 +151,15 @@ public sealed partial class MainViewModel
     [NotifyPropertyChangedFor(nameof(DetailsPanelVisible))]
     private bool _showDetailsPanel = true;
 
-    /// <summary>Scheda attiva: 0 = Panoramica, 1 = File, 2 = Prodotti, 3 = Cloni, 4 = Driver.</summary>
+    /// <summary>Scheda attiva: 0 = Panoramica, 1 = File, 2 = Prodotti, 3 = Cloni, 4 = Driver, 5 = Dischi.</summary>
     [ObservableProperty]
     private int _selectedTabIndex;
+
+    partial void OnSelectedTabIndexChanged(int value)
+    {
+        if (value == DisksTab)
+            Fire(RefreshDisksAsync(), "elenco dei dischi");
+    }
 
     public bool PreviewPanelVisible => IsPreviewVisible && ShowPreviewPanel;
     public bool DetailsPanelVisible => SelectedFile is not null && ShowDetailsPanel;

@@ -38,7 +38,7 @@ public static class MetadataUpdater
                         // Sulle cartelle di rete la verifica della firma leggerebbe ogni file per intero
                         // attraverso la rete: si legge solo chi ha firmato, senza verificarla.
                         var verify = verifySignatures && !NetworkPaths.IsNetworkPath(batch[i].Path);
-                        meta = MetadataExtractor.Extract(batch[i].Path, verify);
+                        meta = Drives.DiskActivity.Measure(batch[i].Path, directory: false, () => MetadataExtractor.Extract(batch[i].Path, verify));
                     }
                     catch (Exception ex) when (ex is not OperationCanceledException)
                     {

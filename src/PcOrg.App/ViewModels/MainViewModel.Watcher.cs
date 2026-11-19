@@ -76,5 +76,10 @@ public sealed partial class MainViewModel
     }
 
     /// <summary>Da chiamare alla chiusura: smette di osservare le cartelle.</summary>
-    public void Shutdown() => EnableWatching(false);
+    public void Shutdown()
+    {
+        EnableWatching(false);
+        _driveWatcher?.Dispose();
+        _driveWatcher = null;
+    }
 }

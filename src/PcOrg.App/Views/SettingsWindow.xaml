@@ -50,6 +50,10 @@
                         <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="28,2,0,18"
                                    Text="Garantisce che il file non sia stato modificato, ma legge ogni programma per intero: disattivala se l'aggiornamento è lento. Sui file in rete la firma non viene mai verificata." />
 
+                        <CheckBox x:Name="NotifyNewDisks" Content="Avvisa quando colleghi un disco o una chiavetta" />
+                        <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="28,2,0,18"
+                                   Text="Mostra spazio e tipo del disco appena collegato e propone di monitorarlo; se contiene cartelle monitorate le aggiorna subito. Lo storico dei dischi è nella scheda Dischi (Ctrl+5)." />
+
                         <TextBlock Text="CARICO SUL PC E SULLA RETE" Style="{StaticResource SectionHeader}" Margin="0,0,0,8" />
                         <Grid Margin="0,0,0,6">
                             <Grid.ColumnDefinitions>

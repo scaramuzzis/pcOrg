@@ -85,6 +85,7 @@ public sealed partial class MainViewModel : ObservableObject
 
         // Si aspetta il primo disegno della finestra, così l'utente vede subito i dati.
         await Task.Delay(800);
+        StartDriveWatcher();
         await RefreshInstalledAsync();
         if (_scanOnStartup && Roots.Count > 0)
             await ScanRootsAsync(Roots.Select(r => r.Root).ToList());

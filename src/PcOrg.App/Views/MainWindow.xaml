@@ -30,6 +30,7 @@
         <KeyBinding Key="D2" Modifiers="Control" Command="{Binding ShowTabCommand}" CommandParameter="2" />
         <KeyBinding Key="D3" Modifiers="Control" Command="{Binding ShowTabCommand}" CommandParameter="3" />
         <KeyBinding Key="D4" Modifiers="Control" Command="{Binding ShowTabCommand}" CommandParameter="4" />
+        <KeyBinding Key="D5" Modifiers="Control" Command="{Binding ShowTabCommand}" CommandParameter="5" />
         <KeyBinding Key="F1" Command="{Binding ShowHelpCommand}" />
         <KeyBinding Key="T" Modifiers="Control" Command="{Binding EditNotesCommand}" />
         <KeyBinding Key="OemComma" Modifiers="Control" Command="{x:Static vm:FocusCommands.OpenSettings}" />
@@ -109,6 +110,9 @@
                 </MenuItem>
                 <MenuItem Header="_Driver e periferiche" Command="{Binding ShowTabCommand}" CommandParameter="4" InputGestureText="Ctrl+4">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Device}" /></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="D_ischi" Command="{Binding ShowTabCommand}" CommandParameter="5" InputGestureText="Ctrl+5">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Drive}" /></MenuItem.Icon>
                 </MenuItem>
                 <Separator />
                 <MenuItem Header="_Colonne dell'elenco…" Click="ColumnsSettings_Click">
@@ -1017,6 +1021,83 @@
                                 <DataGridTextColumn Header="Fornitore" Binding="{Binding File.Company}" Width="150" MinWidth="100" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="File" Binding="{Binding File.Name}" Width="140" MinWidth="100" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="Cartella" Binding="{Binding File.Folder}" Width="2*" MinWidth="160" ElementStyle="{StaticResource CellText}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
+
+                <!-- Scheda Dischi: spazio, file indicizzati, letture di Gestione File, dischi collegati -->
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Drive}" FontSize="14" Margin="0,0,8,0" />
+                            <TextBlock Text="Dischi" />
+                        </StackPanel>
+                    </TabItem.Header>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <Border Style="{StaticResource Card}" Margin="0,0,0,10" Padding="12,10">
+                            <DockPanel>
+                                <TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Drive}" Foreground="#0891B2" Margin="0,0,10,0" />
+                                <TextBlock Text="{Binding DisksSummary}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                            </DockPanel>
+                        </Border>
+
+                        <WrapPanel Grid.Row="1" Margin="0,0,0,10">
+                            <c:IconButton Glyph="{x:Static inf:Glyphs.Refresh}" Label="Aggiorna" Command="{Binding RefreshDisksCommand}" Margin="0,0,6,0"
+                                          ToolTip="Rilegge spazio libero e letture di ogni disco" />
+                            <c:IconButton Glyph="{x:Static inf:Glyphs.Add}" Label="Monitora il disco" Command="{Binding MonitorDiskCommand}" Margin="0,0,6,0"
+                                          ToolTip="Aggiunge l'intero disco selezionato alle cartelle monitorate e lo legge" />
+                            <c:IconButton Glyph="{x:Static inf:Glyphs.Undo}" Label="Azzera le letture" Command="{Binding ResetDiskActivityCommand}" Margin="0,0,6,0"
+                                          ToolTip="Riporta a zero i contatori delle letture fatte da Gestione File" />
+                        </WrapPanel>
+
+                        <DataGrid x:Name="DisksGrid" AutomationProperties.Name="Dischi" Grid.Row="2" ItemsSource="{Binding Disks}" SelectedItem="{Binding SelectedDisk}"
+                                  AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" RowHeight="40"
+                                  HeadersVisibility="Column" GridLinesVisibility="None">
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Header="Disco" Width="2*" MinWidth="180" SortMemberPath="Name">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <TextBlock x:Name="Icon" Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Drive}" Foreground="#0891B2" Margin="2,0,10,0" />
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Text="{Binding Type}" Style="{StaticResource Secondary}" FontSize="11" />
+                                                </StackPanel>
+                                            </StackPanel>
+                                            <DataTemplate.Triggers>
+                                                <DataTrigger Binding="{Binding IsConnected}" Value="False">
+                                                    <Setter TargetName="Icon" Property="Foreground" Value="#94A3B8" />
+                                                </DataTrigger>
+                                            </DataTemplate.Triggers>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="Stato" Binding="{Binding StateText}" Width="110" MinWidth="90" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTemplateColumn Header="Spazio" Width="220" MinWidth="160" SortMemberPath="UsedPercent">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel VerticalAlignment="Center" Margin="4,0">
+                                                <ProgressBar Value="{Binding UsedPercent, Mode=OneWay}" Maximum="100" Height="6" Margin="0,0,0,3" />
+                                                <TextBlock Text="{Binding SpaceText}" Style="{StaticResource Secondary}" FontSize="11" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="File system" Binding="{Binding Format}" Width="90" MinWidth="70" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Cartelle monitorate" Binding="{Binding MonitoredFolders}" Width="80" MinWidth="60" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="File indicizzati" Binding="{Binding IndexedText}" SortMemberPath="IndexedFiles" Width="150" MinWidth="110" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Letture dell'app" Binding="{Binding ActivityText}" SortMemberPath="Activity.Operations" Width="170" MinWidth="120" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Tempo medio" Binding="{Binding LatencyText}" Width="95" MinWidth="80" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Ultima lettura" Binding="{Binding Activity.LastAccessUtc, Converter={x:Static vm:UtcToLocalConverter.Instance}, StringFormat=g}" Width="130" MinWidth="100" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Visto la prima volta" Binding="{Binding FirstSeenUtc, Converter={x:Static vm:UtcToLocalConverter.Instance}, StringFormat=g}" Width="140" MinWidth="100" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Collegamenti" Binding="{Binding Connections}" Width="95" MinWidth="80" ElementStyle="{StaticResource CellText}" />
                             </DataGrid.Columns>
                         </DataGrid>
                     </Grid>
