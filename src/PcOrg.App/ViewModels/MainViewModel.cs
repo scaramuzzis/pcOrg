@@ -674,6 +674,7 @@ public sealed partial class MainViewModel : ObservableObject
     {
         var selectedKey = SelectedProduct?.Key;
         var groups = await Task.Run(() => ProductCatalog.Build(_index.GetProductFiles(ScopeRootId)));
+        ApplyWinget(groups);
         Products.ReplaceAll(groups);
         SelectedProduct = Products.FirstOrDefault(p => p.Key == selectedKey);
 

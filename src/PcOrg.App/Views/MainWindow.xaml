@@ -140,6 +140,9 @@
                 <MenuItem Header="_Cronologia spostamenti…" Command="{Binding ShowHistoryCommand}" InputGestureText="Ctrl+H">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.History}" /></MenuItem.Icon>
                 </MenuItem>
+                <MenuItem Header="Cerca _versioni più recenti dei programmi" Command="{Binding CheckProgramUpdatesCommand}">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Download}" /></MenuItem.Icon>
+                </MenuItem>
                 <MenuItem Header="_Interrompi la scansione" Command="{Binding CancelScanCommand}">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Cancel}" /></MenuItem.Icon>
                 </MenuItem>
@@ -705,6 +708,9 @@
                                 <CheckBox DockPanel.Dock="Right" Content="Solo prodotti con più file" VerticalAlignment="Center"
                                           IsChecked="{Binding OnlyMultipleVersions}"
                                           ToolTip="Mostra solo i programmi di cui hai più copie o più versioni" />
+                                <c:IconButton DockPanel.Dock="Right" Glyph="{x:Static inf:Glyphs.Download}" Label="Versioni più recenti" Margin="0,0,14,0"
+                                              Command="{Binding CheckProgramUpdatesCommand}"
+                                              ToolTip="Confronta i programmi con il catalogo pubblico di winget (richiede internet; non invia dati sui tuoi file)" />
                                 <TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Info}" Foreground="#2563EB" Margin="0,0,10,0" />
                                 <TextBlock Text="{Binding ProductsSummary}" VerticalAlignment="Center" TextWrapping="Wrap" />
                             </DockPanel>
@@ -728,6 +734,7 @@
                                 <DataGridTextColumn Header="Produttore" Binding="{Binding Company}" Width="*" MinWidth="110" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="Sul PC" Binding="{Binding Converter={x:Static inf:InstallStateConverter.Instance}}" Width="230" MinWidth="120" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="Ultima versione" Binding="{Binding LatestVersion}" Width="115" MinWidth="86" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Online (winget)" CanUserSort="False" Binding="{Binding Converter={x:Static inf:OnlineStateConverter.Instance}}" Width="170" MinWidth="100" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="Versioni" Binding="{Binding VersionCount}" Width="75" MinWidth="56" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="File" Binding="{Binding Files.Count}" Width="55" MinWidth="55" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="Spazio" Binding="{Binding TotalSize, Converter={StaticResource FileSize}}"

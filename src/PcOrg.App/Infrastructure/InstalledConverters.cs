@@ -4,6 +4,7 @@ using PcOrg.Core.Drivers;
 using PcOrg.Core.Installed;
 using PcOrg.Core.Metadata;
 using PcOrg.Core.Storage;
+using PcOrg.Core.Updates;
 
 namespace PcOrg.App.Infrastructure;
 
@@ -27,6 +28,12 @@ public static class InstalledCatalog
     /// </summary>
     public static IReadOnlyDictionary<string, DriverMatch> DriverFolders { get; set; } = new Dictionary<string, DriverMatch>();
 
+    /// <summary>
+    /// Ultima versione pubblicata su winget per i prodotti riconosciuti (chiave del prodotto).
+    /// Vuoto finché l'utente non avvia "Cerca versioni più recenti".
+    /// </summary>
+    public static IReadOnlyDictionary<string, WingetMatch> Online { get; set; } = new Dictionary<string, WingetMatch>();
+
     /// <summary>Testo della colonna "Sul PC" per un file.</summary>
     public static string StatusOf(FileRecord file)
     {
@@ -49,6 +56,17 @@ public sealed class InstallStateConverter : IValueConverter
         ProductGroup group when group.Files.Count > 0 => InstalledCatalog.StatusOf(group.Files[0]),
         _ => "",
     };
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotSupportedException();
+}
+
+/// <summary>Prodotto → ultima versione pubblicata su winget (colonna "Online" di Prodotti e versioni).</summary>
+public sealed class OnlineStateConverter : IValueConverter
+{
+    public static OnlineStateConverter Instance { get; } = new();
+
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
+        value is ProductGroup group && InstalledCatalog.Online.TryGetValue(group.Key, out var match) ? match.Text : "";
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotSupportedException();
 }
