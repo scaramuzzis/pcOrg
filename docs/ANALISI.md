@@ -52,17 +52,24 @@ PcOrg.sln
 ├─ src/
 │  ├─ PcOrg.Core        # classificazione, scansione, indice SQLite/FTS5, spostamenti (nessuna dipendenza da WPF)
 │  │  ├─ Classification/   categorie e regole
-│  │  ├─ Indexing/         enumerazione veloce delle cartelle
+│  │  ├─ Indexing/         enumerazione delle cartelle; Ntfs/ lettura della Master File Table (MftParser, MftSnapshot)
 │  │  ├─ Storage/          database, ricerca, log degli spostamenti
-│  │  └─ Moving/           piano di spostamento (anteprima) ed esecuzione/annullamento
+│  │  ├─ Moving/           piano di spostamento (anteprima) ed esecuzione/annullamento
+│  │  ├─ Drives/           dischi collegati, letture per disco
+│  │  ├─ Updates/          aggiornamento dell'app, catalogo di winget
+│  │  └─ Platform/         IPlatformServices: funzioni di sistema (implementazione neutra di default)
+│  ├─ PcOrg.Windows     # WindowsPlatform: registro, SetupAPI, msi.dll, WinVerifyTrust, Cestino, MFT del volume
 │  └─ PcOrg.App         # interfaccia WPF (MVVM con CommunityToolkit.Mvvm), produce GestioneFile.exe
+├─ installer/           # pacchetto MSI (WiX 5), costruito dalla build su Windows
 └─ tests/
-   └─ PcOrg.Core.Tests  # xUnit, girano anche su Linux
+   ├─ PcOrg.Core.Tests  # xUnit, girano anche su Linux
+   └─ PcOrg.App.Tests   # finestre WPF, accessibilità, screenshot e confronto con i riferimenti (solo Windows)
 ```
 
 Gli estrattori dei metadati sono in `PcOrg.Core/Metadata`. La lettura del formato PE (versione,
 architettura, firma, sezioni) è scritta da zero e funziona su ogni sistema; MSI (`msi.dll`) e verifica
-della firma (`WinVerifyTrust`) usano API di Windows e fuori da Windows vengono saltate.
+della firma (`WinVerifyTrust`) usano API di Windows: stanno in `PcOrg.Windows` e Core le raggiunge tramite
+`PlatformServices.Current`, registrata all'avvio dell'app; fuori da Windows vengono saltate.
 `tests/PcOrg.App.Tests` apre le finestre WPF durante la build su Windows per intercettare errori nello XAML.
 
 Flusso: **Cartelle monitorate → Scanner → Estrattori metadati (in background) → DB → UI**.

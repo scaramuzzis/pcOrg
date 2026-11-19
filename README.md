@@ -5,7 +5,17 @@ sparsi nel PC. Scegli le cartelle da tenere sotto controllo; Gestione File le in
 per categoria e li trova all'istante mentre scrivi. Sei tu a decidere se e dove spostarli: prima
 vedi un'anteprima, e ogni spostamento si può annullare.
 
-## Cosa fa oggi (v1.2)
+## Cosa fa oggi (v1.3)
+- **Usabile durante la scansione (1.3)**: ricerca, spostamenti, etichette e aggiunta di cartelle restano disponibili
+  mentre l'indice si aggiorna; l'elenco delle cartelle monitorate scorre e si può allargare.
+- **Carico sotto controllo (1.3)**: velocità di scansione regolabile per cartelle di rete e dischi locali
+  (Massima / Normale / Leggera), scansione a priorità bassa di processore e disco.
+- **Scheda Dischi (1.3)**: spazio, file indicizzati, letture fatte dall'app per disco, storico dei dischi esterni e
+  avviso quando colleghi una chiavetta o un disco.
+- **Scansione veloce NTFS (1.3)**: avviato come amministratore, legge la Master File Table del disco.
+- **Versioni più recenti (1.3)**: confronto dei programmi con il catalogo pubblico di winget.
+- **Aggiornamento automatico (1.3)**: scarica la nuova versione, ne verifica l'impronta SHA-256 e si riavvia.
+- **Installer MSI (1.3)** per installazioni gestite, e nomi per gli screen reader su tutti i controlli.
 - **Una cartella alla volta (1.2)**: clic su una cartella monitorata per vedere e gestire solo i suoi file.
 - **Categorie a scelta (1.1)**: da Impostazioni → Categorie decidi quali categorie mostrare nel pannello.
 - **Nuovo nome (1.0)**: l'applicazione si chiama ora Gestione File (`GestioneFile.exe`); archivio dati e
@@ -97,6 +107,7 @@ Dalla pagina **Releases** scarica uno dei pacchetti:
 | **GestioneFile-portatile-win-x64.zip** (consigliato) | ~60 MB | Cartella con `GestioneFile.exe` (~200 KB) e le librerie, .NET incluso, codice precompilato: avvio rapido, nessuna estrazione |
 | **GestioneFile-leggero-win-x64.zip** | ~2–3 MB | Richiede il [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) |
 | **GestioneFile.exe** | ~60 MB | File unico compresso: più lento ad avviarsi |
+| **GestioneFile-win-x64.msi** | ~60 MB | Installazione in Programmi con collegamento nel menu Start (anche per criteri di gruppo/Intune) |
 
 Estrai la cartella `GestioneFile` dove vuoi e avvia `GestioneFile.exe`: non serve installare nulla.
 
@@ -125,6 +136,10 @@ dotnet publish src/PcOrg.App -c Release -p:Pacchetto=Portatile -o publish   # op
 
 Documentazione funzionale (come si usa): [docs/GUIDA.md](docs/GUIDA.md).
 Struttura, scelte tecniche e piano di sviluppo: [docs/ANALISI.md](docs/ANALISI.md).
+
+Progetti: `PcOrg.Core` (logica, portabile), `PcOrg.Windows` (funzioni solo Windows: registro, SetupAPI, msi.dll,
+WinVerifyTrust, Cestino, MFT), `PcOrg.App` (interfaccia WPF), `installer/` (pacchetto MSI, WiX).
+Gli screenshot generati dalla build vengono confrontati con quelli approvati in `tests/PcOrg.App.Tests/Riferimenti`.
 Migliorie proposte: [docs/MIGLIORIE.md](docs/MIGLIORIE.md).
 
 Sviluppato da **Scaramus**.
