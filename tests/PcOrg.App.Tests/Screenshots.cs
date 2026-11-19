@@ -24,7 +24,8 @@ public class Screenshots
 {
     private sealed class SilentDialogs : IDialogService
     {
-        public string? PickFolder(string title) => null;
+        public string? PickFolder(string title) => FolderToPick;
+        public string? FolderToPick { get; set; }
         public string? AskNetworkFolder() => null;
         public string? PickSaveFile(string title, string defaultName, string filter) => SavePath;
         public void ShowAbout() { }
@@ -115,7 +116,8 @@ public class Screenshots
         welcome.Close();
 
         // 2. Elenco file con dettagli di un programma firmato
-        var vm = new MainViewModel(index, new SilentDialogs());
+        var mainDialogs = new SilentDialogs();
+        var vm = new MainViewModel(index, mainDialogs);
         var window = new MainWindow { DataContext = vm };
         app.MainWindow = window;
         Show(window);
@@ -349,6 +351,35 @@ public class Screenshots
             vm.ShowAllFoldersCommand.Execute(null);
             Pump(1500);
         }
+
+        // 34. Scheda Dischi: spazio, file indicizzati e letture fatte dall'app
+        window.Tabs.SelectedIndex = MainViewModel.DisksTab;
+        vm.RefreshDisksCommand.Execute(null);
+        Pump(2000);
+        Capture(window, output, "34-dischi.png");
+
+        // 35. Versioni più recenti dal catalogo di winget (dati di esempio, senza internet)
+        PcOrg.App.Infrastructure.InstalledCatalog.Online = vm.Products.Take(3).Select((p, i) => (p, i)).ToDictionary(
+            x => x.p.Key, x => new PcOrg.Core.Updates.WingetMatch("Esempio." + x.i, x.p.Name, x.i == 1 ? x.p.LatestVersion ?? "1.0" : "99.0", x.i != 1));
+        window.Tabs.SelectedIndex = MainViewModel.ProductsTab;
+        vm.ProductsView.Refresh();
+        Pump(800);
+        Capture(window, output, "35-versioni-winget.png");
+        PcOrg.App.Infrastructure.InstalledCatalog.Online = new Dictionary<string, PcOrg.Core.Updates.WingetMatch>();
+        vm.ProductsView.Refresh();
+
+        // 36. Molte cartelle monitorate: l'elenco ha la sua barra di scorrimento
+        var dialogsForRoots = mainDialogs;
+        foreach (var extra in new[] { "Documenti ufficio", "Fatture 2025", "Progetti clienti", "Musica", "Scansioni" })
+        {
+            dialogsForRoots.FolderToPick = Directory.CreateDirectory(Path.Combine(temp, extra)).FullName;
+            vm.AddRootCommand.Execute(null);
+            Pump(1200);
+        }
+        dialogsForRoots.FolderToPick = null;
+        window.Tabs.SelectedIndex = MainViewModel.OverviewTab;
+        Pump(800);
+        Capture(window, output, "36-molte-cartelle.png");
 
         // 11. Tema scuro
         app.ThemeMode = ThemeMode.Dark;

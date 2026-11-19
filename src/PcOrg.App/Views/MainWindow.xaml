@@ -239,7 +239,7 @@
                 </Grid>
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <ToggleButton IsChecked="{Binding SearchInContent}" Margin="0,0,8,0" Padding="10,5"
+                    <ToggleButton IsChecked="{Binding SearchInContent}" Margin="0,0,8,0" Padding="10,5" AutomationProperties.Name="Cerca nel contenuto"
                                   ToolTip="Cerca anche dentro i file: testo di PDF, Word e documenti, e file contenuti in ZIP e ISO">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Document}" FontSize="15" Margin="0,0,8,0" />
@@ -418,7 +418,8 @@
                                         <Button Margin="0,0,10,10" Padding="16,14" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                                 HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
                                                 Command="{Binding DataContext.ShowTabCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                CommandParameter="{Binding Tab}" ToolTip="Apri il dettaglio">
+                                                CommandParameter="{Binding Tab}" ToolTip="Apri il dettaglio"
+                                                AutomationProperties.Name="{Binding AccessibleText}">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="Auto" />

@@ -57,6 +57,23 @@ jobs:
           name: screenshot
           path: screenshots/*.png
 
+      # Confronto con le schermate approvate (tests/PcOrg.App.Tests/Riferimenti): fallisce se una cambia troppo.
+      - name: Confronto con i riferimenti
+        id: visual
+        if: github.event_name == 'push' && steps.shots.outcome == 'success'
+        env:
+          PCORG_SCREENSHOTS: ${{ github.workspace }}\screenshots
+          PCORG_REFERENCES: ${{ github.workspace }}\tests\PcOrg.App.Tests\Riferimenti
+        run: dotnet test tests/PcOrg.App.Tests -c Release --no-build --filter "FullyQualifiedName~VisualRegression"
+
+      - name: Carica il confronto
+        if: always() && steps.visual.outcome != 'skipped'
+        uses: actions/upload-artifact@v5
+        with:
+          name: confronto-screenshot
+          path: confronto-screenshot/
+          if-no-files-found: ignore
+
       # Tre pacchetti: portatile (consigliato), leggero (richiede .NET 10 Desktop Runtime), file unico.
       - name: Pubblica i pacchetti
         run: |

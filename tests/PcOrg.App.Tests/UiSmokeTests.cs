@@ -97,6 +97,16 @@ public class UiSmokeTests
         var vm = (MainViewModel)window.DataContext;
         Assert.Equal(6, vm.Results.Count);
 
+        // Accessibilità: in ogni scheda ogni controllo ha un nome leggibile dagli screen reader.
+        for (var tab = 0; tab < window.Tabs.Items.Count; tab++)
+        {
+            window.Tabs.SelectedIndex = tab;
+            Pump(TimeSpan.FromMilliseconds(400));
+            AssertAccessibleNames(window, $"scheda {tab}");
+        }
+        window.Tabs.SelectedIndex = MainViewModel.OverviewTab;
+        Pump(TimeSpan.FromMilliseconds(300));
+
         // Panoramica: si apre per prima, con i quattro riquadri e le barre per categoria
         Assert.Equal(MainViewModel.OverviewTab, window.Tabs.SelectedIndex);
         Assert.Equal(4, vm.DashboardCards.Count);
@@ -365,5 +375,29 @@ public class UiSmokeTests
         };
         timer.Start();
         Dispatcher.PushFrame(frame);
+    }
+
+    /// <summary>
+    /// Controlla che ogni controllo interattivo visibile definito nello XAML dell'app (non quelli interni ai
+    /// modelli del tema) abbia un nome per gli screen reader: testo, AutomationProperties.Name o suggerimento.
+    /// </summary>
+    private static void AssertAccessibleNames(DependencyObject root, string where)
+    {
+        var missing = new List<string>();
+        void Visit(DependencyObject node)
+        {
+            if (node is FrameworkElement { IsVisible: true, TemplatedParent: null } element
+                && element is System.Windows.Controls.Primitives.ButtonBase or TextBox or ComboBox or ListBox or DataGrid)
+            {
+                var peer = System.Windows.Automation.Peers.UIElementAutomationPeer.CreatePeerForElement(element);
+                var name = peer?.GetName();
+                if (string.IsNullOrWhiteSpace(name))
+                    missing.Add($"{element.GetType().Name} {element.Name} ({(element.ToolTip as string) ?? "senza suggerimento"})");
+            }
+            for (var i = 0; i < VisualTreeHelper.GetChildrenCount(node); i++)
+                Visit(VisualTreeHelper.GetChild(node, i));
+        }
+        Visit(root);
+        Assert.True(missing.Count == 0, $"Controlli senza nome accessibile ({where}):\n" + string.Join("\n", missing));
     }
 }

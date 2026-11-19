@@ -9,7 +9,11 @@ using PcOrg.Core.Storage;
 namespace PcOrg.App.ViewModels;
 
 /// <summary>Riquadro della Panoramica: un numero in evidenza, una riga di spiegazione e la scheda che apre.</summary>
-public sealed record StatCard(string Title, string Value, string Detail, string Glyph, Brush Accent, string Tab);
+public sealed record StatCard(string Title, string Value, string Detail, string Glyph, Brush Accent, string Tab)
+{
+    /// <summary>Testo letto dagli screen reader per il riquadro.</summary>
+    public string AccessibleText => $"{Title}: {Value}, {Detail}";
+}
 
 /// <summary>Barra "spazio per categoria" della Panoramica.</summary>
 public sealed record CategoryBar(FileCategory Category, string Name, string Glyph, Brush Accent, long Count, long Size, double Percent)
