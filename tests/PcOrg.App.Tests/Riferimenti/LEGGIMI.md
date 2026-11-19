@@ -11,5 +11,5 @@ Quando un cambiamento dell'interfaccia è voluto, aggiorna i riferimenti con gli
 pwsh tools/aggiorna-riferimenti.ps1   # copia qui gli screenshot dell'ultima build (ramo screenshots)
 ```
 
-Le schermate che dipendono dal computer della build (es. `34-dischi.png`) non vengono confrontate.
+Le schermate che dipendono dal computer della build (dischi e periferiche: `27`, `28`, `34`) non vengono confrontate.
 Se la cartella non contiene immagini il confronto viene saltato.

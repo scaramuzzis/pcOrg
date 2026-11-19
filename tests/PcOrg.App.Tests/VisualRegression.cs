@@ -19,8 +19,8 @@ public class VisualRegression
     /// <summary>Percentuale massima di pixel diversi: date e percorsi temporanei cambiano a ogni build.</summary>
     public const double MaxDifferentPercent = 0.5;
 
-    /// <summary>Schermate che dipendono dal computer della build (dischi presenti) e non si confrontano.</summary>
-    private static readonly HashSet<string> Ignored = new(StringComparer.OrdinalIgnoreCase) { "34-dischi.png" };
+    /// <summary>Schermate che dipendono dal computer della build (dischi e periferiche presenti) e non si confrontano.</summary>
+    private static readonly HashSet<string> Ignored = new(StringComparer.OrdinalIgnoreCase) { "34-dischi.png", "27-driver-e-periferiche.png", "28-driver-che-non-servono.png" };
 
     public sealed record Result(string Name, double DifferentPercent, bool SizeChanged)
     {
