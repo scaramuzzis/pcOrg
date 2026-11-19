@@ -740,7 +740,7 @@
                                   HeadersVisibility="Column" GridLinesVisibility="None"
                                   EnableRowVirtualization="True" VirtualizingPanel.VirtualizationMode="Recycling">
                             <DataGrid.Columns>
-                                <DataGridTemplateColumn Header="Prodotto" Width="2*" SortMemberPath="Name">
+                                <DataGridTemplateColumn Header="Prodotto" Width="2*" MinWidth="170" SortMemberPath="Name">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -751,9 +751,9 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                                 <DataGridTextColumn Header="Produttore" Binding="{Binding Company}" Width="*" MinWidth="110" ElementStyle="{StaticResource CellText}" />
-                                <DataGridTextColumn Header="Sul PC" Binding="{Binding Converter={x:Static inf:InstallStateConverter.Instance}}" Width="230" MinWidth="120" ElementStyle="{StaticResource CellText}" />
-                                <DataGridTextColumn Header="Ultima versione" Binding="{Binding LatestVersion}" Width="115" MinWidth="86" ElementStyle="{StaticResource CellText}" />
-                                <DataGridTextColumn Header="Online (winget)" CanUserSort="False" Binding="{Binding Converter={x:Static inf:OnlineStateConverter.Instance}}" Width="170" MinWidth="100" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Sul PC" Binding="{Binding Converter={x:Static inf:InstallStateConverter.Instance}}" Width="*" MinWidth="110" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Ultima versione" Binding="{Binding LatestVersion}" Width="105" MinWidth="86" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Online" CanUserSort="False" Binding="{Binding Converter={x:Static inf:OnlineStateConverter.Instance}}" Width="*" MinWidth="100" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="Versioni" Binding="{Binding VersionCount}" Width="75" MinWidth="56" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="File" Binding="{Binding Files.Count}" Width="55" MinWidth="55" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="Spazio" Binding="{Binding TotalSize, Converter={StaticResource FileSize}}"
@@ -1065,7 +1065,7 @@
                                   AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" RowHeight="40"
                                   HeadersVisibility="Column" GridLinesVisibility="None">
                             <DataGrid.Columns>
-                                <DataGridTemplateColumn Header="Disco" Width="2*" MinWidth="180" SortMemberPath="Name">
+                                <DataGridTemplateColumn Header="Disco" Width="2*" MinWidth="170" SortMemberPath="Name">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -1083,8 +1083,8 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTextColumn Header="Stato" Binding="{Binding StateText}" Width="110" MinWidth="90" ElementStyle="{StaticResource CellText}" />
-                                <DataGridTemplateColumn Header="Spazio" Width="220" MinWidth="160" SortMemberPath="UsedPercent">
+                                <DataGridTextColumn Header="Stato" Binding="{Binding StateText}" Width="100" MinWidth="80" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTemplateColumn Header="Spazio" Width="170" MinWidth="130" SortMemberPath="UsedPercent">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel VerticalAlignment="Center" Margin="4,0">
@@ -1094,13 +1094,13 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTextColumn Header="File system" Binding="{Binding Format}" Width="90" MinWidth="70" ElementStyle="{StaticResource CellText}" />
-                                <DataGridTextColumn Header="Cartelle monitorate" Binding="{Binding MonitoredFolders}" Width="80" MinWidth="60" ElementStyle="{StaticResource CellText}" />
-                                <DataGridTextColumn Header="File indicizzati" Binding="{Binding IndexedText}" SortMemberPath="IndexedFiles" Width="150" MinWidth="110" ElementStyle="{StaticResource CellText}" />
-                                <DataGridTextColumn Header="Letture dell'app" Binding="{Binding ActivityText}" SortMemberPath="Activity.Operations" Width="170" MinWidth="120" ElementStyle="{StaticResource CellText}" />
-                                <DataGridTextColumn Header="Tempo medio" Binding="{Binding LatencyText}" Width="95" MinWidth="80" ElementStyle="{StaticResource CellText}" />
-                                <DataGridTextColumn Header="Ultima lettura" Binding="{Binding Activity.LastAccessUtc, Converter={x:Static vm:UtcToLocalConverter.Instance}, StringFormat=g}" Width="130" MinWidth="100" ElementStyle="{StaticResource CellText}" />
-                                <DataGridTextColumn Header="Visto la prima volta" Binding="{Binding FirstSeenUtc, Converter={x:Static vm:UtcToLocalConverter.Instance}, StringFormat=g}" Width="140" MinWidth="100" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="File system" Binding="{Binding Format}" Width="80" MinWidth="60" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Cartelle" Binding="{Binding MonitoredFolders}" Width="70" MinWidth="60" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="File indicizzati" Binding="{Binding IndexedText}" SortMemberPath="IndexedFiles" Width="140" MinWidth="100" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Letture dell'app" Binding="{Binding ActivityText}" SortMemberPath="Activity.Operations" Width="150" MinWidth="110" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Tempo medio" Binding="{Binding LatencyText}" Width="90" MinWidth="70" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Ultima lettura" Binding="{Binding Activity.LastAccessUtc, Converter={x:Static vm:UtcToLocalConverter.Instance}, StringFormat=g}" Width="130" MinWidth="100" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Visto la prima volta" Binding="{Binding FirstSeenUtc, Converter={x:Static vm:UtcToLocalConverter.Instance}, StringFormat=g}" Width="140" MinWidth="100" Visibility="Collapsed" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="Collegamenti" Binding="{Binding Connections}" Width="95" MinWidth="80" ElementStyle="{StaticResource CellText}" />
                             </DataGrid.Columns>
                         </DataGrid>

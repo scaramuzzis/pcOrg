@@ -228,7 +228,7 @@ Il pulsante **Seleziona le versioni vecchie** le seleziona tutte in un clic: poi
 
 ## Versioni più recenti dei programmi
 
-Nella scheda **Prodotti e versioni** il pulsante **Versioni più recenti** (anche **Strumenti → Cerca versioni più recenti dei programmi**) confronta i programmi trovati con il catalogo pubblico di **winget**, il gestore di pacchetti di Windows. La colonna **Online (winget)** indica per ogni programma riconosciuto "Disponibile la …" oppure "Aggiornato".
+Nella scheda **Prodotti e versioni** il pulsante **Versioni più recenti** (anche **Strumenti → Cerca versioni più recenti dei programmi**) confronta i programmi trovati con il catalogo pubblico di **winget**, il gestore di pacchetti di Windows. La colonna **Online** indica per ogni programma riconosciuto "Disponibile la …" oppure "Aggiornato".
 
 Viene scaricato soltanto il catalogo pubblico (lo stesso che usa winget, alcuni MB, valido per un giorno): **nessun dato sui tuoi file lascia il PC**, il confronto avviene in locale. Un programma viene riconosciuto se nome e produttore corrispondono a un pacchetto del catalogo; i programmi poco diffusi possono non comparire.
 
@@ -259,7 +259,9 @@ La scheda **Dischi** (**Ctrl+5**) mostra tutti i dischi: interni, chiavette e di
 - **spazio** usato e libero, file system (NTFS, exFAT…);
 - **cartelle monitorate** e **file indicizzati** su quel disco;
 - **letture dell'app**: quante cartelle e quanti file Gestione File ha letto da quel disco da quando è aperto, con il **tempo medio** di una lettura (su un disco o una rete lenta è più alto) e l'ora dell'ultima lettura. **Azzera le letture** riporta i contatori a zero;
-- **visto la prima volta** e **collegamenti**: lo storico dei dischi esterni, anche quando non sono collegati.
+- **collegamenti**: quante volte un disco esterno è stato collegato; i dischi visti in passato restano nell'elenco anche quando non sono collegati.
+
+Le colonne **File system**, **Ultima lettura** e **Visto la prima volta** sono nascoste per non allargare troppo l'elenco: si mostrano con il tasto destro su un'intestazione o da **Impostazioni → Colonne → Dischi**.
 
 **Quando colleghi un disco o una chiavetta** compare un avviso con nome, tipo e spazio occupato. Se il disco contiene cartelle monitorate vengono aggiornate subito; altrimenti **Monitoralo** lo aggiunge alle cartelle monitorate e lo legge. Lo stesso fa il pulsante **Monitora il disco** della scheda. L'avviso si può disattivare in **Impostazioni → Generale**.
 
@@ -398,7 +400,7 @@ Nella scheda **Categorie** (raggiungibile anche da **Visualizza → Categorie da
 
 **Colonne**
 
-Scegli l'elenco da configurare (Elenco file, Prodotti, File del prodotto selezionato), spunta le colonne da mostrare e usa **Su** e **Giù** per cambiarne l'ordine. **Predefinite** riporta l'elenco com'era in origine. La colonna del nome resta sempre visibile.
+Scegli l'elenco da configurare (Elenco file, Prodotti, File del prodotto selezionato, Dischi e gli altri), spunta le colonne da mostrare e usa **Su** e **Giù** per cambiarne l'ordine. **Predefinite** riporta l'elenco com'era in origine. La colonna del nome resta sempre visibile.
 
 Oltre alle colonne standard, l'elenco dei file offre colonne facoltative: **Prodotto**, **Descrizione**, **Firma digitale**, **Architettura**, **Tipo di installer**, **Sul PC**, **Estensione** e **Percorso completo**.
 

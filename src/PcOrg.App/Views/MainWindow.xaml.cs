@@ -41,6 +41,7 @@ public partial class MainWindow : Window
             ["fileCloni"] = DuplicateFilesGrid,
             ["periferiche"] = DevicesGrid,
             ["driverPeriferica"] = DriverFilesGrid,
+            ["dischi"] = DisksGrid,
         };
         _saveLayoutTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _saveLayoutTimer.Tick += (_, _) =>
@@ -73,6 +74,7 @@ public partial class MainWindow : Window
         ["fileCloni"] = "Cloni: copie del file selezionato",
         ["periferiche"] = "Periferiche presenti",
         ["driverPeriferica"] = "Driver dell'archivio",
+        ["dischi"] = "Dischi",
     };
 
     // ------------------------------------------------------------------ Disposizione salvata
