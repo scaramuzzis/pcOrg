@@ -78,6 +78,9 @@ public sealed class AppSettings
     /// <summary>Avvisa quando viene collegato un disco mai visto prima.</summary>
     public bool NotifyNewDisks { get; set; } = true;
 
+    /// <summary>Scansione veloce dei dischi NTFS leggendo la MFT (solo se l'app è avviata come amministratore).</summary>
+    public bool FastNtfsScan { get; set; } = true;
+
     /// <summary>Ritmo di lettura delle cartelle sui dischi del PC.</summary>
     public PcOrg.Core.ScanSpeed LocalScanSpeed { get; set; } = PcOrg.Core.ScanSpeed.Massima;
 

@@ -79,6 +79,9 @@
                                 <ComboBoxItem Content="Leggera: fino a 25 letture al secondo, un file alla volta" Tag="Leggera" />
                             </ComboBox>
                         </Grid>
+                        <CheckBox x:Name="FastNtfsScan" Content="Scansione veloce dei dischi NTFS (quando Gestione File è avviato come amministratore)" Margin="0,8,0,0" />
+                        <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="28,2,0,6"
+                                   Text="Per la prima scansione e per la scansione completa legge in un colpo solo la tabella dei file del disco (MFT), come fanno i programmi di ricerca istantanea: con milioni di file è molte volte più rapida. Serve avviare l'app come amministratore (menu Strumenti → Riavvia come amministratore); altrimenti si usa la scansione normale." />
                         <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="0,2,0,18"
                                    Text="Una lettura è l'elenco di una cartella o la lettura di un file. Con una velocità più bassa la scansione dura di più ma il NAS, il computer che condivide la cartella e la rete restano liberi per gli altri. La scansione gira sempre con priorità bassa, così il PC resta reattivo." />
 

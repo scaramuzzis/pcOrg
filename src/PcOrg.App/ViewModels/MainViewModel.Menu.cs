@@ -69,7 +69,8 @@ public sealed partial class MainViewModel
     public sealed record Options(string Theme, bool ScanOnStartup, bool WatchFolders, bool VerifySignatures,
         bool ShowPreview, bool ShowDetails, bool LogEnabled, LogLevel LogLevel,
         bool IndexContent = true, bool CheckUpdatesOnStartup = false,
-        ScanSpeed LocalScanSpeed = ScanSpeed.Massima, ScanSpeed NetworkScanSpeed = ScanSpeed.Normale, bool NotifyNewDisks = true);
+        ScanSpeed LocalScanSpeed = ScanSpeed.Massima, ScanSpeed NetworkScanSpeed = ScanSpeed.Normale, bool NotifyNewDisks = true,
+        bool FastNtfsScan = true);
 
     /// <summary>Applica e salva le opzioni scelte nella finestra Impostazioni.</summary>
     public void ApplyOptions(Options o)
@@ -84,6 +85,7 @@ public sealed partial class MainViewModel
         _settings.LocalScanSpeed = ScanPace.Local = o.LocalScanSpeed;
         _settings.NetworkScanSpeed = ScanPace.Network = o.NetworkScanSpeed;
         _settings.NotifyNewDisks = o.NotifyNewDisks;
+        _settings.FastNtfsScan = o.FastNtfsScan;
         ShowPreviewPanel = o.ShowPreview;
         ShowDetailsPanel = o.ShowDetails;
         ApplyTheme(o.Theme, save: false);
@@ -249,4 +251,36 @@ public sealed partial class MainViewModel
     /// <summary>Apre la guida; il parametro è (parte del) titolo del capitolo da mostrare.</summary>
     [RelayCommand]
     private void ShowHelp(string? chapter) => _dialogs.ShowHelp(chapter);
+
+    // ------------------------------------------------------------------ Amministratore
+
+    /// <summary>Vero se l'app ha i privilegi di amministratore (serve per la scansione veloce NTFS).</summary>
+    public bool IsElevated => PcOrg.Core.Platform.PlatformServices.Current.IsElevated;
+
+    /// <summary>Riavvia Gestione File come amministratore (Windows chiede conferma), per la scansione veloce NTFS.</summary>
+    [RelayCommand(CanExecute = nameof(CanRestartAsAdministrator))]
+    private void RestartAsAdministrator()
+    {
+        var exe = Environment.ProcessPath;
+        if (exe is null)
+            return;
+        try
+        {
+            Process.Start(new ProcessStartInfo(exe)
+            {
+                UseShellExecute = true,
+                Verb = "runas",
+                Arguments = $"{App.RestartArgument} {Environment.ProcessId}",
+            });
+        }
+        catch (System.ComponentModel.Win32Exception)
+        {
+            ShowToast("Riavvio come amministratore annullato.", ToastKind.Info);
+            return;
+        }
+        Log.Info("Riavvio come amministratore richiesto.");
+        Application.Current.MainWindow?.Close();
+    }
+
+    private bool CanRestartAsAdministrator() => !IsElevated;
 }

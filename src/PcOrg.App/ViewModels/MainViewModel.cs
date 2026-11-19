@@ -506,6 +506,8 @@ public sealed partial class MainViewModel : ObservableObject
         var stopwatch = Stopwatch.StartNew();
         var kind = full ? "Scansione completa" : "Aggiornamento rapido";
         Log.Info($"{kind} avviato: {string.Join(", ", roots.Select(r => r.Path))}");
+        // Scansione veloce NTFS: una lettura della MFT per volume, riusata per tutte le cartelle che ci stanno.
+        var snapshots = new Dictionary<string, PcOrg.Core.Indexing.Ntfs.MftSnapshot?>(StringComparer.OrdinalIgnoreCase);
         try
         {
             foreach (var root in roots)
@@ -521,14 +523,27 @@ public sealed partial class MainViewModel : ObservableObject
                 var fullForRoot = full || !FileIndex.SupportsQuickUpdate(root.Path);
                 if (fullForRoot && !full)
                     Log.Info($"{root.Path}: disco senza date di cartella affidabili (FAT/exFAT), scansione completa.");
+                PcOrg.Core.Indexing.Ntfs.MftSnapshot? snapshot = null;
+                if ((fullForRoot || root.LastScanUtc is null) && _settings.FastNtfsScan && !root.IsNetwork
+                    && PcOrg.Core.Platform.PlatformServices.Current.IsElevated)
+                {
+                    var volume = PcOrg.Core.Drives.DiskActivity.VolumeOf(root.Path);
+                    if (!snapshots.TryGetValue(volume, out snapshot))
+                    {
+                        Status = $"Lettura veloce della tabella dei file di {volume}…";
+                        snapshot = await Task.Run(() => PcOrg.Core.Platform.PlatformServices.Current.ReadVolumeSnapshot(root.Path, token), token);
+                        snapshots[volume] = snapshot;
+                    }
+                }
+                var fastText = snapshot is null ? "" : " (lettura veloce NTFS)";
                 var progress = new Progress<ScanResult>(p => Status =
-                    $"{kind} di {root.Path}: {p.DirectoriesVisited:N0} cartelle controllate, {p.DirectoriesChanged:N0} rilette, " +
+                    $"{kind} di {root.Path}{fastText}: {p.DirectoriesVisited:N0} cartelle controllate, {p.DirectoriesChanged:N0} rilette, " +
                     $"{p.FilesChanged:N0} file cambiati…");
                 try
                 {
                     total += await Task.Run(
                         () => ScanPace.InBackground(() => _index.UpdateRoot(root.Id, root.Path, fullForRoot, progress, token,
-                            isStillAvailable: () => Directory.Exists(root.Path))), token);
+                            isStillAvailable: () => Directory.Exists(root.Path), source: snapshot)), token);
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                 {
@@ -564,6 +579,11 @@ public sealed partial class MainViewModel : ObservableObject
             IsScanning = false;
             _scanCts.Dispose();
             _scanCts = null;
+            if (snapshots.Values.Any(s => s is not null))
+            {
+                snapshots.Clear(); // la fotografia della MFT occupa molta memoria: la si libera subito
+                GC.Collect();
+            }
             ReloadRoots();
             await RefreshAsync();
         }

@@ -414,6 +414,18 @@ public sealed class WindowsPlatform : IPlatformServices
     public uint? VolumeSerial(string root) =>
         GetVolumeInformation(root, null, 0, out var serial, out _, out _, null, 0) ? serial : null;
 
+    public PcOrg.Core.Indexing.Ntfs.MftSnapshot? ReadVolumeSnapshot(string path, CancellationToken cancellationToken) =>
+        MftVolumeReader.TryRead(path, cancellationToken);
+
+    public bool IsElevated
+    {
+        get
+        {
+            using var identity = System.Security.Principal.WindowsIdentity.GetCurrent();
+            return new System.Security.Principal.WindowsPrincipal(identity).IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
+        }
+    }
+
     public IDisposable? EnterBackgroundMode() =>
         SetThreadPriority(GetCurrentThread(), ThreadModeBackgroundBegin) ? new BackgroundMode() : null;
 

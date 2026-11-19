@@ -150,6 +150,9 @@
                 <MenuItem Header="_Interrompi la scansione" Command="{Binding CancelScanCommand}">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Cancel}" /></MenuItem.Icon>
                 </MenuItem>
+                <MenuItem Header="Riavvia come _amministratore (scansione veloce NTFS)" Command="{Binding RestartAsAdministratorCommand}">
+                    <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Shield}" /></MenuItem.Icon>
+                </MenuItem>
                 <Separator />
                 <MenuItem Header="Apri la cartella dei _dati" Command="{Binding OpenDataFolderCommand}">
                     <MenuItem.Icon><TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.FolderOpen}" /></MenuItem.Icon>

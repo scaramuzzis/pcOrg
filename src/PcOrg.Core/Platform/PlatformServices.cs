@@ -38,6 +38,15 @@ public interface IPlatformServices
 
     /// <summary>Abbassa la priorità di processore e disco del thread corrente; Dispose la ripristina.</summary>
     IDisposable? EnterBackgroundMode();
+
+    /// <summary>
+    /// Scansione veloce: fotografia della Master File Table del volume NTFS che contiene il percorso.
+    /// Null se non disponibile (non amministratore, volume non NTFS o di rete): si usa la scansione normale.
+    /// </summary>
+    Indexing.Ntfs.MftSnapshot? ReadVolumeSnapshot(string path, CancellationToken cancellationToken);
+
+    /// <summary>Vero se l'app ha i privilegi di amministratore.</summary>
+    bool IsElevated { get; }
 }
 
 /// <summary>Implementazione neutra: nessuna funzione di sistema (elenchi vuoti, nessuna verifica).</summary>
@@ -54,6 +63,8 @@ public sealed class PortablePlatform : IPlatformServices
     public string? MappedDriveToUnc(string drive) => null;
     public uint? VolumeSerial(string root) => null;
     public IDisposable? EnterBackgroundMode() => null;
+    public Indexing.Ntfs.MftSnapshot? ReadVolumeSnapshot(string path, CancellationToken cancellationToken) => null;
+    public bool IsElevated => false;
 }
 
 /// <summary>Piattaforma in uso: l'app registra quella di Windows all'avvio.</summary>
