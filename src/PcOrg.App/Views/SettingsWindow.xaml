@@ -24,7 +24,7 @@
             </StackPanel>
         </StackPanel>
 
-        <TabControl x:Name="Tabs" Grid.Row="1" Margin="20,4,20,0">
+        <TabControl x:Name="Tabs" AutomationProperties.Name="Sezioni delle impostazioni" Grid.Row="1" Margin="20,4,20,0">
             <!-- ======================================================= Generale -->
             <TabItem Header="Generale">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -49,6 +49,34 @@
                         <CheckBox x:Name="VerifySignatures" Content="Verifica le firme digitali dei programmi" />
                         <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="28,2,0,18"
                                    Text="Garantisce che il file non sia stato modificato, ma legge ogni programma per intero: disattivala se l'aggiornamento è lento. Sui file in rete la firma non viene mai verificata." />
+
+                        <TextBlock Text="CARICO SUL PC E SULLA RETE" Style="{StaticResource SectionHeader}" Margin="0,0,0,8" />
+                        <Grid Margin="0,0,0,6">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="Cartelle di rete:" VerticalAlignment="Center" Margin="0,0,12,6" />
+                            <ComboBox x:Name="NetworkSpeedChooser" Grid.Column="1" MinWidth="320" HorizontalAlignment="Left" Margin="0,0,0,6"
+                                      AutomationProperties.Name="Velocità di scansione delle cartelle di rete">
+                                <ComboBoxItem Content="Massima: nessun limite" Tag="Massima" />
+                                <ComboBoxItem Content="Normale: fino a 150 letture al secondo (consigliata)" Tag="Normale" />
+                                <ComboBoxItem Content="Leggera: fino a 25 letture al secondo, un file alla volta" Tag="Leggera" />
+                            </ComboBox>
+                            <TextBlock Grid.Row="1" Text="Dischi del PC:" VerticalAlignment="Center" Margin="0,0,12,0" />
+                            <ComboBox x:Name="LocalSpeedChooser" Grid.Row="1" Grid.Column="1" MinWidth="320" HorizontalAlignment="Left"
+                                      AutomationProperties.Name="Velocità di scansione dei dischi del PC">
+                                <ComboBoxItem Content="Massima: nessun limite (consigliata)" Tag="Massima" />
+                                <ComboBoxItem Content="Normale: fino a 150 letture al secondo" Tag="Normale" />
+                                <ComboBoxItem Content="Leggera: fino a 25 letture al secondo, un file alla volta" Tag="Leggera" />
+                            </ComboBox>
+                        </Grid>
+                        <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="0,2,0,18"
+                                   Text="Una lettura è l'elenco di una cartella o la lettura di un file. Con una velocità più bassa la scansione dura di più ma il NAS, il computer che condivide la cartella e la rete restano liberi per gli altri. La scansione gira sempre con priorità bassa, così il PC resta reattivo." />
 
                         <TextBlock Text="AGGIORNAMENTI DI PCORG" Style="{StaticResource SectionHeader}" Margin="0,0,0,8" />
                         <CheckBox x:Name="CheckUpdates" Content="All'avvio controlla se esiste una nuova versione di Gestione File" />
@@ -77,12 +105,12 @@
 
                     <DockPanel Grid.ColumnSpan="2" Margin="0,0,0,8">
                         <TextBlock Text="Elenco:" VerticalAlignment="Center" Margin="0,0,10,0" />
-                        <ComboBox x:Name="GridChooser" MinWidth="260" HorizontalAlignment="Left" SelectionChanged="GridChooser_SelectionChanged" />
+                        <ComboBox x:Name="GridChooser" AutomationProperties.Name="Elenco da personalizzare" MinWidth="260" HorizontalAlignment="Left" SelectionChanged="GridChooser_SelectionChanged" />
                     </DockPanel>
                     <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="0,0,0,10"
                                Text="Spunta le colonne da mostrare e usa le frecce per cambiarne l'ordine. Puoi anche trascinare le intestazioni nell'elenco e scegliere le colonne con il tasto destro: la disposizione viene ricordata." />
 
-                    <ListBox x:Name="ColumnList" Grid.Row="2" ItemContainerStyle="{StaticResource CompactItem}"
+                    <ListBox x:Name="ColumnList" AutomationProperties.Name="Colonne" Grid.Row="2" ItemContainerStyle="{StaticResource CompactItem}"
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
@@ -115,7 +143,7 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.ColumnSpan="2" Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="0,0,0,10"
                                Text="Le regole dicono dove archiviare i file. Con &quot;Organizza con le regole&quot; (scheda File o menu Strumenti) ogni file va nella cartella della prima regola che lo riguarda, dall'alto in basso. Vedrai sempre l'anteprima e potrai annullare." />
-                    <ListBox x:Name="RuleList" Grid.Row="1" ItemContainerStyle="{StaticResource CompactItem}"
+                    <ListBox x:Name="RuleList" AutomationProperties.Name="Regole di archiviazione" Grid.Row="1" ItemContainerStyle="{StaticResource CompactItem}"
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled" MouseDoubleClick="EditRule_Click">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
@@ -192,7 +220,7 @@
                                    Text="Annota in un file di testo avvii, scansioni, spostamenti e soprattutto gli errori, con data e ora: è lo strumento per capire cosa è andato storto. Il file viene limitato automaticamente a pochi MB." />
                         <DockPanel Margin="28,0,0,8">
                             <TextBlock Text="Dettaglio:" VerticalAlignment="Center" Margin="0,0,10,0" />
-                            <ComboBox x:Name="LogLevelChooser" MinWidth="320" HorizontalAlignment="Left"
+                            <ComboBox x:Name="LogLevelChooser" AutomationProperties.Name="Livello di dettaglio del registro" MinWidth="320" HorizontalAlignment="Left"
                                       IsEnabled="{Binding IsChecked, ElementName=LogEnabled}">
                                 <ComboBoxItem Content="Solo errori" Tag="Error" />
                                 <ComboBoxItem Content="Errori e avvisi" Tag="Warning" />
@@ -229,7 +257,7 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.ColumnSpan="2" Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="0,0,0,10"
                                Text="Spunta le categorie da mostrare nel pannello Categorie. Quelle senza spunta vengono solo nascoste dall'elenco: i loro file restano indicizzati e si trovano sempre con Tutti e con la ricerca." />
-                    <ListBox x:Name="CategoryList" Grid.Row="1" ItemContainerStyle="{StaticResource CompactItem}"
+                    <ListBox x:Name="CategoryList" AutomationProperties.Name="Categorie da mostrare" Grid.Row="1" ItemContainerStyle="{StaticResource CompactItem}"
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <ListBox.ItemTemplate>
                             <DataTemplate>

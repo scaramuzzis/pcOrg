@@ -11,6 +11,9 @@ public sealed record DuplicateGroup(string Hash, long Size, IReadOnlyList<FileRe
     public long WastedBytes => Size * (Files.Count - 1);
 
     public string Name => Files.Count > 0 ? Files[0].Name : "";
+
+    /// <summary>Testo letto dagli screen reader per la riga dell'elenco.</summary>
+    public override string ToString() => $"{Name}, {Files.Count} copie";
 }
 
 /// <summary>Avanzamento della ricerca dei cloni.</summary>

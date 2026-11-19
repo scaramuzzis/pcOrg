@@ -59,6 +59,12 @@ public sealed class AppSettings
     /// <summary>Rileva subito file aggiunti, modificati o eliminati mentre l'app è aperta.</summary>
     public bool WatchFolders { get; set; } = true;
 
+    /// <summary>Ritmo di lettura delle cartelle sui dischi del PC.</summary>
+    public PcOrg.Core.ScanSpeed LocalScanSpeed { get; set; } = PcOrg.Core.ScanSpeed.Massima;
+
+    /// <summary>Ritmo di lettura delle cartelle di rete: limita il carico sul NAS o sul computer che le condivide.</summary>
+    public PcOrg.Core.ScanSpeed NetworkScanSpeed { get; set; } = PcOrg.Core.ScanSpeed.Normale;
+
     // ---------------------------------------------------------------- Registro attività
 
     /// <summary>Scrive il registro attività (log\pcorg.log).</summary>

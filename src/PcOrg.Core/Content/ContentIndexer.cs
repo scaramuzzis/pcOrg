@@ -24,6 +24,7 @@ public static class ContentIndexer
             for (var i = 0; i < batch.Count; i++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                ScanPace.WaitFor(batch[i].Path, cancellationToken);
                 texts[i] = ContentExtractor.Extract(batch[i].Path);
             }
             // Si salva anche chi non ha testo, così non viene riletto finché non cambia.

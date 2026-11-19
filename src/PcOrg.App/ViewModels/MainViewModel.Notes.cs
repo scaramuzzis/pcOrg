@@ -97,7 +97,7 @@ public sealed partial class MainViewModel
     /// </summary>
     private async Task InstallUpdateAsync(UpdateInfo info, ReleaseAsset asset, InstallKind kind)
     {
-        if (IsBusy)
+        if (IsWorking)
         {
             ShowToast("Attendi la fine dell'operazione in corso, poi riprova ad aggiornare.", ToastKind.Info);
             return;

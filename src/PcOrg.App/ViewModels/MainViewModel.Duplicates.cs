@@ -109,10 +109,10 @@ public sealed partial class MainViewModel
     }
 
     /// <summary>Cerca i cloni nelle cartelle monitorate (in background, interrompibile).</summary>
-    [RelayCommand(CanExecute = nameof(CanModify))]
+    [RelayCommand(CanExecute = nameof(CanScan))]
     private async Task FindDuplicatesAsync()
     {
-        IsBusy = true;
+        IsScanning = true;
         _scanCts = new CancellationTokenSource();
         var token = _scanCts.Token;
         var stopwatch = Stopwatch.StartNew();
@@ -136,7 +136,7 @@ public sealed partial class MainViewModel
         }
         finally
         {
-            IsBusy = false;
+            IsScanning = false;
             _scanCts?.Dispose();
             _scanCts = null;
         }

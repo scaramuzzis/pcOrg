@@ -28,6 +28,9 @@ public sealed record CategoryItem(FileCategory? Category, string Name, long Coun
     public bool IsSubcategory => Extensions is not null;
     public string Glyph => Glyphs.ForCategory(Category);
     public Brush Accent => CategoryColors.For(Category);
+
+    /// <summary>Testo letto dagli screen reader per la voce dell'elenco.</summary>
+    public override string ToString() => $"{Name}, {Count:N0} file, {FileSizeConverter.Format(TotalSize)}";
 }
 
 /// <summary>Tipo di notifica a comparsa: determina icona e colore.</summary>
@@ -110,9 +113,9 @@ public sealed partial class MainViewModel : ObservableObject
     public async Task<bool> WaitUntilIdleAsync(TimeSpan timeout)
     {
         var stopwatch = Stopwatch.StartNew();
-        while (IsBusy && stopwatch.Elapsed < timeout)
+        while (IsWorking && stopwatch.Elapsed < timeout)
             await Task.Delay(100);
-        return !IsBusy;
+        return !IsWorking;
     }
 
     public ObservableCollection<RootItem> Roots { get; } = [];
@@ -346,12 +349,30 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string _searchText = "";
 
+    /// <summary>
+    /// Operazione esclusiva in corso (spostamento, ricerca dei cloni, organizzazione, download): ne parte una alla volta.
+    /// </summary>
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(ScanCommand), nameof(FullScanCommand), nameof(AddRootCommand), nameof(RemoveRootCommand),
-        nameof(MoveSelectedCommand), nameof(CancelScanCommand), nameof(FindDuplicatesCommand),
+    [NotifyPropertyChangedFor(nameof(IsWorking))]
+    [NotifyCanExecuteChangedFor(nameof(ScanCommand), nameof(FullScanCommand), nameof(AddRootCommand), nameof(AddNetworkRootCommand),
+        nameof(RemoveRootCommand), nameof(MoveSelectedCommand), nameof(FindDuplicatesCommand),
         nameof(RecycleMarkedCommand), nameof(MoveMarkedCommand), nameof(RecycleSelectedCommand), nameof(OrganizeWithRulesCommand),
         nameof(EditNotesCommand), nameof(CheckProgramUpdatesCommand))]
     private bool _isBusy;
+
+    /// <summary>
+    /// Scansione o lettura dei metadati in background. Non blocca l'app: si può cercare, spostare, mettere
+    /// etichette e aggiungere cartelle (vengono scansionate subito dopo). Sono sospese solo le operazioni
+    /// che hanno bisogno dell'indice completo (nuova scansione, ricerca dei cloni, rimozione di cartelle).
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsWorking))]
+    [NotifyCanExecuteChangedFor(nameof(ScanCommand), nameof(FullScanCommand), nameof(RemoveRootCommand),
+        nameof(CancelScanCommand), nameof(FindDuplicatesCommand))]
+    private bool _isScanning;
+
+    /// <summary>Qualsiasi lavoro in corso (barra di avanzamento, chiusura sicura).</summary>
+    public bool IsWorking => IsBusy || IsScanning;
 
     [ObservableProperty]
     private string _status = "Pronto";
@@ -374,11 +395,11 @@ public sealed partial class MainViewModel : ObservableObject
             return;
         try
         {
-            var root = _index.AddRoot(folder);
+            var root = await Task.Run(() => _index.AddRoot(folder));
             ReloadRoots();
             if (!string.Equals(root.Path, PcOrg.Core.PathUtil.Normalize(folder), StringComparison.OrdinalIgnoreCase))
                 ShowToast($"Unità di rete salvata come {root.Path}: funzionerà anche se la lettera dell'unità cambia", ToastKind.Info);
-            await ScanRootsAsync([root]);
+            await ScanOrQueueAsync(root);
         }
         catch (Exception ex) when (ex is InvalidOperationException or IOException)
         {
@@ -408,10 +429,10 @@ public sealed partial class MainViewModel : ObservableObject
         }
         try
         {
-            var root = _index.AddRoot(path);
+            var root = await Task.Run(() => _index.AddRoot(path));
             ReloadRoots();
             ShowToast($"Cartella di rete aggiunta: {root.Path}", ToastKind.Success);
-            await ScanRootsAsync([root]);
+            await ScanOrQueueAsync(root);
         }
         catch (Exception ex) when (ex is InvalidOperationException or IOException or UnauthorizedAccessException)
         {
@@ -428,25 +449,41 @@ public sealed partial class MainViewModel : ObservableObject
                 $"Gestione File smetterà di tenere in ordine \"{root.Path}\".\n\nI file restano dove sono: vengono solo tolti dall'elenco.",
                 "Rimuovere la cartella?", "Rimuovi"))
             return;
-        _index.RemoveRoot(root.Id);
+        await Task.Run(() => _index.RemoveRoot(root.Id));
         ReloadRoots();
         await RefreshAsync();
         ShowToast($"Cartella rimossa: {root.Path}", ToastKind.Info);
     }
 
     private bool CanModify() => !IsBusy;
-    private bool CanRemoveRoot() => !IsBusy && SelectedRoot is not null;
+    private bool CanScan() => !IsBusy && !IsScanning;
+    private bool CanRemoveRoot() => !IsBusy && !IsScanning && SelectedRoot is not null;
 
     /// <summary>Aggiornamento rapido (F5): rilegge solo le cartelle cambiate.</summary>
-    [RelayCommand(CanExecute = nameof(CanModify))]
+    [RelayCommand(CanExecute = nameof(CanScan))]
     private Task ScanAsync() => ScanRootsAsync(ScopeRoots());
 
     /// <summary>Scansione completa (Ctrl+F5): rilegge tutte le cartelle, rileva anche i file modificati nel contenuto.</summary>
-    [RelayCommand(CanExecute = nameof(CanModify))]
+    [RelayCommand(CanExecute = nameof(CanScan))]
     private Task FullScanAsync() => ScanRootsAsync(ScopeRoots(), full: true);
 
-    [RelayCommand(CanExecute = nameof(IsBusy))]
+    [RelayCommand(CanExecute = nameof(IsScanning))]
     private void CancelScan() => _scanCts?.Cancel();
+
+    /// <summary>Cartelle aggiunte durante una scansione: vengono scansionate appena questa finisce.</summary>
+    private readonly List<RootFolder> _queuedRoots = [];
+
+    /// <summary>Scansiona subito la cartella, o la mette in coda se c'è già una scansione in corso.</summary>
+    private async Task ScanOrQueueAsync(RootFolder root)
+    {
+        if (IsScanning)
+        {
+            _queuedRoots.Add(root);
+            ShowToast($"{root.Path} verrà letta appena finisce la scansione in corso", ToastKind.Info);
+            return;
+        }
+        await ScanRootsAsync([root]);
+    }
 
     /// <summary>
     /// Aggiorna le cartelle indicate. Di norma è un aggiornamento rapido (<see cref="FileIndex.UpdateRoot"/>):
@@ -460,7 +497,7 @@ public sealed partial class MainViewModel : ObservableObject
             return;
         }
 
-        IsBusy = true;
+        IsScanning = true;
         _scanCts = new CancellationTokenSource();
         var token = _scanCts.Token;
         var total = ScanResult.Empty;
@@ -489,8 +526,8 @@ public sealed partial class MainViewModel : ObservableObject
                 try
                 {
                     total += await Task.Run(
-                        () => _index.UpdateRoot(root.Id, root.Path, fullForRoot, progress, token,
-                            isStillAvailable: () => Directory.Exists(root.Path)), token);
+                        () => ScanPace.InBackground(() => _index.UpdateRoot(root.Id, root.Path, fullForRoot, progress, token,
+                            isStillAvailable: () => Directory.Exists(root.Path))), token);
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                 {
@@ -523,7 +560,7 @@ public sealed partial class MainViewModel : ObservableObject
         }
         finally
         {
-            IsBusy = false;
+            IsScanning = false;
             _scanCts.Dispose();
             _scanCts = null;
             ReloadRoots();
@@ -531,19 +568,25 @@ public sealed partial class MainViewModel : ObservableObject
         }
         await UpdateMetadataAsync();
         Fire(RefreshInstalledAsync(), "programmi installati");
+        if (_queuedRoots.Count > 0)
+        {
+            var queued = _queuedRoots.DistinctBy(r => r.Id).ToList();
+            _queuedRoots.Clear();
+            await ScanRootsAsync(queued);
+        }
     }
 
     /// <summary>Legge versione, produttore, architettura e firma dei file nuovi o modificati.</summary>
     private async Task UpdateMetadataAsync()
     {
-        IsBusy = true;
+        IsScanning = true;
         _scanCts = new CancellationTokenSource();
         var token = _scanCts.Token;
         try
         {
             var progress = new Progress<(int Done, int Total)>(p =>
                 Status = $"Lettura di versioni e firme: {p.Done:N0} di {p.Total:N0} file…");
-            var count = await Task.Run(() => MetadataUpdater.Run(_index, progress, token, _settings.VerifySignatures), token);
+            var count = await Task.Run(() => ScanPace.InBackground(() => MetadataUpdater.Run(_index, progress, token, _settings.VerifySignatures)), token);
             Status = count == 0 ? "Indice aggiornato." : $"Lette versioni e firme di {count:N0} file.";
 
             // Testo dei documenti e contenuto di ZIP e ISO, per la ricerca "nel contenuto".
@@ -551,7 +594,7 @@ public sealed partial class MainViewModel : ObservableObject
             {
                 var contentProgress = new Progress<(int Done, int Total)>(p =>
                     Status = $"Lettura del contenuto di documenti e archivi: {p.Done:N0} di {p.Total:N0} file…");
-                var read = await Task.Run(() => PcOrg.Core.Content.ContentIndexer.Run(_index, contentProgress, token), token);
+                var read = await Task.Run(() => ScanPace.InBackground(() => PcOrg.Core.Content.ContentIndexer.Run(_index, contentProgress, token)), token);
                 if (read > 0)
                 {
                     Status = $"Letto il contenuto di {read:N0} documenti e archivi.";
@@ -565,7 +608,7 @@ public sealed partial class MainViewModel : ObservableObject
         }
         finally
         {
-            IsBusy = false;
+            IsScanning = false;
             _scanCts.Dispose();
             _scanCts = null;
         }
@@ -714,7 +757,7 @@ public sealed partial class MainViewModel : ObservableObject
             {
                 Results.ReplaceAll(results); // una sola notifica: la griglia si ridisegna una volta
             }
-            if (!IsBusy)
+            if (!IsWorking)
                 Status = results.Count >= query.Limit
                     ? $"Mostrati i primi {results.Count:N0} risultati ({stopwatch.ElapsedMilliseconds} ms): affina la ricerca"
                     : $"{results.Count:N0} file ({stopwatch.ElapsedMilliseconds} ms)";

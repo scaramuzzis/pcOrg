@@ -249,7 +249,7 @@ public partial class MainWindow : Window
     private async void OnClosing(object? sender, CancelEventArgs e)
     {
         SaveLayout();
-        if (_closingConfirmed || ViewModel is not { IsBusy: true } vm)
+        if (_closingConfirmed || ViewModel is not { IsWorking: true } vm)
         {
             ViewModel?.Shutdown();
             return;

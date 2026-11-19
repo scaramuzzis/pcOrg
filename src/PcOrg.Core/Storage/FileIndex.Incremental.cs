@@ -150,6 +150,10 @@ public sealed partial class FileIndex
 
         var tx = conn.BeginTransaction();
         var pending = 0;
+        // Salvataggio anche a tempo: su una cartella di rete lenta 200 cartelle possono richiedere minuti,
+        // e intanto l'indice resterebbe bloccato in scrittura per le altre operazioni (etichette, spostamenti).
+        var sinceCommit = System.Diagnostics.Stopwatch.StartNew();
+        var network = NetworkPaths.IsNetworkPath(startPath);
         try
         {
             while (stack.Count > 0)
@@ -168,6 +172,7 @@ public sealed partial class FileIndex
                 }
 
                 long mtime;
+                ScanPace.Wait(network, cancellationToken);
                 try
                 {
                     if (!Directory.Exists(dir))
@@ -192,6 +197,7 @@ public sealed partial class FileIndex
                 // Cartella nuova o cambiata: se ne legge il contenuto e lo si confronta con l'indice.
                 List<FileInfo> files;
                 List<string> subdirs;
+                ScanPace.Wait(network, cancellationToken);
                 try
                 {
                     var info = new DirectoryInfo(dir);
@@ -223,8 +229,9 @@ public sealed partial class FileIndex
                 if (Log.IsEnabled(LogLevel.Debug) && delta.Added + delta.Updated + delta.Removed > 0)
                     Log.Debug($"Cartella aggiornata: {dir} (+{delta.Added} ~{delta.Updated} -{delta.Removed})");
 
-                if (++pending >= DirectoryBatchSize)
+                if (++pending >= DirectoryBatchSize || (pending > 0 && sinceCommit.ElapsedMilliseconds >= 1000))
                 {
+                    sinceCommit.Restart();
                     // Salvataggio intermedio: un'interruzione non fa perdere il lavoro fatto.
                     tx.Commit();
                     tx.Dispose();

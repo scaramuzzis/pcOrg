@@ -21,6 +21,9 @@ public sealed record ProductGroup(
     /// <summary>Spazio occupato dalle versioni precedenti all'ultima.</summary>
     public long OldVersionsSize => OldVersions.Sum(f => f.Size);
 
+    /// <summary>Testo letto dagli screen reader per la riga dell'elenco.</summary>
+    public override string ToString() => Company is null ? $"{Name} {LatestVersion}" : $"{Name} {LatestVersion}, {Company}";
+
     public bool IsLatest(FileRecord file) => VersionComparer.AreEqual(file.Version, LatestVersion);
 
     public bool IsOld(FileRecord file) =>

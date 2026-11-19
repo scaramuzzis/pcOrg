@@ -29,7 +29,7 @@
                     <c:IconButton DockPanel.Dock="Right" Glyph="{x:Static inf:Glyphs.FolderOpen}" Label="Sfoglia…" Margin="8,0,0,0"
                                   Click="Browse_Click" ToolTip="Scegli la cartella da Rete o da un'unità di rete" />
                     <Grid>
-                        <TextBox x:Name="PathBox" Padding="8,6" FontSize="14" TextChanged="PathBox_TextChanged" />
+                        <TextBox x:Name="PathBox" AutomationProperties.Name="Percorso della cartella di rete" Padding="8,6" FontSize="14" TextChanged="PathBox_TextChanged" />
                         <TextBlock IsHitTestVisible="False" Margin="11,0,0,0" VerticalAlignment="Center" FontSize="14"
                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}" Text="\\NAS\Condivisa\Download">
                             <TextBlock.Style>

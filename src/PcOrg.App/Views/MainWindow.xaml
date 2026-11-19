@@ -209,7 +209,7 @@
 
                 <!-- Ricerca -->
                 <Grid Grid.Column="1" MaxWidth="680" Margin="16,0">
-                    <TextBox x:Name="SearchBox" FontSize="15" Padding="38,8,36,8" VerticalContentAlignment="Center"
+                    <TextBox x:Name="SearchBox" AutomationProperties.Name="Cerca file, programmi, driver e produttori" FontSize="15" Padding="38,8,36,8" VerticalContentAlignment="Center"
                              Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                              ToolTip="Cerca per nome, cartella, prodotto o produttore. Ctrl+F per cercare, Esc per cancellare." />
                     <TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Search}" Margin="13,0,0,0"
@@ -252,7 +252,7 @@
 
         <!-- Barra di avanzamento sottile durante scansione e lettura metadati -->
         <ProgressBar Grid.Row="1" Height="3" IsIndeterminate="True" BorderThickness="0"
-                     Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}" />
+                     Visibility="{Binding IsWorking, Converter={StaticResource BoolToVisibility}}" />
 
         <!-- ============================================================ Contenuto -->
         <Grid x:Name="ContentGrid" Grid.Row="2" Margin="14,12,14,8">
@@ -265,11 +265,17 @@
             <!-- Pannello sinistro: cartelle e categorie -->
             <Border Style="{StaticResource Card}" Padding="10">
                 <Grid>
+                    <!--
+                        Cartelle e categorie si dividono l'altezza (1/3 e 2/3) e hanno ciascuna la propria barra di
+                        scorrimento; il divisore tra le due si trascina. Prima la riga delle cartelle aveva altezza
+                        automatica con un massimo: l'elenco veniva tagliato e non si poteva scorrere oltre la terza cartella.
+                    -->
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" MaxHeight="220" />
+                        <RowDefinition x:Name="RootsRow" Height="*" MinHeight="72" />
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition x:Name="CategoriesRow" Height="2*" MinHeight="120" />
                     </Grid.RowDefinitions>
 
                     <DockPanel Margin="4,0,0,6">
@@ -286,10 +292,11 @@
                         <TextBlock Text="CARTELLE MONITORATE" Style="{StaticResource SectionHeader}" />
                     </DockPanel>
 
-                    <ListBox Grid.Row="1" ItemsSource="{Binding Roots}" SelectedItem="{Binding SelectedRoot}"
+                    <ListBox Grid.Row="1" ItemsSource="{Binding Roots}" AutomationProperties.Name="Cartelle monitorate" SelectedItem="{Binding SelectedRoot}"
                              ToolTip="Fai clic su una cartella per lavorare solo sui suoi file"
                              x:Name="RootsList" ItemContainerStyle="{StaticResource CompactItem}"
-                             BorderThickness="0" Background="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                             BorderThickness="0" Background="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="False">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <Grid ToolTip="{Binding Path}" Margin="0,2">
@@ -305,7 +312,7 @@
                                         <TextBlock Text="{Binding Path}" Style="{StaticResource Secondary}" />
                                         <TextBlock Style="{StaticResource Secondary}" FontSize="11"
                                                    Text="{Binding LastScanUtc, Converter={x:Static vm:UtcToLocalConverter.Instance}, StringFormat='Aggiornata {0:g}', TargetNullValue='Mai scansionata'}" />
-                                        <TextBlock FontSize="11" Foreground="#DC2626" Text="Non raggiungibile: file mostrati dall'ultimo aggiornamento"
+                                        <TextBlock FontSize="11" Foreground="{DynamicResource SystemFillColorCriticalBrush}" Text="Non raggiungibile: file mostrati dall'ultimo aggiornamento"
                                                    TextWrapping="Wrap" Visibility="{Binding IsOffline, Converter={StaticResource BoolToVisibility}}" />
                                     </StackPanel>
                                 </Grid>
@@ -321,7 +328,11 @@
                         </ListBox.ItemTemplate>
                     </ListBox>
 
-                    <StackPanel Grid.Row="2" Margin="4,14,0,6">
+                    <GridSplitter Grid.Row="2" Height="8" HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                                  Background="Transparent" ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" Cursor="SizeNS"
+                                  ToolTip="Trascina per dare più spazio alle cartelle o alle categorie" />
+
+                    <StackPanel Grid.Row="3" Margin="4,6,0,6">
                         <TextBlock Text="CATEGORIE" Style="{StaticResource SectionHeader}" />
                         <!-- Avviso "stai vedendo una sola cartella", con il pulsante per tornare a tutte -->
                         <DockPanel Margin="0,4,0,0" Visibility="{Binding HasScope, Converter={StaticResource BoolToVisibility}}">
@@ -333,7 +344,7 @@
                         </DockPanel>
                     </StackPanel>
 
-                    <ListBox Grid.Row="3" ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" ItemContainerStyle="{StaticResource CompactItem}"
+                    <ListBox Grid.Row="4" ItemsSource="{Binding Categories}" AutomationProperties.Name="Categorie" SelectedItem="{Binding SelectedCategory}" ItemContainerStyle="{StaticResource CompactItem}"
                              BorderThickness="0" Background="Transparent" HorizontalContentAlignment="Stretch"
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <ListBox.ItemTemplate>
@@ -378,7 +389,7 @@
                           ToolTip="Trascina per allargare o restringere il pannello" />
 
             <!-- Pannello destro: schede File / Prodotti -->
-            <TabControl x:Name="Tabs" x:FieldModifier="public" Grid.Column="2" SelectedIndex="{Binding SelectedTabIndex}"
+            <TabControl x:Name="Tabs" AutomationProperties.Name="Viste" x:FieldModifier="public" Grid.Column="2" SelectedIndex="{Binding SelectedTabIndex}"
                         SelectionChanged="Tabs_SelectionChanged"
                         Visibility="{Binding HasRoots, Converter={StaticResource BoolToVisibility}}">
                 <!-- Scheda Panoramica -->
@@ -511,7 +522,7 @@
                                               ToolTip="Scegli dove spostare i file selezionati: prima vedrai un'anteprima, e potrai sempre annullare" />
                             </WrapPanel>
 
-                            <DataGrid x:Name="ResultsGrid" Grid.Row="1" ItemsSource="{Binding Results}"
+                            <DataGrid x:Name="ResultsGrid" AutomationProperties.Name="Elenco dei file" Grid.Row="1" ItemsSource="{Binding Results}"
                                       inf:GridKeys.DeleteCommand="{Binding RecycleSelectedCommand}"
                                       AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Extended"
                                       HeadersVisibility="Column" GridLinesVisibility="None" RowHeight="34"
@@ -716,7 +727,7 @@
                             </DockPanel>
                         </Border>
 
-                        <DataGrid x:Name="ProductsGrid" Grid.Row="1" ItemsSource="{Binding ProductsView}" SelectedItem="{Binding SelectedProduct}"
+                        <DataGrid x:Name="ProductsGrid" AutomationProperties.Name="Prodotti e versioni" Grid.Row="1" ItemsSource="{Binding ProductsView}" SelectedItem="{Binding SelectedProduct}"
                                   AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" RowHeight="34"
                                   HeadersVisibility="Column" GridLinesVisibility="None"
                                   EnableRowVirtualization="True" VirtualizingPanel.VirtualizationMode="Recycling">
@@ -755,7 +766,7 @@
                                           ToolTip="Sposta nel Cestino di Windows i file selezionati (Canc). Potrai ripristinarli dal Cestino." />
                         </WrapPanel>
 
-                        <DataGrid x:Name="ProductFilesGrid" Grid.Row="3" ItemsSource="{Binding ProductFiles}"
+                        <DataGrid x:Name="ProductFilesGrid" AutomationProperties.Name="File del prodotto selezionato" Grid.Row="3" ItemsSource="{Binding ProductFiles}"
                                   inf:GridKeys.DeleteCommand="{Binding RecycleSelectedCommand}"
                                   AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Extended" RowHeight="32"
                                   HeadersVisibility="Column" GridLinesVisibility="None"
@@ -813,7 +824,7 @@
                         <Border Style="{StaticResource Card}" Margin="0,0,0,10" Padding="12,10">
                             <DockPanel>
                                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <ComboBox ItemsSource="{Binding SizeOptions}" SelectedItem="{Binding SelectedSizeOption}" DisplayMemberPath="Label"
+                                    <ComboBox ItemsSource="{Binding SizeOptions}" AutomationProperties.Name="Dimensione minima dei file da confrontare" SelectedItem="{Binding SelectedSizeOption}" DisplayMemberPath="Label"
                                               MinWidth="170" Margin="12,0,10,0" ToolTip="Ignora i file più piccoli: la ricerca è più veloce e mostra solo ciò che pesa davvero" />
                                     <CheckBox Content="Anche cartelle di rete" IsChecked="{Binding IncludeNetworkInDuplicates}" Margin="0,0,12,0" VerticalAlignment="Center"
                                               ToolTip="I file in rete vanno letti attraverso la rete: la ricerca può essere molto più lenta" />
@@ -827,7 +838,7 @@
                         </Border>
 
                         <!-- Gruppi di file identici -->
-                        <DataGrid x:Name="DuplicateGroupsGrid" Grid.Row="1" ItemsSource="{Binding DuplicateGroups}" SelectedItem="{Binding SelectedDuplicateGroup}"
+                        <DataGrid x:Name="DuplicateGroupsGrid" AutomationProperties.Name="Gruppi di file identici" Grid.Row="1" ItemsSource="{Binding DuplicateGroups}" SelectedItem="{Binding SelectedDuplicateGroup}"
                                   AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" RowHeight="32"
                                   HeadersVisibility="Column" GridLinesVisibility="None"
                                   EnableRowVirtualization="True" VirtualizingPanel.VirtualizationMode="Recycling">
@@ -851,7 +862,7 @@
                         <!-- Azioni -->
                         <WrapPanel Grid.Row="2" Margin="0,12,0,10">
                             <TextBlock Text="COPIE DEL FILE SELEZIONATO" Style="{StaticResource SectionHeader}" Margin="2,0,14,0" />
-                            <ComboBox ItemsSource="{Binding KeepRules}" SelectedItem="{Binding SelectedKeepRule}" DisplayMemberPath="Label"
+                            <ComboBox ItemsSource="{Binding KeepRules}" AutomationProperties.Name="Quale copia tenere" SelectedItem="{Binding SelectedKeepRule}" DisplayMemberPath="Label"
                                       MinWidth="260" Margin="0,0,6,0" ToolTip="Quale copia tenere in ogni gruppo" />
                             <c:IconButton Glyph="{x:Static inf:Glyphs.SelectAll}" Label="Segna i doppioni" Command="{Binding MarkDoublesCommand}" Margin="0,0,6,0"
                                           ToolTip="In tutti i gruppi segna le copie da eliminare, tenendone una secondo la regola scelta" />
@@ -865,7 +876,7 @@
                         </WrapPanel>
 
                         <!-- Copie del gruppo selezionato -->
-                        <DataGrid x:Name="DuplicateFilesGrid" Grid.Row="3" ItemsSource="{Binding DuplicateFiles}"
+                        <DataGrid x:Name="DuplicateFilesGrid" AutomationProperties.Name="Copie del gruppo selezionato" Grid.Row="3" ItemsSource="{Binding DuplicateFiles}"
                                   AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Extended" RowHeight="32"
                                   HeadersVisibility="Column" GridLinesVisibility="None"
                                   SelectionChanged="DuplicateFilesGrid_SelectionChanged" MouseDoubleClick="FileGrid_MouseDoubleClick">
@@ -934,7 +945,7 @@
                         </Border>
 
                         <!-- Periferiche presenti -->
-                        <DataGrid x:Name="DevicesGrid" Grid.Row="1" ItemsSource="{Binding DeviceRows}" SelectedItem="{Binding SelectedDevice}"
+                        <DataGrid x:Name="DevicesGrid" AutomationProperties.Name="Pacchetti driver" Grid.Row="1" ItemsSource="{Binding DeviceRows}" SelectedItem="{Binding SelectedDevice}"
                                   AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" RowHeight="32"
                                   HeadersVisibility="Column" GridLinesVisibility="None"
                                   EnableRowVirtualization="True" VirtualizingPanel.VirtualizationMode="Recycling">
@@ -972,7 +983,7 @@
                             <c:IconButton Glyph="{x:Static inf:Glyphs.Delete}" Label="Sposta nel Cestino…" Command="{Binding RecycleSelectedCommand}" Margin="0,0,6,0" />
                         </WrapPanel>
 
-                        <DataGrid x:Name="DriverFilesGrid" Grid.Row="3" ItemsSource="{Binding DriverFiles}"
+                        <DataGrid x:Name="DriverFilesGrid" AutomationProperties.Name="File del driver selezionato" Grid.Row="3" ItemsSource="{Binding DriverFiles}"
                                   inf:GridKeys.DeleteCommand="{Binding RecycleSelectedCommand}"
                                   AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Extended" RowHeight="32"
                                   HeadersVisibility="Column" GridLinesVisibility="None"
@@ -1050,7 +1061,7 @@
                 Background="{DynamicResource LayerFillColorDefaultBrush}">
             <DockPanel>
                 <c:IconButton DockPanel.Dock="Right" Glyph="{x:Static inf:Glyphs.Cancel}" Label="Interrompi" Command="{Binding CancelScanCommand}"
-                              Padding="8,2" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}"
+                              Padding="8,2" Visibility="{Binding IsScanning, Converter={StaticResource BoolToVisibility}}"
                               ToolTip="Ferma la scansione: riprenderà al prossimo aggiornamento" />
                 <TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Info}" FontSize="13" Margin="0,0,8,0" Opacity="0.7" />
                 <TextBlock Text="{Binding Status}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"

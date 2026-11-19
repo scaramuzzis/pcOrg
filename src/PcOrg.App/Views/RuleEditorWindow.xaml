@@ -44,21 +44,21 @@
                 </Grid.Resources>
 
                 <TextBlock Style="{StaticResource Label}" Text="Nome della regola" />
-                <TextBox x:Name="RuleName" Grid.Column="1" Margin="0,4" Padding="6,4" />
+                <TextBox x:Name="RuleName" AutomationProperties.Name="Nome della regola" Grid.Column="1" Margin="0,4" Padding="6,4" />
 
                 <TextBlock Grid.Row="1" Style="{StaticResource Label}" Text="Categoria" />
-                <ComboBox x:Name="CategoryChooser" Grid.Row="1" Grid.Column="1" Margin="0,4" />
+                <ComboBox x:Name="CategoryChooser" AutomationProperties.Name="Categoria" Grid.Row="1" Grid.Column="1" Margin="0,4" />
 
                 <TextBlock Grid.Row="2" Style="{StaticResource Label}" Text="Produttore contiene" />
-                <TextBox x:Name="Company" Grid.Row="2" Grid.Column="1" Margin="0,4" Padding="6,4" ToolTip="Es. NVIDIA, Realtek, Microsoft. Vuoto = qualsiasi produttore" />
+                <TextBox x:Name="Company" AutomationProperties.Name="Produttore" Grid.Row="2" Grid.Column="1" Margin="0,4" Padding="6,4" ToolTip="Es. NVIDIA, Realtek, Microsoft. Vuoto = qualsiasi produttore" />
 
                 <TextBlock Grid.Row="3" Style="{StaticResource Label}" Text="Nome del file contiene" />
-                <TextBox x:Name="NameContains" Grid.Row="3" Grid.Column="1" Margin="0,4" Padding="6,4" ToolTip="Es. driver, setup, fattura. Vuoto = qualsiasi nome" />
+                <TextBox x:Name="NameContains" AutomationProperties.Name="Il nome contiene" Grid.Row="3" Grid.Column="1" Margin="0,4" Padding="6,4" ToolTip="Es. driver, setup, fattura. Vuoto = qualsiasi nome" />
 
                 <TextBlock Grid.Row="4" Style="{StaticResource Label}" Text="Cartella di destinazione" />
                 <DockPanel Grid.Row="4" Grid.Column="1" Margin="0,4">
                     <c:IconButton DockPanel.Dock="Right" Glyph="{x:Static inf:Glyphs.FolderOpen}" Label="Sfoglia…" Margin="8,0,0,0" Click="Browse_Click" />
-                    <TextBox x:Name="Destination" Padding="6,4" TextChanged="Destination_TextChanged" />
+                    <TextBox x:Name="Destination" AutomationProperties.Name="Cartella di destinazione" Padding="6,4" TextChanged="Destination_TextChanged" />
                 </DockPanel>
 
                 <TextBlock Grid.Row="5" Grid.Column="1" Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="0,2,0,6"

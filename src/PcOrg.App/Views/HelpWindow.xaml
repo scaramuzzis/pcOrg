@@ -24,7 +24,7 @@
                 </StackPanel>
 
                 <Grid DockPanel.Dock="Top" Margin="0,0,0,10">
-                    <TextBox x:Name="SearchBox" Padding="32,6,8,6" TextChanged="SearchBox_TextChanged"
+                    <TextBox x:Name="SearchBox" AutomationProperties.Name="Cerca nella guida" Padding="32,6,8,6" TextChanged="SearchBox_TextChanged"
                              ToolTip="Cerca nella guida: mostra solo i capitoli che contengono il testo" />
                     <TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Search}" FontSize="14" Margin="10,0,0,0"
                                HorizontalAlignment="Left" IsHitTestVisible="False" Opacity="0.7" />
@@ -46,7 +46,7 @@
                 <TextBlock DockPanel.Dock="Top" Text="CAPITOLI" Style="{StaticResource SectionHeader}" Margin="4,4,0,6" />
                 <TextBlock x:Name="NoResults" DockPanel.Dock="Top" Text="Nessun capitolo contiene il testo cercato."
                            Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="4,0" Visibility="Collapsed" />
-                <ListBox x:Name="ChapterList" BorderThickness="0" Background="Transparent" DisplayMemberPath="Title"
+                <ListBox x:Name="ChapterList" AutomationProperties.Name="Capitoli della guida" BorderThickness="0" Background="Transparent" DisplayMemberPath="Title"
                          ItemContainerStyle="{StaticResource CompactItem}" SelectionChanged="ChapterList_SelectionChanged"
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
             </DockPanel>

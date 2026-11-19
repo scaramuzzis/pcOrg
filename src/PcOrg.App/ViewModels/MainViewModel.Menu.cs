@@ -5,6 +5,7 @@ using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PcOrg.App.Infrastructure;
+using PcOrg.Core;
 using PcOrg.Core.Diagnostics;
 using PcOrg.Core.Storage;
 
@@ -29,6 +30,8 @@ public sealed partial class MainViewModel
         _settings = settings;
         _persistSettings = settings.FilePath is not null;
         _scanOnStartup = settings.ScanOnStartup;
+        ScanPace.Local = settings.LocalScanSpeed;
+        ScanPace.Network = settings.NetworkScanSpeed;
         ShowPreviewPanel = settings.ShowPreviewPanel;
         ShowDetailsPanel = settings.ShowDetailsPanel;
         SearchInContent = settings.SearchInContent;
@@ -65,7 +68,8 @@ public sealed partial class MainViewModel
     /// <summary>Opzioni modificabili dalla finestra Impostazioni.</summary>
     public sealed record Options(string Theme, bool ScanOnStartup, bool WatchFolders, bool VerifySignatures,
         bool ShowPreview, bool ShowDetails, bool LogEnabled, LogLevel LogLevel,
-        bool IndexContent = true, bool CheckUpdatesOnStartup = false);
+        bool IndexContent = true, bool CheckUpdatesOnStartup = false,
+        ScanSpeed LocalScanSpeed = ScanSpeed.Massima, ScanSpeed NetworkScanSpeed = ScanSpeed.Normale);
 
     /// <summary>Applica e salva le opzioni scelte nella finestra Impostazioni.</summary>
     public void ApplyOptions(Options o)
@@ -77,6 +81,8 @@ public sealed partial class MainViewModel
         _settings.LogLevel = o.LogLevel;
         _settings.IndexContent = o.IndexContent;
         _settings.CheckUpdatesOnStartup = o.CheckUpdatesOnStartup;
+        _settings.LocalScanSpeed = ScanPace.Local = o.LocalScanSpeed;
+        _settings.NetworkScanSpeed = ScanPace.Network = o.NetworkScanSpeed;
         ShowPreviewPanel = o.ShowPreview;
         ShowDetailsPanel = o.ShowDetails;
         ApplyTheme(o.Theme, save: false);
@@ -84,7 +90,8 @@ public sealed partial class MainViewModel
         EnableWatching(o.WatchFolders);
         SaveSettings();
         Log.Info($"Impostazioni: tema {o.Theme}, aggiornamento all'avvio {o.ScanOnStartup}, rilevamento automatico " +
-                 $"{o.WatchFolders}, verifica firme {o.VerifySignatures}, registro {o.LogEnabled} ({o.LogLevel}).");
+                 $"{o.WatchFolders}, verifica firme {o.VerifySignatures}, registro {o.LogEnabled} ({o.LogLevel}), " +
+                 $"velocità di scansione locale {o.LocalScanSpeed}, in rete {o.NetworkScanSpeed}.");
     }
 
     // ------------------------------------------------------------------ Manutenzione dell'indice

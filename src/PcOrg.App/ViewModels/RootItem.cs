@@ -20,4 +20,7 @@ public sealed partial class RootItem(RootFolder root) : ObservableObject
     private bool? _isAvailable;
 
     public bool IsOffline => IsAvailable == false;
+
+    /// <summary>Testo letto dagli screen reader per la voce dell'elenco.</summary>
+    public override string ToString() => IsOffline ? $"{Path}, non raggiungibile" : Path;
 }
