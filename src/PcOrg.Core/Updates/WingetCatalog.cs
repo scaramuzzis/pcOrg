@@ -9,7 +9,9 @@ using PcOrg.Core.Metadata;
 namespace PcOrg.Core.Updates;
 
 /// <summary>Un pacchetto del catalogo pubblico di winget.</summary>
-public sealed record WingetPackage(string Id, string Name, string LatestVersion, string? Publisher = null);
+/// <param name="AlternativeNames">Altri nomi con cui il pacchetto è noto (tabella norm_names dell'indice).</param>
+public sealed record WingetPackage(string Id, string Name, string LatestVersion, string? Publisher = null,
+    IReadOnlyList<string>? AlternativeNames = null);
 
 /// <summary>Prodotto riconosciuto nel catalogo winget, con l'ultima versione pubblicata.</summary>
 /// <param name="IsNewer">Vero se la versione pubblicata è più recente della più recente trovata sul PC.</param>
@@ -126,14 +128,19 @@ public sealed partial class WingetCatalog
     /// <summary>Chiavi con cui un pacchetto viene trovato: il nome, e il nome senza l'editore davanti.</summary>
     private static IEnumerable<string> KeysOf(WingetPackage p)
     {
-        var name = Normalize(p.Name);
-        if (name.Length == 0)
-            yield break;
-        yield return name;
-        var prefixes = new[] { Normalize(p.Id.Split('.')[0]), p.Publisher is null ? "" : CompanyWord(p.Publisher) ?? "" };
-        foreach (var prefix in prefixes.Where(x => x.Length > 0).Distinct())
-            if (name.Length > prefix.Length + 2 && name.StartsWith(prefix, StringComparison.Ordinal))
-                yield return name[prefix.Length..];
+        var prefixes = new[] { Normalize(p.Id.Split('.')[0]), p.Publisher is null ? "" : CompanyWord(p.Publisher) ?? "" }
+            .Where(x => x.Length > 0).Distinct().ToList();
+        var keys = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var raw in (p.AlternativeNames ?? []).Prepend(p.Name))
+        {
+            var name = Normalize(raw);
+            if (name.Length == 0 || !keys.Add(name))
+                continue;
+            foreach (var prefix in prefixes)
+                if (name.Length > prefix.Length + 2 && name.StartsWith(prefix, StringComparison.Ordinal))
+                    keys.Add(name[prefix.Length..]);
+        }
+        return keys;
     }
 
     /// <summary>
@@ -143,6 +150,8 @@ public sealed partial class WingetCatalog
     public static string Normalize(string value)
     {
         var lower = value.ToLowerInvariant();
+        // Lingua, architettura e varianti tra parentesi: "Mozilla Firefox (en-US)" → "mozilla firefox".
+        lower = ParenthesesRegex().Replace(lower, " ");
         lower = NoiseRegex().Replace(lower, " ");
         var sb = new StringBuilder(lower.Length);
         foreach (var c in lower)
@@ -181,6 +190,9 @@ public sealed partial class WingetCatalog
 
     [GeneratedRegex(@"\d+(\.\d+)+|\d+")]
     private static partial Regex BranchRegex();
+
+    [GeneratedRegex(@"\([^)]*\)|\[[^\]]*\]")]
+    private static partial Regex ParenthesesRegex();
 
     // ------------------------------------------------------------------ Lettura dell'indice
 
@@ -228,6 +240,7 @@ public sealed partial class WingetCatalog
     private static List<WingetPackage> ReadV2(SqliteConnection connection, HashSet<string> tables)
     {
         var publishers = ReadPublishers(connection, tables);
+        var names = ReadNames(connection, tables);
         var list = new List<WingetPackage>();
         using var cmd = connection.CreateCommand();
         cmd.CommandText = "SELECT rowid, id, name, latest_version FROM packages";
@@ -237,8 +250,9 @@ public sealed partial class WingetCatalog
             if (reader.IsDBNull(1) || reader.IsDBNull(2) || reader.IsDBNull(3))
                 continue;
             publishers.TryGetValue(reader.GetInt64(0), out var publisher);
+            names.TryGetValue(reader.GetInt64(0), out var alternative);
             list.Add(new WingetPackage(Convert.ToString(reader.GetValue(1))!, Convert.ToString(reader.GetValue(2))!,
-                Convert.ToString(reader.GetValue(3))!, publisher));
+                Convert.ToString(reader.GetValue(3))!, publisher, alternative));
         }
         return list;
     }
@@ -268,6 +282,39 @@ public sealed partial class WingetCatalog
         catch (SqliteException ex)
         {
             Log.Warn("Catalogo winget: editori non leggibili.", ex);
+        }
+        return map;
+    }
+
+    /// <summary>Nomi normalizzati da winget per pacchetto (tabella norm_names*), se presenti.</summary>
+    private static Dictionary<long, List<string>> ReadNames(SqliteConnection connection, HashSet<string> tables)
+    {
+        var map = new Dictionary<long, List<string>>();
+        var table = tables.FirstOrDefault(t => t.StartsWith("norm_names", StringComparison.OrdinalIgnoreCase)
+                                                && !t.EndsWith("_map", StringComparison.OrdinalIgnoreCase));
+        if (table is null)
+            return map;
+        try
+        {
+            var columns = Columns(connection, table);
+            var package = columns.FirstOrDefault(c => c.Contains("package", StringComparison.OrdinalIgnoreCase));
+            var value = columns.FirstOrDefault(c => c.Contains("name", StringComparison.OrdinalIgnoreCase));
+            if (package is null || value is null)
+                return map;
+            using var cmd = connection.CreateCommand();
+            cmd.CommandText = $"SELECT \"{package}\", \"{value}\" FROM \"{table}\"";
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+                if (!reader.IsDBNull(0) && !reader.IsDBNull(1))
+                {
+                    if (!map.TryGetValue(reader.GetInt64(0), out var list))
+                        map[reader.GetInt64(0)] = list = [];
+                    list.Add(Convert.ToString(reader.GetValue(1))!);
+                }
+        }
+        catch (SqliteException ex)
+        {
+            Log.Warn("Catalogo winget: nomi alternativi non leggibili.", ex);
         }
         return map;
     }

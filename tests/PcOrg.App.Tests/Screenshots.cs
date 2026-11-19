@@ -404,6 +404,11 @@ public class Screenshots
         Pump(800);
         Capture(window, output, "33-prodotti-tema-scuro.png");
 
+        // Prima di chiudere si attende la fine delle scansioni: altrimenti la finestra chiede conferma.
+        Step("attesa della fine delle scansioni");
+        for (var i = 0; i < 120 && vm.IsWorking; i++)
+            Pump(500);
+        Step("chiusura");
         window.Close();
         app.Shutdown();
         Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();

@@ -144,9 +144,12 @@ public class WingetCatalogTests
         var v2 = Path.Combine(dir.Path, "v2.db");
         Exec(v2, """
             CREATE TABLE packages (rowid INTEGER PRIMARY KEY, id TEXT, name TEXT, moniker TEXT, latest_version TEXT);
-            CREATE TABLE norm_publishers2_0 (norm_publisher TEXT, package INT64);
-            INSERT INTO packages VALUES (1, 'Mozilla.Firefox', 'Mozilla Firefox', 'firefox', '160.0.2');
-            INSERT INTO norm_publishers2_0 VALUES ('mozilla', 1);
+            CREATE TABLE norm_names2 (norm_name TEXT, package INT64, PRIMARY KEY(norm_name, package)) WITHOUT ROWID;
+            CREATE TABLE norm_publishers2 (norm_publisher TEXT, package INT64, PRIMARY KEY(norm_publisher, package)) WITHOUT ROWID;
+            INSERT INTO packages VALUES (1, 'Mozilla.Firefox', 'Mozilla Firefox (en-US)', 'firefox', '160.0.2');
+            INSERT INTO packages VALUES (2, 'Mozilla.CrashFirefoxIntentionally', 'Crash Firefox Intentionally', NULL, '1');
+            INSERT INTO norm_names2 VALUES ('mozillafirefox', 1);
+            INSERT INTO norm_publishers2 VALUES ('mozilla', 1);
             """);
         Assert.Equal("Mozilla.Firefox", WingetCatalog.Load(v2).Match("Firefox", "Mozilla Corporation", "150")?.Id);
 

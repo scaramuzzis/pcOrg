@@ -89,7 +89,8 @@ public sealed partial class MainViewModel
 
     /// <summary>Tipo di installazione in uso (portatile, leggera, file unico, installata con MSI).</summary>
     private static InstallKind CurrentInstallKind() =>
-        AppUpdater.DetectKind(AppContext.BaseDirectory, string.IsNullOrEmpty(typeof(MainViewModel).Assembly.Location));
+        // Nel file unico le librerie sono dentro l'eseguibile: accanto non c'è GestioneFile.dll.
+        AppUpdater.DetectKind(AppContext.BaseDirectory, !File.Exists(Path.Combine(AppContext.BaseDirectory, "GestioneFile.dll")));
 
     /// <summary>
     /// Aggiornamento automatico: con conferma scarica il pacchetto adatto a questa installazione,

@@ -524,7 +524,11 @@ public sealed partial class MainViewModel : ObservableObject
                 if (fullForRoot && !full)
                     Log.Info($"{root.Path}: disco senza date di cartella affidabili (FAT/exFAT), scansione completa.");
                 PcOrg.Core.Indexing.Ntfs.MftSnapshot? snapshot = null;
-                if ((fullForRoot || root.LastScanUtc is null) && _settings.FastNtfsScan && !root.IsNetwork
+                // La MFT descrive l'intero disco (anche milioni di file): conviene leggerla per la scansione completa
+                // o per la prima lettura di un disco intero, non per la prima lettura di una cartella piccola.
+                var isVolumeRoot = Path.GetPathRoot(root.Path) is { } volumeRoot
+                                   && string.Equals(volumeRoot.TrimEnd('\\'), root.Path.TrimEnd('\\'), StringComparison.OrdinalIgnoreCase);
+                if ((fullForRoot || (root.LastScanUtc is null && isVolumeRoot)) && _settings.FastNtfsScan && !root.IsNetwork
                     && PcOrg.Core.Platform.PlatformServices.Current.IsElevated)
                 {
                     var volume = PcOrg.Core.Drives.DiskActivity.VolumeOf(root.Path);
