@@ -34,9 +34,14 @@ jobs:
         id: shots
         if: github.event_name == 'push'
         continue-on-error: true
+        timeout-minutes: 12
         env:
           PCORG_SCREENSHOTS: ${{ github.workspace }}\screenshots
         run: dotnet test tests/PcOrg.App.Tests -c Release --no-build --filter "FullyQualifiedName~Screenshots"
+
+      - name: Avanzamento degli screenshot
+        if: always() && github.event_name == 'push'
+        run: if (Test-Path screenshot-avanzamento.txt) { Get-Content screenshot-avanzamento.txt }
 
       - name: Pubblica gli screenshot
         if: github.event_name == 'push' && steps.shots.outcome == 'success'

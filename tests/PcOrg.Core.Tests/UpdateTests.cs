@@ -174,9 +174,45 @@ public class WingetCatalogTests
         var file = await WingetCatalog.EnsureIndexAsync(dir.Path, "test");
         var catalog = WingetCatalog.Load(file);
         Assert.True(catalog.Count > 1000, $"Solo {catalog.Count} pacchetti");
-        Assert.Equal("Mozilla.Firefox", catalog.Match("Firefox", "Mozilla Corporation", "100.0")?.Id);
+        Assert.True(catalog.Match("Firefox", "Mozilla Corporation", "100.0")?.Id == "Mozilla.Firefox", Describe(file));
         Assert.NotNull(catalog.Match("Node.js", "OpenJS Foundation", "20.0.0"));
         Assert.Equal("7zip.7zip", catalog.Match("7-Zip", "Igor Pavlov", "19.00")?.Id);
+    }
+
+    /// <summary>Struttura dell'indice e righe di esempio, per capire un formato diverso da quello atteso.</summary>
+    private static string Describe(string file)
+    {
+        var sb = new System.Text.StringBuilder("Firefox non riconosciuto. Struttura dell'indice:\n");
+        using var c = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={file};Mode=ReadOnly;Pooling=False");
+        c.Open();
+        var tables = new List<string>();
+        using (var cmd = c.CreateCommand())
+        {
+            cmd.CommandText = "SELECT name, sql FROM sqlite_master WHERE type = 'table'";
+            using var r = cmd.ExecuteReader();
+            while (r.Read())
+            {
+                tables.Add(r.GetString(0));
+                sb.AppendLine(r.IsDBNull(1) ? r.GetString(0) : r.GetString(1));
+            }
+        }
+        foreach (var table in tables)
+        {
+            using var cmd = c.CreateCommand();
+            cmd.CommandText = $"SELECT * FROM \"{table}\" WHERE rowid IN (SELECT rowid FROM \"{table}\" LIMIT 3) OR CAST({(table == "packages" ? "id" : "rowid")} AS TEXT) LIKE '%Firefox%' LIMIT 8";
+            try
+            {
+                using var r = cmd.ExecuteReader();
+                sb.AppendLine($"-- {table}");
+                while (r.Read())
+                    sb.AppendLine(string.Join(" | ", Enumerable.Range(0, r.FieldCount).Select(i => r.IsDBNull(i) ? "NULL" : Convert.ToString(r.GetValue(i)))));
+            }
+            catch (Microsoft.Data.Sqlite.SqliteException ex)
+            {
+                sb.AppendLine($"-- {table}: {ex.Message}");
+            }
+        }
+        return sb.ToString();
     }
 
     private static void Exec(string file, string sql)

@@ -51,14 +51,17 @@ public class Screenshots
         Directory.CreateDirectory(output);
 
         Exception? failure = null;
+        _progressFile = Path.Combine(output, "..", "screenshot-avanzamento.txt");
+        File.WriteAllText(_progressFile, "");
         var thread = new Thread(() =>
         {
             try { Run(output); }
             catch (Exception ex) { failure = ex; }
-        });
+        }) { IsBackground = true }; // se si blocca non deve impedire la chiusura del processo di test
         thread.SetApartmentState(ApartmentState.STA);
         thread.Start();
-        thread.Join();
+        if (!thread.Join(TimeSpan.FromMinutes(8)))
+            throw new Xunit.Sdk.XunitException($"Screenshot bloccati dopo: {_lastStep}");
         if (failure is not null)
             throw new Xunit.Sdk.XunitException("Errore negli screenshot: " + failure);
     }
@@ -69,6 +72,7 @@ public class Screenshots
         var temp = Path.Combine(Path.GetTempPath(), "pcorg-shots-" + Guid.NewGuid().ToString("N"));
         var download = Path.Combine(temp, "Download");
         var archive = Path.Combine(temp, "Archivio");
+        Step("creazione dei dati di esempio");
         SampleData.Create(download);
         Directory.CreateDirectory(archive);
 
@@ -102,9 +106,12 @@ public class Screenshots
         index.SyncRoot(usbRoot.Id, FolderScanner.Enumerate(usbRoot.Path));
         Directory.Delete(usb, recursive: true);
 
+        Step("lettura metadati");
         MetadataUpdater.Run(index);
+        Step("lettura contenuto");
         PcOrg.Core.Content.ContentIndexer.Run(index);
 
+        Step("dati di esempio pronti");
         var app = new App();
         app.InitializeComponent();
         app.ShutdownMode = ShutdownMode.OnExplicitShutdown;
@@ -353,6 +360,7 @@ public class Screenshots
         }
 
         // 34. Scheda Dischi: spazio, file indicizzati e letture fatte dall'app
+        Step("scheda Dischi");
         window.Tabs.SelectedIndex = MainViewModel.DisksTab;
         vm.RefreshDisksCommand.Execute(null);
         Pump(2000);
@@ -372,6 +380,7 @@ public class Screenshots
         var dialogsForRoots = mainDialogs;
         foreach (var extra in new[] { "Documenti ufficio", "Fatture 2025", "Progetti clienti", "Musica", "Scansioni" })
         {
+            Step("aggiungo la cartella " + extra);
             dialogsForRoots.FolderToPick = Directory.CreateDirectory(Path.Combine(temp, extra)).FullName;
             vm.AddRootCommand.Execute(null);
             Pump(1200);
@@ -428,8 +437,20 @@ public class Screenshots
 
     // ------------------------------------------------------------------ Cattura
 
+    private static string? _progressFile;
+    private static volatile string _lastStep = "(inizio)";
+
+    /// <summary>Annota il passo in corso (con l'ora) per capire dove si ferma la generazione degli screenshot.</summary>
+    private static void Step(string text)
+    {
+        _lastStep = text;
+        if (_progressFile is not null)
+            File.AppendAllText(_progressFile, $"{DateTime.Now:HH:mm:ss.fff} {text}{Environment.NewLine}");
+    }
+
     private static void Capture(Window window, string folder, string name)
     {
+        Step("cattura " + name);
         window.UpdateLayout();
         Pump(300);
         var shot = TryPrintWindow(window);
