@@ -1,0 +1,44 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <!--
+    Installazione per tutti gli utenti in "C:\Program Files\Gestione File", con collegamento nel menu Start.
+    I dati (indice e impostazioni) restano in %LOCALAPPDATA%\pcOrg di ogni utente e non vengono toccati
+    né dall'aggiornamento né dalla disinstallazione.
+  -->
+  <Package Name="Gestione File"
+           Manufacturer="Scaramus"
+           Version="$(var.ProductVersion)"
+           UpgradeCode="bfb29c07-b0d7-4846-8063-ed81e762644f"
+           Language="1040"
+           Codepage="1252"
+           Scope="perMachine">
+    <SummaryInformation Description="Gestione File: installer, driver, programmi e archivi in ordine" />
+
+    <MajorUpgrade DowngradeErrorMessage="È già installata una versione più recente di Gestione File." />
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <Icon Id="GestioneFile.ico" SourceFile="..\src\PcOrg.App\Assets\pcorg.ico" />
+    <Property Id="ARPPRODUCTICON" Value="GestioneFile.ico" />
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/scaramuzzis/pcOrg" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="Gestione File" />
+    </StandardDirectory>
+    <StandardDirectory Id="ProgramMenuFolder" />
+
+    <Feature Id="Principale" Title="Gestione File">
+      <!-- Tutti i file del pacchetto portatile (eseguibile, librerie e runtime .NET). -->
+      <Files Directory="INSTALLFOLDER" Include="$(var.SourceDir)\**" />
+
+      <!-- Segnala all'app che è stata installata con l'MSI: l'aggiornamento automatico userà l'MSI. -->
+      <Component Id="Contrassegno" Directory="INSTALLFOLDER">
+        <File Id="Contrassegno" Source="GestioneFile.installato" />
+      </Component>
+
+      <Component Id="CollegamentoMenuStart" Directory="ProgramMenuFolder">
+        <Shortcut Id="CollegamentoMenuStart" Name="Gestione File" Description="I tuoi file in ordine"
+                  Target="[INSTALLFOLDER]GestioneFile.exe" WorkingDirectory="INSTALLFOLDER" Icon="GestioneFile.ico" />
+        <RegistryValue Root="HKLM" Key="Software\Scaramus\Gestione File" Name="Installato" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </Feature>
+  </Package>
+</Wix>
