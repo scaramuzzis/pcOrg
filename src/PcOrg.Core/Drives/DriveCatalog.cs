@@ -1,6 +1,3 @@
-using System.Runtime.InteropServices;
-using System.Text;
-
 namespace PcOrg.Core.Drives;
 
 /// <summary>Un disco collegato al PC (interno, USB, di rete o lettore ottico).</summary>
@@ -49,18 +46,8 @@ public static class DriveCatalog
         return list;
     }
 
-    private static string IdOf(string root, string label, long size)
-    {
-        if (OperatingSystem.IsWindows()
-            && GetVolumeInformation(root, null, 0, out var serial, out _, out _, null, 0) && serial != 0)
-            return serial.ToString("X8");
-        return $"{label}|{size}";
-    }
-
-    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true, EntryPoint = "GetVolumeInformationW")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool GetVolumeInformation(string rootPathName, StringBuilder? volumeName, int volumeNameSize,
-        out uint serialNumber, out uint maxComponentLength, out uint fileSystemFlags, StringBuilder? fileSystemName, int fileSystemNameSize);
+    private static string IdOf(string root, string label, long size) =>
+        Platform.PlatformServices.Current.VolumeSerial(root) is { } serial and not 0 ? serial.ToString("X8") : $"{label}|{size}";
 }
 
 /// <summary>

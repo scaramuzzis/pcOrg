@@ -74,3 +74,22 @@ public class DiskTests
         Assert.Equal([@"E:\"], removed);
     }
 }
+
+public class PlatformTests
+{
+    [Fact]
+    public void Senza_piattaforma_le_funzioni_di_sistema_restano_neutre()
+    {
+        var p = Platform.PortablePlatform.Instance;
+        Assert.Empty(p.ReadInstalledPrograms());
+        Assert.Empty(p.ReadDevices());
+        Assert.Null(p.VerifyAuthenticode("x"));
+        Assert.Null(p.ReadMsi("x"));
+        Assert.Null(p.EnterBackgroundMode());
+        Assert.Throws<PlatformNotSupportedException>(() => p.SendToRecycleBin("x"));
+    }
+
+    [Fact]
+    public void Su_windows_e_registrata_la_piattaforma_di_windows() =>
+        Assert.Equal(OperatingSystem.IsWindows(), Platform.PlatformServices.Current is PcOrg.Windows.WindowsPlatform);
+}

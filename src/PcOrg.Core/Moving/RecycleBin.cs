@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using PcOrg.Core.Diagnostics;
 using PcOrg.Core.Storage;
 
@@ -59,37 +58,5 @@ public static class RecycleBin
         return new RecycleResult(recycled, errors) { Bytes = bytes };
     }
 
-    // ------------------------------------------------------------------ Windows: SHFileOperation con "annulla"
-
-    private static bool DefaultSend(string path)
-    {
-        if (!OperatingSystem.IsWindows())
-            throw new PlatformNotSupportedException("Il Cestino è disponibile solo su Windows.");
-        var op = new ShFileOpStruct
-        {
-            wFunc = FoDelete,
-            pFrom = path + "\0\0", // elenco terminato da doppio carattere nullo
-            fFlags = FofAllowUndo | FofNoConfirmation | FofSilent | FofNoErrorUi,
-        };
-        return SHFileOperation(ref op) == 0 && !op.fAnyOperationsAborted && !File.Exists(path);
-    }
-
-    private const uint FoDelete = 0x0003;
-    private const ushort FofSilent = 0x0004, FofNoConfirmation = 0x0010, FofAllowUndo = 0x0040, FofNoErrorUi = 0x0400;
-
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-    private struct ShFileOpStruct
-    {
-        public IntPtr hwnd;
-        public uint wFunc;
-        public string pFrom;
-        public string? pTo;
-        public ushort fFlags;
-        [MarshalAs(UnmanagedType.Bool)] public bool fAnyOperationsAborted;
-        public IntPtr hNameMappings;
-        public string? lpszProgressTitle;
-    }
-
-    [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
-    private static extern int SHFileOperation(ref ShFileOpStruct fileOp);
+    private static bool DefaultSend(string path) => Platform.PlatformServices.Current.SendToRecycleBin(path);
 }

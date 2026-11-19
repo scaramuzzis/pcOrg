@@ -1,6 +1,3 @@
-using System.Runtime.InteropServices;
-using System.Text;
-
 namespace PcOrg.Core;
 
 /// <summary>Riconoscimento e normalizzazione delle cartelle di rete (\\server\condivisione, unità mappate).</summary>
@@ -38,13 +35,11 @@ public static class NetworkPaths
     {
         if (!OperatingSystem.IsWindows() || IsUnc(path) || path.Length < 2 || path[1] != ':')
             return path;
-        var drive = path[..2];
-        var buffer = new StringBuilder(512);
-        var length = buffer.Capacity;
-        if (WNetGetConnection(drive, buffer, ref length) != 0 || buffer.Length == 0)
+        var remote = Platform.PlatformServices.Current.MappedDriveToUnc(path[..2]);
+        if (string.IsNullOrEmpty(remote))
             return path;
         var rest = path[2..].TrimStart('\\', '/');
-        return rest.Length == 0 ? buffer.ToString() : Path.Combine(buffer.ToString(), rest);
+        return rest.Length == 0 ? remote : Path.Combine(remote, rest);
     }
 
     /// <summary>
@@ -57,7 +52,4 @@ public static class NetworkPaths
         var finished = await Task.WhenAny(check, Task.Delay(timeout)).ConfigureAwait(false);
         return finished == check && check.Result;
     }
-
-    [DllImport("mpr.dll", CharSet = CharSet.Unicode, EntryPoint = "WNetGetConnectionW")]
-    private static extern int WNetGetConnection(string localName, StringBuilder remoteName, ref int length);
 }

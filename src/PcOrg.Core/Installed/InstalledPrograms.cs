@@ -1,5 +1,3 @@
-using System.Runtime.Versioning;
-using Microsoft.Win32;
 using PcOrg.Core.Diagnostics;
 using PcOrg.Core.Metadata;
 using PcOrg.Core.Storage;
@@ -55,51 +53,15 @@ public sealed record InstallInfo(InstallState State, InstalledProgram? Program)
 /// </remarks>
 public static class InstalledPrograms
 {
-    private const string UninstallKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall";
-
     /// <summary>Programmi installati (vuoto fuori da Windows o se il registro non è leggibile).</summary>
     public static IReadOnlyList<InstalledProgram> Read()
     {
-        if (!OperatingSystem.IsWindows())
-            return [];
-        var list = new List<InstalledProgram>();
-        try
-        {
-            ReadHive(RegistryHive.LocalMachine, RegistryView.Registry64, list);
-            ReadHive(RegistryHive.LocalMachine, RegistryView.Registry32, list);
-            ReadHive(RegistryHive.CurrentUser, RegistryView.Default, list);
-        }
-        catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException or IOException)
-        {
-            Log.Warn("Elenco dei programmi installati non leggibile completamente.", ex);
-        }
-        var distinct = list
+        var distinct = Platform.PlatformServices.Current.ReadInstalledPrograms()
             .GroupBy(p => (p.Name.ToUpperInvariant(), p.Version))
             .Select(g => g.First())
             .ToList();
-        Log.Info($"Programmi installati letti dal registro: {distinct.Count}.");
+        Log.Info($"Programmi installati letti: {distinct.Count}.");
         return distinct;
-    }
-
-    [SupportedOSPlatform("windows")]
-    private static void ReadHive(RegistryHive hive, RegistryView view, List<InstalledProgram> list)
-    {
-        using var root = RegistryKey.OpenBaseKey(hive, view);
-        using var uninstall = root.OpenSubKey(UninstallKey);
-        if (uninstall is null)
-            return;
-        foreach (var name in uninstall.GetSubKeyNames())
-        {
-            using var key = uninstall.OpenSubKey(name);
-            if (key?.GetValue("DisplayName") is not string display || string.IsNullOrWhiteSpace(display))
-                continue;
-            if (key.GetValue("SystemComponent") is int system && system == 1)
-                continue;
-            if (key.GetValue("ParentKeyName") is string || key.GetValue("ReleaseType") is string release && release.Contains("Update", StringComparison.OrdinalIgnoreCase))
-                continue;
-            list.Add(Create(display.Trim(), key.GetValue("DisplayVersion") as string, key.GetValue("Publisher") as string,
-                key.GetValue("InstallLocation") as string));
-        }
     }
 
     /// <summary>Crea la voce calcolando la chiave di confronto (pubblico per i test).</summary>

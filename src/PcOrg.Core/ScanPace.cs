@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 
 namespace PcOrg.Core;
 
@@ -57,16 +56,8 @@ public static class ScanPace
     /// </summary>
     public static T InBackground<T>(Func<T> work)
     {
-        var lowered = OperatingSystem.IsWindows() && SetThreadPriority(GetCurrentThread(), ThreadModeBackgroundBegin);
-        try
-        {
-            return work();
-        }
-        finally
-        {
-            if (lowered)
-                SetThreadPriority(GetCurrentThread(), ThreadModeBackgroundEnd);
-        }
+        using var background = Platform.PlatformServices.Current.EnterBackgroundMode();
+        return work();
     }
 
     /// <summary>Distanzia le letture in modo da non superare il ritmo indicato.</summary>
@@ -91,14 +82,4 @@ public static class ScanPace
             cancellationToken.ThrowIfCancellationRequested();
         }
     }
-
-    private const int ThreadModeBackgroundBegin = 0x00010000;
-    private const int ThreadModeBackgroundEnd = 0x00020000;
-
-    [DllImport("kernel32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool SetThreadPriority(IntPtr thread, int priority);
-
-    [DllImport("kernel32.dll")]
-    private static extern IntPtr GetCurrentThread();
 }

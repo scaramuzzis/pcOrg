@@ -17,6 +17,9 @@ namespace PcOrg.App;
 /// </summary>
 public partial class App : Application
 {
+    /// <summary>Le funzioni di Windows (registro, periferiche, Cestino, firme) sono in PcOrg.Windows.</summary>
+    static App() => PcOrg.Windows.WindowsPlatformSetup.Register();
+
     private Mutex? _instance;
     private bool _sessionStarted;
 
