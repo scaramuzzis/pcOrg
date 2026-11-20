@@ -497,6 +497,23 @@ public sealed partial class MainViewModel : ObservableObject
             Status = "Aggiungi una cartella per iniziare.";
             return;
         }
+        // Le risorse si misurano per tutta l'operazione: scansione, versioni e firme, cartelle in coda.
+        var what = (full ? "scansione completa di " : "aggiornamento di ") +
+                   (roots.Count == 1 ? roots[0].Path : $"{roots.Count} cartelle");
+        var measuring = await StartResourceMonitorAsync(roots, what);
+        try
+        {
+            await ScanRootsCoreAsync(roots, full);
+        }
+        finally
+        {
+            if (measuring)
+                StopResourceMonitor();
+        }
+    }
+
+    private async Task ScanRootsCoreAsync(IReadOnlyList<RootFolder> roots, bool full)
+    {
 
         IsScanning = true;
         _scanCts = new CancellationTokenSource();
@@ -540,9 +557,12 @@ public sealed partial class MainViewModel : ObservableObject
                     }
                 }
                 var fastText = snapshot is null ? "" : " (lettura veloce NTFS)";
-                var progress = new Progress<ScanResult>(p => Status =
-                    $"{kind} di {root.Path}{fastText}: {p.DirectoriesVisited:N0} cartelle controllate, {p.DirectoriesChanged:N0} rilette, " +
-                    $"{p.FilesChanged:N0} file cambiati…");
+                var progress = new Progress<ScanResult>(p =>
+                {
+                    ReportScanWork(total.DirectoriesVisited + p.DirectoriesVisited);
+                    Status = $"{kind} di {root.Path}{fastText}: {p.DirectoriesVisited:N0} cartelle controllate, {p.DirectoriesChanged:N0} rilette, " +
+                             $"{p.FilesChanged:N0} file cambiati…";
+                });
                 try
                 {
                     total += await Task.Run(

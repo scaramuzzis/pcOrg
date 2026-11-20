@@ -47,6 +47,9 @@ public interface IPlatformServices
 
     /// <summary>Vero se l'app ha i privilegi di amministratore.</summary>
     bool IsElevated { get; }
+
+    /// <summary>Byte letti e scritti dal processo dall'avvio (file locali e di rete); null se non disponibile.</summary>
+    (long Read, long Written)? ProcessIoCounters();
 }
 
 /// <summary>Implementazione neutra: nessuna funzione di sistema (elenchi vuoti, nessuna verifica).</summary>
@@ -65,6 +68,7 @@ public sealed class PortablePlatform : IPlatformServices
     public IDisposable? EnterBackgroundMode() => null;
     public Indexing.Ntfs.MftSnapshot? ReadVolumeSnapshot(string path, CancellationToken cancellationToken) => null;
     public bool IsElevated => false;
+    public (long Read, long Written)? ProcessIoCounters() => null;
 }
 
 /// <summary>Piattaforma in uso: l'app registra quella di Windows all'avvio.</summary>

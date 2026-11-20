@@ -1046,10 +1046,31 @@
                         </Grid.RowDefinitions>
 
                         <Border Style="{StaticResource Card}" Margin="0,0,0,10" Padding="12,10">
-                            <DockPanel>
-                                <TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Drive}" Foreground="#0891B2" Margin="0,0,10,0" />
-                                <TextBlock Text="{Binding DisksSummary}" VerticalAlignment="Center" TextWrapping="Wrap" />
-                            </DockPanel>
+                            <StackPanel>
+                                <DockPanel>
+                                    <TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Drive}" Foreground="#0891B2" Margin="0,0,10,0" />
+                                    <TextBlock Text="{Binding DisksSummary}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                </DockPanel>
+                                <!-- Risorse della scansione in corso o dell'ultima scansione -->
+                                <TextBlock Text="RISORSE DELLA SCANSIONE" Style="{StaticResource SectionHeader}" Margin="0,12,0,2" />
+                                <TextBlock Text="{Binding ScanResourcesTitle}" Style="{StaticResource Secondary}" Margin="0,0,0,6" />
+                                <ItemsControl ItemsSource="{Binding ScanResources}" AutomationProperties.Name="Risorse della scansione" Focusable="False">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Width="190" Margin="0,4,12,4" ToolTip="{Binding Hint}">
+                                                <TextBlock Text="{Binding Label}" Style="{StaticResource Secondary}" />
+                                                <TextBlock Text="{Binding Value}" FontSize="16" FontWeight="SemiBold" />
+                                                <TextBlock Text="{Binding Hint}" Style="{StaticResource Secondary}" FontSize="11" TextWrapping="Wrap" TextTrimming="None" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
                         </Border>
 
                         <WrapPanel Grid.Row="1" Margin="0,0,0,10">
@@ -1148,6 +1169,11 @@
                 <c:IconButton DockPanel.Dock="Right" Glyph="{x:Static inf:Glyphs.Cancel}" Label="Interrompi" Command="{Binding CancelScanCommand}"
                               Padding="8,2" Visibility="{Binding IsScanning, Converter={StaticResource BoolToVisibility}}"
                               ToolTip="Ferma la scansione: riprenderà al prossimo aggiornamento" />
+                <!-- Risorse usate dalla scansione in corso (dettagli nella scheda Dischi) -->
+                <TextBlock DockPanel.Dock="Right" Text="{Binding ScanResourcesText}" Margin="12,0" VerticalAlignment="Center"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" FontSize="12"
+                           ToolTip="Risorse usate dalla scansione in corso: dettagli nella scheda Dischi (Ctrl+5)"
+                           Visibility="{Binding IsScanning, Converter={StaticResource BoolToVisibility}}" />
                 <TextBlock Style="{StaticResource Icon}" Text="{x:Static inf:Glyphs.Info}" FontSize="13" Margin="0,0,8,0" Opacity="0.7" />
                 <TextBlock Text="{Binding Status}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
                            Foreground="{DynamicResource TextFillColorSecondaryBrush}" />

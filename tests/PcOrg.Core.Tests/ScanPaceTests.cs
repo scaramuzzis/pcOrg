@@ -93,3 +93,41 @@ public class PlatformTests
     public void Su_windows_e_registrata_la_piattaforma_di_windows() =>
         Assert.Equal(OperatingSystem.IsWindows(), Platform.PlatformServices.Current is PcOrg.Windows.WindowsPlatform);
 }
+
+public class ResourceMonitorTests
+{
+    [Fact]
+    public void Misura_traffico_letture_e_tempo_rimanente()
+    {
+        long network = 1_000_000, read = 5_000, operations = 100;
+        var time = TimeSpan.FromSeconds(1);
+        var monitor = new Diagnostics.ResourceMonitor(() => (read, 0), () => network, () => (operations, time))
+        {
+            ExpectedWork = 1000,
+        };
+        network += 2 * 1024 * 1024;
+        read += 300_000;
+        operations += 50;
+        time += TimeSpan.FromMilliseconds(500);
+        Thread.Sleep(50);
+        var sample = monitor.Sample();
+        Assert.Equal(2 * 1024 * 1024, sample.NetworkBytes);
+        Assert.Equal(300_000, sample.AppReadBytes);
+        Assert.Equal(50, sample.Operations);
+        Assert.Equal(10, sample.AverageLatencyMs, 3);
+        Assert.True(sample.WorkingSetBytes > 0);
+        Assert.Null(sample.Remaining); // troppo presto per una stima
+        Assert.Contains("letture", sample.Summary);
+        Assert.Equal("2.0 MB", Diagnostics.ResourceSample.FormatBytes(2 * 1024 * 1024).Replace(',', '.'));
+        Assert.Equal("1 h 05 min", Diagnostics.ResourceSample.FormatDuration(TimeSpan.FromMinutes(65)));
+    }
+
+    [Fact]
+    public void Senza_contatori_del_sistema_i_dati_letti_non_sono_disponibili()
+    {
+        var monitor = new Diagnostics.ResourceMonitor(networkBytes: () => throw new System.Net.NetworkInformation.NetworkInformationException());
+        var sample = monitor.Sample();
+        Assert.Null(sample.AppReadBytes);
+        Assert.Equal(0, sample.NetworkBytes);
+    }
+}

@@ -82,7 +82,7 @@ Gestione File può tenere in ordine anche cartelle condivise su un **NAS** o su 
 
 **Quando la cartella non è raggiungibile** (NAS spento, PC portatile fuori casa) compare in grigio con la scritta **Non raggiungibile**. I suoi file restano nell'elenco e si possono cercare con i dati dell'ultimo aggiornamento; vengono aggiornati appena la cartella torna disponibile. Se la rete cade durante una scansione, l'elenco di quella cartella resta com'era: non si perde nulla.
 
-**Quanto pesa la scansione sulla rete.** Per ogni cartella Gestione File chiede al NAS o al computer che la condivide l'elenco del contenuto (una richiesta per cartella, pochi KB); dei file legge solo nome, dimensione e data, senza aprirli. Solo programmi e installer (`.exe`, `.msi`, `.sys`) vengono aperti per leggerne versione e firma (di solito pochi KB in testa al file); il contenuto di PDF e documenti per la ricerca nel contenuto viene letto **solo nelle cartelle locali**. Con milioni di file la prima scansione di una cartella di rete richiede quindi milioni di piccole richieste: con la velocità **Normale** (predefinita) sono al massimo 150 al secondo, un carico paragonabile a qualcuno che sfoglia le cartelle in Esplora risorse. Se il NAS è piccolo o il computer che condivide la cartella è usato da altri, scegli **Leggera** (25 letture al secondo, un file alla volta) in **Impostazioni → Generale → Carico sul PC e sulla rete**. Gli aggiornamenti successivi rileggono solo le cartelle cambiate e pesano pochissimo.
+**Quanto pesa la scansione sulla rete.** Per ogni cartella Gestione File chiede al NAS o al computer che la condivide l'elenco del contenuto (una richiesta per cartella, pochi KB); dei file legge solo nome, dimensione e data, senza aprirli. Solo programmi e installer (`.exe`, `.msi`, `.sys`) vengono aperti per leggerne versione e firma (di solito pochi KB in testa al file); il contenuto di PDF e documenti per la ricerca nel contenuto viene letto **solo nelle cartelle locali**. Con milioni di file la prima scansione di una cartella di rete richiede quindi milioni di piccole richieste: con la velocità **Normale** (predefinita) sono al massimo 150 al secondo, un carico paragonabile a qualcuno che sfoglia le cartelle in Esplora risorse. Se il NAS è piccolo o il computer che condivide la cartella è usato da altri, scegli **Leggera** (25 letture al secondo, un file alla volta) in **Impostazioni → Generale → Carico sul PC e sulla rete**. Gli aggiornamenti successivi rileggono solo le cartelle cambiate e pesano pochissimo. Il carico reale di ogni scansione (letture, traffico, tempo di risposta del NAS) si vede nel riquadro **Risorse della scansione** della scheda [Dischi](#dischi).
 
 > Sui file in rete Gestione File legge chi ha firmato un programma ma non verifica la firma, perché la verifica richiederebbe di leggere ogni file per intero attraverso la rete. Per questo la firma compare con il simbolo **?**.
 
@@ -260,6 +260,17 @@ La scheda **Dischi** (**Ctrl+5**) mostra tutti i dischi: interni, chiavette e di
 - **cartelle monitorate** e **file indicizzati** su quel disco;
 - **letture dell'app**: quante cartelle e quanti file Gestione File ha letto da quel disco da quando è aperto, con il **tempo medio** di una lettura (su un disco o una rete lenta è più alto) e l'ora dell'ultima lettura. **Azzera le letture** riporta i contatori a zero;
 - **collegamenti**: quante volte un disco esterno è stato collegato; i dischi visti in passato restano nell'elenco anche quando non sono collegati.
+
+**Risorse della scansione.** Durante ogni aggiornamento la barra di stato mostra, accanto a **Interrompi**, il traffico di rete al secondo, le letture al secondo, il processore e la memoria usati e, quando l'indice conosce già le cartelle, quanto manca alla fine. In cima alla scheda **Dischi** lo stesso riquadro mostra i dettagli della scansione in corso o dell'ultima:
+
+- **Durata** e tempo rimanente stimato (alla prima scansione di una cartella non è stimabile);
+- **Letture**: cartelle elencate e file aperti, con il ritmo al secondo;
+- **Tempo medio di risposta**: se cresce durante la scansione, il disco o il NAS sono sotto sforzo e conviene scegliere la velocità *Leggera*;
+- **Traffico di rete del PC**: dati ricevuti e inviati durante la scansione (comprende anche gli altri programmi aperti);
+- **Dati letti da Gestione File**: quanto ha letto l'app, dai file in rete e locali e dall'indice;
+- **Processore** e **Memoria** usati da Gestione File.
+
+A fine scansione lo stesso riepilogo viene scritto nel **registro attività**, così puoi confrontare scansioni diverse.
 
 Le colonne **File system**, **Ultima lettura** e **Visto la prima volta** sono nascoste per non allargare troppo l'elenco: si mostrano con il tasto destro su un'intestazione o da **Impostazioni → Colonne → Dischi**.
 

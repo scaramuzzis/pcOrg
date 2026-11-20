@@ -426,6 +426,23 @@ public sealed class WindowsPlatform : IPlatformServices
         }
     }
 
+    public (long Read, long Written)? ProcessIoCounters() =>
+        GetProcessIoCounters(GetCurrentProcess(), out var io) ? ((long)io.ReadTransferCount, (long)io.WriteTransferCount) : null;
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct IoCounters
+    {
+        public ulong ReadOperationCount, WriteOperationCount, OtherOperationCount;
+        public ulong ReadTransferCount, WriteTransferCount, OtherTransferCount;
+    }
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetProcessIoCounters(IntPtr process, out IoCounters counters);
+
+    [DllImport("kernel32.dll")]
+    private static extern IntPtr GetCurrentProcess();
+
     public IDisposable? EnterBackgroundMode() =>
         SetThreadPriority(GetCurrentThread(), ThreadModeBackgroundBegin) ? new BackgroundMode() : null;
 

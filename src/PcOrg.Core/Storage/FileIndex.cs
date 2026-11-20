@@ -627,6 +627,15 @@ public sealed partial class FileIndex
         return list;
     }
 
+    /// <summary>Cartelle già note di una cartella monitorata (per stimare la durata di un aggiornamento).</summary>
+    public long CountDirectories(long rootId)
+    {
+        using var conn = Connect();
+        using var cmd = Command(conn, "SELECT COUNT(*) FROM dirs WHERE root_id = $r;");
+        cmd.Parameters.AddWithValue("$r", rootId);
+        return Convert.ToInt64(cmd.ExecuteScalar(), CultureInfo.InvariantCulture);
+    }
+
     public int CountFilesNeedingMetadata()
     {
         var extensions = string.Join(", ", MetadataExtractor.SupportedExtensions.Select(e => $"'{e}'"));
