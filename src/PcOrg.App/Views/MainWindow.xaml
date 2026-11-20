@@ -609,68 +609,78 @@
                             <Border Grid.Row="2" Margin="0,10,0,0" Style="{StaticResource Card}"
                                     Visibility="{Binding DetailsPanelVisible, Converter={StaticResource BoolToVisibility}}">
                                 <Grid DataContext="{Binding SelectedFile}">
+                                    <!-- Le voci si dispongono su più colonne se c'è spazio, su una sola quando il pannello è stretto -->
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="120" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="120" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
                                     <Grid.Resources>
                                         <Style TargetType="TextBlock">
-                                            <Setter Property="Margin" Value="0,2,12,2" />
                                             <Setter Property="TextTrimming" Value="CharacterEllipsis" />
                                         </Style>
                                     </Grid.Resources>
 
-                                    <Border Grid.RowSpan="7" Width="48" Height="48" CornerRadius="10" VerticalAlignment="Top" Margin="0,0,14,0"
+                                    <Border Grid.RowSpan="3" Width="48" Height="48" CornerRadius="10" VerticalAlignment="Top" Margin="0,0,14,0"
                                             Background="{Binding Category, Converter={x:Static inf:CategoryBrushConverter.Instance}}">
                                         <TextBlock Style="{StaticResource Icon}" FontSize="22" Foreground="White" HorizontalAlignment="Center" Margin="0"
                                                    Text="{Binding Category, Converter={x:Static inf:CategoryGlyphConverter.Instance}}" />
                                     </Border>
 
-                                    <StackPanel Grid.Column="1" Grid.ColumnSpan="4" Margin="0,0,0,4">
+                                    <StackPanel Grid.Column="1" Margin="0,0,0,4">
                                         <TextBlock FontWeight="SemiBold" FontSize="14" Text="{Binding Name}" Margin="0" />
                                         <TextBlock Text="{Binding Path}" ToolTip="{Binding Path}" Style="{StaticResource Secondary}" Margin="0" />
                                     </StackPanel>
 
-                                    <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource Secondary}" Text="Prodotto" />
-                                    <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding Meta.ProductName, TargetNullValue='—'}" />
-                                    <TextBlock Grid.Row="1" Grid.Column="3" Style="{StaticResource Secondary}" Text="Descrizione" />
-                                    <TextBlock Grid.Row="1" Grid.Column="4" Text="{Binding Meta.FileDescription, TargetNullValue='—'}" />
-
-                                    <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource Secondary}" Text="Produttore" />
-                                    <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding Meta.CompanyName, TargetNullValue='—'}" />
-                                    <TextBlock Grid.Row="2" Grid.Column="3" Style="{StaticResource Secondary}" Text="Versione" />
-                                    <TextBlock Grid.Row="2" Grid.Column="4" Text="{Binding Meta.VersionDetails, TargetNullValue='—'}" />
-
-                                    <TextBlock Grid.Row="3" Grid.Column="1" Style="{StaticResource Secondary}" Text="Firma digitale" />
-                                    <TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding SignatureText, TargetNullValue='—'}" />
-                                    <TextBlock Grid.Row="3" Grid.Column="3" Style="{StaticResource Secondary}" Text="Architettura" />
-                                    <TextBlock Grid.Row="3" Grid.Column="4" Text="{Binding ArchitectureText, TargetNullValue='—'}" />
-
-                                    <TextBlock Grid.Row="4" Grid.Column="1" Style="{StaticResource Secondary}" Text="Tipo di installer" />
-                                    <TextBlock Grid.Row="4" Grid.Column="2" Text="{Binding Meta.InstallerType, TargetNullValue='—'}" />
-                                    <TextBlock Grid.Row="4" Grid.Column="3" Style="{StaticResource Secondary}" Text="Sul PC" />
-                                    <TextBlock Grid.Row="4" Grid.Column="4" Text="{Binding Converter={x:Static inf:InstallStateConverter.Instance}, TargetNullValue='—'}"
-                                               ToolTip="Confronto con i programmi installati su questo PC" />
-
-                                    <TextBlock Grid.Row="5" Grid.Column="1" Style="{StaticResource Secondary}" Text="Dimensione" />
-                                    <TextBlock Grid.Row="5" Grid.Column="2" Text="{Binding Size, Converter={StaticResource FileSize}}" />
-                                    <TextBlock Grid.Row="5" Grid.Column="3" Style="{StaticResource Secondary}" Text="Modificato" />
-                                    <TextBlock Grid.Row="5" Grid.Column="4" Text="{Binding ModifiedUtc, StringFormat=g, Converter={x:Static vm:UtcToLocalConverter.Instance}}" />
+                                    <WrapPanel Grid.Row="1" Grid.Column="1">
+                                        <StackPanel Width="140" Margin="0,3,12,3">
+                                            <TextBlock Style="{StaticResource Secondary}" Text="Prodotto" Margin="0" />
+                                            <TextBlock Text="{Binding Meta.ProductName, TargetNullValue='—'}" Margin="0" />
+                                        </StackPanel>
+                                        <StackPanel Width="140" Margin="0,3,12,3">
+                                            <TextBlock Style="{StaticResource Secondary}" Text="Descrizione" Margin="0" />
+                                            <TextBlock Text="{Binding Meta.FileDescription, TargetNullValue='—'}" Margin="0" />
+                                        </StackPanel>
+                                        <StackPanel Width="140" Margin="0,3,12,3">
+                                            <TextBlock Style="{StaticResource Secondary}" Text="Produttore" Margin="0" />
+                                            <TextBlock Text="{Binding Meta.CompanyName, TargetNullValue='—'}" Margin="0" />
+                                        </StackPanel>
+                                        <StackPanel Width="140" Margin="0,3,12,3">
+                                            <TextBlock Style="{StaticResource Secondary}" Text="Versione" Margin="0" />
+                                            <TextBlock Text="{Binding Meta.VersionDetails, TargetNullValue='—'}" Margin="0" />
+                                        </StackPanel>
+                                        <StackPanel Width="140" Margin="0,3,12,3">
+                                            <TextBlock Style="{StaticResource Secondary}" Text="Firma digitale" Margin="0" />
+                                            <TextBlock Text="{Binding SignatureText, TargetNullValue='—'}" Margin="0" />
+                                        </StackPanel>
+                                        <StackPanel Width="140" Margin="0,3,12,3">
+                                            <TextBlock Style="{StaticResource Secondary}" Text="Architettura" Margin="0" />
+                                            <TextBlock Text="{Binding ArchitectureText, TargetNullValue='—'}" Margin="0" />
+                                        </StackPanel>
+                                        <StackPanel Width="140" Margin="0,3,12,3">
+                                            <TextBlock Style="{StaticResource Secondary}" Text="Tipo di installer" Margin="0" />
+                                            <TextBlock Text="{Binding Meta.InstallerType, TargetNullValue='—'}" Margin="0" />
+                                        </StackPanel>
+                                        <StackPanel Width="140" Margin="0,3,12,3">
+                                            <TextBlock Style="{StaticResource Secondary}" Text="Sul PC" Margin="0" />
+                                            <TextBlock Text="{Binding Converter={x:Static inf:InstallStateConverter.Instance}, TargetNullValue='—'}" ToolTip="Confronto con i programmi installati su questo PC" Margin="0" />
+                                        </StackPanel>
+                                        <StackPanel Width="140" Margin="0,3,12,3">
+                                            <TextBlock Style="{StaticResource Secondary}" Text="Dimensione" Margin="0" />
+                                            <TextBlock Text="{Binding Size, Converter={StaticResource FileSize}}" Margin="0" />
+                                        </StackPanel>
+                                        <StackPanel Width="140" Margin="0,3,12,3">
+                                            <TextBlock Style="{StaticResource Secondary}" Text="Modificato" Margin="0" />
+                                            <TextBlock Text="{Binding ModifiedUtc, StringFormat=g, Converter={x:Static vm:UtcToLocalConverter.Instance}}" Margin="0" />
+                                        </StackPanel>
+                                    </WrapPanel>
 
                                     <!-- Etichette, nota ed estratto del testo trovato: compaiono solo se presenti -->
-                                    <StackPanel Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="4">
+                                    <StackPanel Grid.Row="2" Grid.Column="1">
                                         <TextBlock TextWrapping="Wrap" Visibility="{Binding Tags, Converter={x:Static inf:EmptyToCollapsedConverter.Instance}}">
                                             <Run Text="Etichette: " Foreground="{DynamicResource TextFillColorSecondaryBrush}" /><Run Text="{Binding Tags, Mode=OneWay}" FontWeight="SemiBold" />
                                         </TextBlock>
