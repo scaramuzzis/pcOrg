@@ -636,48 +636,52 @@
                                         <TextBlock Text="{Binding Path}" ToolTip="{Binding Path}" Style="{StaticResource Secondary}" Margin="0" />
                                     </StackPanel>
 
-                                    <WrapPanel Grid.Row="1" Grid.Column="1">
-                                        <StackPanel Width="140" Margin="0,3,12,3">
+                                    <!-- Altezza massima: i dettagli non devono mai coprire l'elenco dei file -->
+                                    <ScrollViewer Grid.Row="1" Grid.Column="1" MaxHeight="150" VerticalScrollBarVisibility="Auto"
+                                                  HorizontalScrollBarVisibility="Disabled" Focusable="False">
+                                    <WrapPanel>
+                                        <StackPanel Width="125" Margin="0,3,12,3">
                                             <TextBlock Style="{StaticResource Secondary}" Text="Prodotto" Margin="0" />
                                             <TextBlock Text="{Binding Meta.ProductName, TargetNullValue='—'}" Margin="0" />
                                         </StackPanel>
-                                        <StackPanel Width="140" Margin="0,3,12,3">
+                                        <StackPanel Width="125" Margin="0,3,12,3">
                                             <TextBlock Style="{StaticResource Secondary}" Text="Descrizione" Margin="0" />
                                             <TextBlock Text="{Binding Meta.FileDescription, TargetNullValue='—'}" Margin="0" />
                                         </StackPanel>
-                                        <StackPanel Width="140" Margin="0,3,12,3">
+                                        <StackPanel Width="125" Margin="0,3,12,3">
                                             <TextBlock Style="{StaticResource Secondary}" Text="Produttore" Margin="0" />
                                             <TextBlock Text="{Binding Meta.CompanyName, TargetNullValue='—'}" Margin="0" />
                                         </StackPanel>
-                                        <StackPanel Width="140" Margin="0,3,12,3">
+                                        <StackPanel Width="125" Margin="0,3,12,3">
                                             <TextBlock Style="{StaticResource Secondary}" Text="Versione" Margin="0" />
                                             <TextBlock Text="{Binding Meta.VersionDetails, TargetNullValue='—'}" Margin="0" />
                                         </StackPanel>
-                                        <StackPanel Width="140" Margin="0,3,12,3">
+                                        <StackPanel Width="125" Margin="0,3,12,3">
                                             <TextBlock Style="{StaticResource Secondary}" Text="Firma digitale" Margin="0" />
                                             <TextBlock Text="{Binding SignatureText, TargetNullValue='—'}" Margin="0" />
                                         </StackPanel>
-                                        <StackPanel Width="140" Margin="0,3,12,3">
+                                        <StackPanel Width="125" Margin="0,3,12,3">
                                             <TextBlock Style="{StaticResource Secondary}" Text="Architettura" Margin="0" />
                                             <TextBlock Text="{Binding ArchitectureText, TargetNullValue='—'}" Margin="0" />
                                         </StackPanel>
-                                        <StackPanel Width="140" Margin="0,3,12,3">
+                                        <StackPanel Width="125" Margin="0,3,12,3">
                                             <TextBlock Style="{StaticResource Secondary}" Text="Tipo di installer" Margin="0" />
                                             <TextBlock Text="{Binding Meta.InstallerType, TargetNullValue='—'}" Margin="0" />
                                         </StackPanel>
-                                        <StackPanel Width="140" Margin="0,3,12,3">
+                                        <StackPanel Width="125" Margin="0,3,12,3">
                                             <TextBlock Style="{StaticResource Secondary}" Text="Sul PC" Margin="0" />
                                             <TextBlock Text="{Binding Converter={x:Static inf:InstallStateConverter.Instance}, TargetNullValue='—'}" ToolTip="Confronto con i programmi installati su questo PC" Margin="0" />
                                         </StackPanel>
-                                        <StackPanel Width="140" Margin="0,3,12,3">
+                                        <StackPanel Width="125" Margin="0,3,12,3">
                                             <TextBlock Style="{StaticResource Secondary}" Text="Dimensione" Margin="0" />
                                             <TextBlock Text="{Binding Size, Converter={StaticResource FileSize}}" Margin="0" />
                                         </StackPanel>
-                                        <StackPanel Width="140" Margin="0,3,12,3">
+                                        <StackPanel Width="125" Margin="0,3,12,3">
                                             <TextBlock Style="{StaticResource Secondary}" Text="Modificato" Margin="0" />
                                             <TextBlock Text="{Binding ModifiedUtc, StringFormat=g, Converter={x:Static vm:UtcToLocalConverter.Instance}}" Margin="0" />
                                         </StackPanel>
                                     </WrapPanel>
+                                    </ScrollViewer>
 
                                     <!-- Etichette, nota ed estratto del testo trovato: compaiono solo se presenti -->
                                     <StackPanel Grid.Row="2" Grid.Column="1">
