@@ -69,7 +69,10 @@ public class Screenshots
     private static void Run(string output)
     {
         SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext(Dispatcher.CurrentDispatcher));
-        var temp = Path.Combine(Path.GetTempPath(), "pcorg-shots-" + Guid.NewGuid().ToString("N"));
+        // Nome fisso (non casuale): i percorsi mostrati nelle schermate restano uguali da una build all'altra.
+        var temp = Path.Combine(Path.GetTempPath(), "pcorg-shots");
+        if (Directory.Exists(temp))
+            Directory.Delete(temp, recursive: true);
         var download = Path.Combine(temp, "Download");
         var archive = Path.Combine(temp, "Archivio");
         Step("creazione dei dati di esempio");
