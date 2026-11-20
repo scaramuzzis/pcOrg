@@ -32,6 +32,7 @@ public sealed partial class MainViewModel
         _scanOnStartup = settings.ScanOnStartup;
         ScanPace.Local = settings.LocalScanSpeed;
         ScanPace.Network = settings.NetworkScanSpeed;
+        _index.NetworkMetadataOnDemand = settings.NetworkDetailsOnDemand;
         ShowPreviewPanel = settings.ShowPreviewPanel;
         ShowDetailsPanel = settings.ShowDetailsPanel;
         SearchInContent = settings.SearchInContent;
@@ -70,7 +71,7 @@ public sealed partial class MainViewModel
         bool ShowPreview, bool ShowDetails, bool LogEnabled, LogLevel LogLevel,
         bool IndexContent = true, bool CheckUpdatesOnStartup = false,
         ScanSpeed LocalScanSpeed = ScanSpeed.Massima, ScanSpeed NetworkScanSpeed = ScanSpeed.Normale, bool NotifyNewDisks = true,
-        bool FastNtfsScan = true);
+        bool FastNtfsScan = true, bool NetworkDetailsOnDemand = false);
 
     /// <summary>Applica e salva le opzioni scelte nella finestra Impostazioni.</summary>
     public void ApplyOptions(Options o)
@@ -86,6 +87,7 @@ public sealed partial class MainViewModel
         _settings.NetworkScanSpeed = ScanPace.Network = o.NetworkScanSpeed;
         _settings.NotifyNewDisks = o.NotifyNewDisks;
         _settings.FastNtfsScan = o.FastNtfsScan;
+        _settings.NetworkDetailsOnDemand = _index.NetworkMetadataOnDemand = o.NetworkDetailsOnDemand;
         ShowPreviewPanel = o.ShowPreview;
         ShowDetailsPanel = o.ShowDetails;
         ApplyTheme(o.Theme, save: false);

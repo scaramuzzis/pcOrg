@@ -79,6 +79,9 @@
                                 <ComboBoxItem Content="Leggera: fino a 25 letture al secondo, un file alla volta" Tag="Leggera" />
                             </ComboBox>
                         </Grid>
+                        <CheckBox x:Name="NetworkDetailsOnDemand" Content="Cartelle di rete: leggi versioni e firme solo quando selezioni un file" Margin="0,8,0,0" />
+                        <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="28,2,0,6"
+                                   Text="La scansione legge solo l'elenco dei file (nome, tipo, dimensione, data): è il minimo possibile per il NAS. I dettagli di programmi e installer vengono letti quando li selezioni; Prodotti e versioni e Driver mostrano solo quelli già letti. Disattivata: i dettagli si leggono in background dopo l'elenco, al ritmo scelto sopra." />
                         <CheckBox x:Name="FastNtfsScan" Content="Scansione veloce dei dischi NTFS (quando Gestione File è avviato come amministratore)" Margin="0,8,0,0" />
                         <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="28,2,0,6"
                                    Text="Per i dischi interi e le cartelle molto grandi (oltre 20.000 sottocartelle), nella prima lettura e nella scansione completa, legge in un colpo solo la tabella dei file del disco (MFT), come fanno i programmi di ricerca istantanea: con milioni di file è molte volte più rapida. Serve avviare l'app come amministratore (menu Strumenti → Riavvia come amministratore); altrimenti si usa la scansione normale." />

@@ -223,7 +223,11 @@ public sealed partial class MainViewModel : ObservableObject
 
     private CancellationTokenSource? _previewCts;
 
-    partial void OnSelectedFileChanged(FileRecord? value) => Fire(LoadPreviewAsync(value), "anteprima");
+    partial void OnSelectedFileChanged(FileRecord? value)
+    {
+        Fire(LoadPreviewAsync(value), "anteprima");
+        Fire(LoadDetailsOnDemandAsync(value), "dettagli del file");
+    }
 
     private async Task LoadPreviewAsync(FileRecord? file)
     {
@@ -566,6 +570,7 @@ public sealed partial class MainViewModel : ObservableObject
                 var progress = new Progress<ScanResult>(p =>
                 {
                     ReportScanWork(total.DirectoriesVisited + p.DirectoriesVisited);
+                    ReportProgress("Scansione", total.DirectoriesVisited + p.DirectoriesVisited, _resourceMonitor?.ExpectedWork ?? 0);
                     Status = $"{kind} di {root.Path}{fastText}: {p.DirectoriesVisited:N0} cartelle controllate, {p.DirectoriesChanged:N0} rilette, " +
                              $"{p.FilesChanged:N0} file cambiati…";
                 });
@@ -636,7 +641,10 @@ public sealed partial class MainViewModel : ObservableObject
         try
         {
             var progress = new Progress<(int Done, int Total)>(p =>
-                Status = $"Lettura di versioni e firme: {p.Done:N0} di {p.Total:N0} file…");
+            {
+                ReportProgress("Versioni e firme", p.Done, p.Total);
+                Status = $"Lettura di versioni e firme: {p.Done:N0} di {p.Total:N0} file…";
+            });
             var count = await Task.Run(() => ScanPace.InBackground(() => MetadataUpdater.Run(_index, progress, token, _settings.VerifySignatures)), token);
             Status = count == 0 ? "Indice aggiornato." : $"Lette versioni e firme di {count:N0} file.";
 
@@ -644,7 +652,10 @@ public sealed partial class MainViewModel : ObservableObject
             if (_settings.IndexContent)
             {
                 var contentProgress = new Progress<(int Done, int Total)>(p =>
-                    Status = $"Lettura del contenuto di documenti e archivi: {p.Done:N0} di {p.Total:N0} file…");
+                {
+                    ReportProgress("Contenuto dei documenti", p.Done, p.Total);
+                    Status = $"Lettura del contenuto di documenti e archivi: {p.Done:N0} di {p.Total:N0} file…";
+                });
                 var read = await Task.Run(() => ScanPace.InBackground(() => PcOrg.Core.Content.ContentIndexer.Run(_index, contentProgress, token)), token);
                 if (read > 0)
                 {
@@ -901,7 +912,11 @@ public sealed partial class MainViewModel : ObservableObject
             }
 
             var count = plan.Count(p => p.WillMove);
-            var progress = new Progress<int>(n => Status = $"Spostamento {n:N0} di {count:N0}…");
+            var progress = new Progress<int>(n =>
+            {
+                ReportProgress("Spostamento", n, count);
+                Status = $"Spostamento {n:N0} di {count:N0}…";
+            });
             var description = $"{count} file in {destination}";
             var result = await Task.Run(() => _moves.Execute(plan, description, progress));
             Log.Info($"Spostamento #{result.BatchId}: {result.Moved} file in {destination}, {result.Errors.Count} errori." +

@@ -83,7 +83,11 @@ public sealed partial class MainViewModel
                 }
                 ReloadRoots();
             }
-            var progress = new Progress<int>(n => Status = $"Organizzazione: {n:N0} di {toMove:N0} file…");
+            var progress = new Progress<int>(n =>
+            {
+                ReportProgress("Organizzazione", n, toMove);
+                Status = $"Organizzazione: {n:N0} di {toMove:N0} file…";
+            });
             var result = await Task.Run(() => _moves.Execute(plan, $"Organizzazione con le regole: {toMove} file", progress));
             Log.Info($"Organizzazione con le regole #{result.BatchId}: {result.Moved} file spostati, {result.Errors.Count} errori.");
             ShowToast($"{result.Moved:N0} file archiviati con le regole", ToastKind.Success, "Annulla", () => UndoMoveAsync(result.BatchId));

@@ -23,7 +23,11 @@ public sealed partial class MainViewModel
         try
         {
             Status = "Download del catalogo di winget…";
-            var progress = new Progress<double>(p => Status = $"Download del catalogo di winget: {p:P0}");
+            var progress = new Progress<double>(p =>
+            {
+                ReportProgress("Catalogo winget", p);
+                Status = $"Download del catalogo di winget: {p:P0}";
+            });
             var file = await WingetCatalog.EnsureIndexAsync(Path.Combine(AppPaths.DataFolder, "winget"), AboutWindow.AppVersion, progress);
             Status = "Confronto con i programmi trovati…";
             _winget = await Task.Run(() => WingetCatalog.Load(file));

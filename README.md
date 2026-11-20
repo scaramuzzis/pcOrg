@@ -5,7 +5,10 @@ sparsi nel PC. Scegli le cartelle da tenere sotto controllo; Gestione File le in
 per categoria e li trova all'istante mentre scrivi. Sei tu a decidere se e dove spostarli: prima
 vedi un'anteprima, e ogni spostamento si può annullare.
 
-## Cosa fa oggi (v1.4)
+## Cosa fa oggi (v1.5)
+- **Barra di avanzamento (1.5)** con fase e percentuale per scansioni, versioni e firme, contenuto, cloni, spostamenti e download.
+- **Dettagli su richiesta (1.5)**: il file selezionato viene letto subito se non lo è ancora; per le cartelle di rete si può
+  scegliere di leggere versioni e firme solo alla selezione (scansione = solo elenco dei file).
 - **Risorse della scansione (1.4)**: traffico di rete, letture al secondo, tempo di risposta del disco o del NAS,
   dati letti, processore, memoria e tempo rimanente, in tempo reale e nel registro attività.
 - **Usabile durante la scansione (1.3)**: ricerca, spostamenti, etichette e aggiunta di cartelle restano disponibili

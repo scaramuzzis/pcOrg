@@ -258,7 +258,8 @@
         </Border>
 
         <!-- Barra di avanzamento sottile durante scansione e lettura metadati -->
-        <ProgressBar Grid.Row="1" Height="3" IsIndeterminate="True" BorderThickness="0"
+        <ProgressBar Grid.Row="1" Height="3" BorderThickness="0" Maximum="100"
+                     IsIndeterminate="{Binding ProgressIndeterminate}" Value="{Binding ProgressPercent, Mode=OneWay}"
                      Visibility="{Binding IsWorking, Converter={StaticResource BoolToVisibility}}" />
 
         <!-- ============================================================ Contenuto -->
@@ -1169,6 +1170,15 @@
                 <c:IconButton DockPanel.Dock="Right" Glyph="{x:Static inf:Glyphs.Cancel}" Label="Interrompi" Command="{Binding CancelScanCommand}"
                               Padding="8,2" Visibility="{Binding IsScanning, Converter={StaticResource BoolToVisibility}}"
                               ToolTip="Ferma la scansione: riprenderà al prossimo aggiornamento" />
+                <!-- Avanzamento dell'operazione in corso: percentuale se il totale è noto, animata altrimenti -->
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="12,0,0,0" VerticalAlignment="Center"
+                            Visibility="{Binding IsWorking, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Text="{Binding ProgressText}" FontSize="12" VerticalAlignment="Center" Margin="0,0,8,0"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    <ProgressBar Width="160" Height="6" Maximum="100" VerticalAlignment="Center"
+                                 IsIndeterminate="{Binding ProgressIndeterminate}" Value="{Binding ProgressPercent, Mode=OneWay}"
+                                 AutomationProperties.Name="Avanzamento dell'operazione in corso" />
+                </StackPanel>
                 <!-- Risorse usate dalla scansione in corso (dettagli nella scheda Dischi) -->
                 <TextBlock DockPanel.Dock="Right" Text="{Binding ScanResourcesText}" Margin="12,0" VerticalAlignment="Center"
                            Foreground="{DynamicResource TextFillColorSecondaryBrush}" FontSize="12"

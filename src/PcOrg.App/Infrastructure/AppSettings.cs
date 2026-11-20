@@ -78,6 +78,12 @@ public sealed class AppSettings
     /// <summary>Avvisa quando viene collegato un disco mai visto prima.</summary>
     public bool NotifyNewDisks { get; set; } = true;
 
+    /// <summary>
+    /// Cartelle di rete: versioni e firme di programmi e installer si leggono solo quando selezioni il file,
+    /// non in background durante la scansione (carico minimo sul NAS; Prodotti e Driver si riempiono man mano).
+    /// </summary>
+    public bool NetworkDetailsOnDemand { get; set; }
+
     /// <summary>Scansione veloce dei dischi NTFS leggendo la MFT (solo se l'app è avviata come amministratore).</summary>
     public bool FastNtfsScan { get; set; } = true;
 

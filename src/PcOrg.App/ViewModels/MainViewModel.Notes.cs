@@ -119,7 +119,11 @@ public sealed partial class MainViewModel
         {
             if (Directory.Exists(folder))
                 Directory.Delete(folder, recursive: true);
-            var progress = new Progress<double>(p => Status = $"Download dell'aggiornamento {info.LatestVersion}: {p:P0}");
+            var progress = new Progress<double>(p =>
+            {
+                ReportProgress("Download", p);
+                Status = $"Download dell'aggiornamento {info.LatestVersion}: {p:P0}";
+            });
             var file = await AppUpdater.DownloadAsync(asset, folder, AboutWindow.AppVersion, progress);
             Status = "Preparazione dell'aggiornamento…";
             prepared = await Task.Run(() => AppUpdater.Prepare(kind, file, info.LatestVersion!));

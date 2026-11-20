@@ -71,6 +71,7 @@ public partial class SettingsWindow : Window
         CheckUpdates.IsChecked = settings.CheckUpdatesOnStartup;
         NotifyNewDisks.IsChecked = settings.NotifyNewDisks;
         FastNtfsScan.IsChecked = settings.FastNtfsScan;
+        NetworkDetailsOnDemand.IsChecked = settings.NetworkDetailsOnDemand;
         SelectSpeed(NetworkSpeedChooser, settings.NetworkScanSpeed);
         SelectSpeed(LocalSpeedChooser, settings.LocalScanSpeed);
         ShowPreview.IsChecked = vm.ShowPreviewPanel;
@@ -300,7 +301,8 @@ public partial class SettingsWindow : Window
             LocalScanSpeed: SelectedSpeed(LocalSpeedChooser, ScanSpeed.Massima),
             NetworkScanSpeed: SelectedSpeed(NetworkSpeedChooser, ScanSpeed.Normale),
             NotifyNewDisks: NotifyNewDisks.IsChecked == true,
-            FastNtfsScan: FastNtfsScan.IsChecked == true));
+            FastNtfsScan: FastNtfsScan.IsChecked == true,
+            NetworkDetailsOnDemand: NetworkDetailsOnDemand.IsChecked == true));
         _main.SaveLayout();
         DialogResult = true;
     }
