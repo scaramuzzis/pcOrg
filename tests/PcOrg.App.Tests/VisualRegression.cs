@@ -16,8 +16,14 @@ public class VisualRegression
     /// <summary>Un pixel è "diverso" se un canale cambia più di così (assorbe l'antialiasing del testo).</summary>
     public const int ChannelTolerance = 48;
 
-    /// <summary>Percentuale massima di pixel diversi: date e percorsi temporanei cambiano a ogni build.</summary>
+    /// <summary>Percentuale massima di pixel diversi: date e ore cambiano a ogni build.</summary>
     public const double MaxDifferentPercent = 0.5;
+
+    /// <summary>
+    /// Righe in fondo escluse dal confronto: su alcune macchine della build lo schermo è più basso della finestra
+    /// e la cattura della barra di stato esce grigia.
+    /// </summary>
+    public const int IgnoredBottomRows = 12;
 
     /// <summary>Schermate che dipendono dal computer della build (dischi e periferiche presenti) e non si confrontano.</summary>
     private static readonly HashSet<string> Ignored = new(StringComparer.OrdinalIgnoreCase) { "34-dischi.png", "27-driver-e-periferiche.png", "28-driver-che-non-servono.png" };
@@ -71,8 +77,14 @@ public class VisualRegression
 
         var diff = new byte[actual.Pixels.Length];
         long different = 0;
+        var compared = Math.Max(0, actual.Height - IgnoredBottomRows) * actual.Width * 4;
         for (var i = 0; i < actual.Pixels.Length; i += 4)
         {
+            if (i >= compared)
+            {
+                diff[i + 3] = 255; // zona esclusa: nera nell'immagine delle differenze
+                continue;
+            }
             var changed = false;
             for (var c = 0; c < 3; c++)
                 if (Math.Abs(expected.Pixels[i + c] - actual.Pixels[i + c]) > ChannelTolerance)
