@@ -209,13 +209,17 @@ Seleziona uno o più file e usa **Etichette…** (scheda File), il tasto destro,
 - **Seguono il file** quando lo sposti con Gestione File e restano anche se ricostruisci l'indice.
 - Per toglierle, lascia vuoti i campi.
 
-## Anteprima delle immagini
+## Anteprima
 
-Quando selezioni una foto o un'immagine, a destra dell'elenco compare il pannello **Anteprima** con l'immagine, le dimensioni in pixel e il peso del file. Con un doppio clic (o **Invio**) l'immagine si apre nel visualizzatore di Windows.
+Selezionando un file, il pannello **Anteprima** a destra mostra:
 
-I formati supportati sono JPG, PNG, GIF, BMP, TIFF e ICO. Per **HEIC** (le foto dell'iPhone), **WebP** e **AVIF** serve l'estensione gratuita di Microsoft dallo Store: se manca, il pannello lo indica.
+- **foto e immagini** (JPG, PNG, GIF, BMP, TIFF, ICO; WebP, HEIC e AVIF con le estensioni gratuite di Microsoft), con le dimensioni in pixel;
+- **video e audio**: il fotogramma o la copertina come in Esplora risorse e il pulsante **Riproduci**, che li riproduce direttamente nel pannello (**Ferma** per interrompere). Si riproducono i formati che Windows sa leggere; per alcuni (es. MKV) serve il codec;
+- **PDF, Word, Excel, PowerPoint e OpenDocument**: la miniatura della prima pagina, se Windows ne ha una (dipende dai programmi installati), e l'**inizio del testo**;
+- **file di testo** (txt, log, csv, json, xml, ini, script, file .rdp…): le prime righe;
+- **altri formati** di cui Windows fornisce una miniatura.
 
-Il pannello si può nascondere da **Visualizza → Pannello anteprima immagini**.
+I file **disponibili solo online** (OneDrive) non vengono aperti, per non scaricarli. Per programmi, archivi e immagini disco il pannello non compare. Il pannello si nasconde da **Visualizza → Pannello anteprima**.
 
 ## Prodotti e versioni
 

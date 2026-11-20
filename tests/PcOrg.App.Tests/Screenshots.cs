@@ -384,6 +384,29 @@ public class Screenshots
         PcOrg.App.Infrastructure.InstalledCatalog.Online = new Dictionary<string, PcOrg.Core.Updates.WingetMatch>();
         vm.ProductsView.Refresh();
 
+        // 37. Anteprima di un file di testo (stessa dimensione del file di esempio: i conteggi non cambiano)
+        Step("anteprima di un file di testo");
+        window.Tabs.SelectedIndex = MainViewModel.FilesTab;
+        vm.SelectedCategory = vm.Categories[0];
+        Pump(600);
+        var readme = vm.Results.FirstOrDefault(r => r.Name == "leggimi.txt");
+        if (readme is not null)
+        {
+            var text = new System.Text.StringBuilder();
+            text.AppendLine("LEGGIMI - Driver stampante ufficio").AppendLine();
+            text.AppendLine("1. Scollegare la stampante dal PC.");
+            text.AppendLine("2. Avviare setup.exe come amministratore.");
+            text.AppendLine("3. Al termine collegare il cavo USB e attendere il riconoscimento.").AppendLine();
+            text.AppendLine("Versione pacchetto: 5.2.1 (64 bit)");
+            text.AppendLine("Supporto: assistenza interna, interno 214.");
+            while (text.Length < readme.Size)
+                text.Append(' ');
+            File.WriteAllText(readme.Path, text.ToString()[..(int)readme.Size]);
+            Select(window, vm, readme);
+            Pump(800);
+            Capture(window, output, "37-anteprima-testo.png");
+        }
+
         // 36. Molte cartelle monitorate: l'elenco ha la sua barra di scorrimento
         var dialogsForRoots = mainDialogs;
         foreach (var extra in new[] { "Documenti ufficio", "Fatture 2025", "Progetti clienti", "Musica", "Scansioni" })

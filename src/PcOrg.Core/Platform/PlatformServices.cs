@@ -50,7 +50,16 @@ public interface IPlatformServices
 
     /// <summary>Byte letti e scritti dal processo dall'avvio (file locali e di rete); null se non disponibile.</summary>
     (long Read, long Written)? ProcessIoCounters();
+
+    /// <summary>
+    /// Miniatura del file come in Esplora risorse (fotogramma di un video, copertina di un brano, prima pagina
+    /// di un documento); null se il sistema non ne ha una (si esclude l'icona generica del tipo di file).
+    /// </summary>
+    ThumbnailImage? GetThumbnail(string path, int size);
 }
+
+/// <summary>Immagine in pixel BGRA a 32 bit, righe dall'alto in basso.</summary>
+public sealed record ThumbnailImage(int Width, int Height, byte[] Bgra);
 
 /// <summary>Implementazione neutra: nessuna funzione di sistema (elenchi vuoti, nessuna verifica).</summary>
 public sealed class PortablePlatform : IPlatformServices
@@ -69,6 +78,7 @@ public sealed class PortablePlatform : IPlatformServices
     public Indexing.Ntfs.MftSnapshot? ReadVolumeSnapshot(string path, CancellationToken cancellationToken) => null;
     public bool IsElevated => false;
     public (long Read, long Written)? ProcessIoCounters() => null;
+    public ThumbnailImage? GetThumbnail(string path, int size) => null;
 }
 
 /// <summary>Piattaforma in uso: l'app registra quella di Windows all'avvio.</summary>

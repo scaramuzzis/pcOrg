@@ -128,13 +128,18 @@ public class UiSmokeTests
         Assert.Single(vm.SelectedFiles);
         window.ResultsGrid.SelectedItem = null;
 
-        // Anteprima: compare per le immagini, sparisce per gli altri file.
+        // Anteprima: immagini, prime righe dei file di testo; nessuna per i programmi.
         vm.SelectedFiles = [vm.Results.First(r => r.Name == "foto.png")];
         Pump(TimeSpan.FromSeconds(1));
         Assert.True(vm.IsPreviewVisible);
         Assert.NotNull(vm.PreviewImage);
         Assert.StartsWith("1200 × 800", vm.PreviewInfo);
         vm.SelectedFiles = [vm.Results.First(r => r.Name == "nota.txt")];
+        Pump(TimeSpan.FromMilliseconds(600));
+        Assert.Equal(PreviewKind.Text, vm.PreviewKind);
+        Assert.Equal("x", vm.PreviewText);
+        Assert.True(vm.IsTextOnlyPreview);
+        vm.SelectedFiles = [vm.Results.First(r => r.Name == "host-1.exe")];
         Assert.False(vm.IsPreviewVisible);
         var ghost = Assert.Single(vm.Categories, c => c.IsSubcategory && c.Name.StartsWith("Ghost"));
         vm.SelectedCategory = ghost;

@@ -222,6 +222,7 @@ public sealed partial class MainViewModel : ObservableObject
     private bool _isPreviewVisible;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasPreviewVisual), nameof(HasTextUnderImage), nameof(IsTextOnlyPreview))]
     private ImageSource? _previewImage;
 
     [ObservableProperty]
@@ -235,25 +236,65 @@ public sealed partial class MainViewModel : ObservableObject
         Fire(LoadDetailsOnDemandAsync(value), "dettagli del file");
     }
 
+    /// <summary>Tipo di anteprima mostrata (immagine, video/audio, documento, testo, miniatura).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsMediaPreview), nameof(HasPreviewText), nameof(HasPreviewVisual))]
+    private PreviewKind _previewKind;
+
+    /// <summary>Testo dell'anteprima (prime righe di un file di testo o inizio di un documento).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasPreviewText), nameof(HasTextUnderImage), nameof(IsTextOnlyPreview))]
+    private string? _previewText;
+
+    /// <summary>Video o brano in riproduzione nel pannello (null = fermo).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsPlaying))]
+    private Uri? _previewMediaSource;
+
+    public bool IsMediaPreview => PreviewKind == PreviewKind.Media;
+    public bool HasPreviewText => !string.IsNullOrEmpty(PreviewText);
+    /// <summary>C'è qualcosa da mostrare nel riquadro immagine (foto, miniatura, video in riproduzione).</summary>
+    public bool HasPreviewVisual => PreviewImage is not null || PreviewKind == PreviewKind.Media || PreviewKind == PreviewKind.Image;
+    public bool HasTextUnderImage => HasPreviewText && PreviewImage is not null;
+    public bool IsTextOnlyPreview => HasPreviewText && PreviewImage is null;
+    public bool IsPlaying => PreviewMediaSource is not null;
+
+    /// <summary>Riproduce nel pannello il video o il brano selezionato.</summary>
+    [RelayCommand]
+    private void PlayPreview()
+    {
+        if (SelectedFile is { } file && PreviewKind == PreviewKind.Media)
+            PreviewMediaSource = new Uri(file.Path);
+    }
+
+    [RelayCommand]
+    private void StopPreview() => PreviewMediaSource = null;
+
     private async Task LoadPreviewAsync(FileRecord? file)
     {
         _previewCts?.Cancel();
-        var visible = file is not null && (file.Category == FileCategory.Immagine || ImagePreview.CanPreview(file.Path));
-        IsPreviewVisible = visible;
+        PreviewMediaSource = null;
         PreviewImage = null;
-        if (!visible)
+        PreviewText = null;
+        var expected = file is null ? PreviewKind.None : FilePreview.ExpectedKind(file.Path, file.Category);
+        PreviewKind = expected == PreviewKind.Thumbnail ? PreviewKind.None : expected;
+        // Per i formati "da provare" il pannello compare solo se Windows ha davvero una miniatura.
+        IsPreviewVisible = PreviewKind != PreviewKind.None;
+        if (file is null || expected == PreviewKind.None)
             return;
 
         PreviewInfo = "Caricamento anteprima…";
         var cts = _previewCts = new CancellationTokenSource();
         try
         {
-            var result = await ImagePreview.LoadAsync(file!.Path, cts.Token);
+            var result = await FilePreview.LoadAsync(file.Path, file.Category, file.Size, cts.Token);
             if (cts.IsCancellationRequested)
                 return;
+            PreviewKind = result.Kind;
             PreviewImage = result.Image;
-            PreviewInfo = result.Message
-                ?? $"{result.PixelWidth} × {result.PixelHeight} pixel · {FileSizeConverter.Format(file.Size)}";
+            PreviewText = result.Text;
+            PreviewInfo = result.Info;
+            IsPreviewVisible = result.Kind != PreviewKind.None;
         }
         catch (OperationCanceledException)
         {

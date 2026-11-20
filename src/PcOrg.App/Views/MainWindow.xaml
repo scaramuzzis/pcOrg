@@ -697,10 +697,34 @@
                                            ToolTip="{Binding SelectedFile.Path}" />
                                 <TextBlock DockPanel.Dock="Bottom" Text="{Binding PreviewInfo}" TextWrapping="Wrap"
                                            Style="{StaticResource Secondary}" Margin="0,8,0,0" />
-                                <Border CornerRadius="6" Margin="0,8,0,0" Padding="6" Background="{DynamicResource SubtleFillColorSecondaryBrush}">
-                                    <Image Source="{Binding PreviewImage}" Stretch="Uniform" StretchDirection="DownOnly"
-                                           RenderOptions.BitmapScalingMode="HighQuality"
-                                           ToolTip="Doppio clic sul file per aprirlo con il visualizzatore di Windows" />
+                                <!-- Video e audio: riproduzione nel pannello -->
+                                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,8,0,0"
+                                            Visibility="{Binding IsMediaPreview, Converter={StaticResource BoolToVisibility}}">
+                                    <c:IconButton Glyph="{x:Static inf:Glyphs.Play}" Label="Riproduci" Command="{Binding PlayPreviewCommand}" Margin="0,0,6,0"
+                                                  ToolTip="Riproduci qui il video o il brano" />
+                                    <c:IconButton Glyph="{x:Static inf:Glyphs.Stop}" Label="Ferma" Command="{Binding StopPreviewCommand}"
+                                                  Visibility="{Binding IsPlaying, Converter={StaticResource BoolToVisibility}}" />
+                                </StackPanel>
+                                <!-- Inizio del testo di un documento, sotto la sua miniatura -->
+                                <TextBox DockPanel.Dock="Bottom" Text="{Binding PreviewText, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap"
+                                         MaxHeight="220" Margin="0,8,0,0" FontSize="11" VerticalScrollBarVisibility="Auto"
+                                         AutomationProperties.Name="Inizio del testo del documento"
+                                         Visibility="{Binding HasTextUnderImage, Converter={StaticResource BoolToVisibility}}" />
+                                <!-- Solo testo (file di testo, documento senza miniatura): occupa tutto il pannello -->
+                                <TextBox DockPanel.Dock="Top" Text="{Binding PreviewText, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap"
+                                         Margin="0,8,0,0" FontFamily="Cascadia Mono, Consolas" FontSize="11" VerticalScrollBarVisibility="Auto"
+                                         AutomationProperties.Name="Testo dell'anteprima"
+                                         Visibility="{Binding IsTextOnlyPreview, Converter={StaticResource BoolToVisibility}}" />
+                                <Border CornerRadius="6" Margin="0,8,0,0" Padding="6" Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                                        Visibility="{Binding HasPreviewVisual, Converter={StaticResource BoolToVisibility}}">
+                                    <Grid>
+                                        <Image Source="{Binding PreviewImage}" Stretch="Uniform" StretchDirection="DownOnly"
+                                               RenderOptions.BitmapScalingMode="HighQuality"
+                                               ToolTip="Doppio clic sul file per aprirlo con il programma predefinito" />
+                                        <MediaElement Source="{Binding PreviewMediaSource}" LoadedBehavior="Play" UnloadedBehavior="Close"
+                                                      Stretch="Uniform" Volume="0.6"
+                                                      Visibility="{Binding IsPlaying, Converter={StaticResource BoolToVisibility}}" />
+                                    </Grid>
                                 </Border>
                             </DockPanel>
                         </Border>

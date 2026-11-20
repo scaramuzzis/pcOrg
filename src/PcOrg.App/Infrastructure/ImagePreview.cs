@@ -25,7 +25,7 @@ public static class ImagePreview
     public static Task<ImagePreviewResult> LoadAsync(string path, CancellationToken cancellationToken) =>
         Task.Run(() => Load(path), cancellationToken);
 
-    private static ImagePreviewResult Load(string path)
+    public static ImagePreviewResult Load(string path)
     {
         if (!CanPreview(path))
             return new(null, 0, 0, "Anteprima non disponibile per questo formato.");
