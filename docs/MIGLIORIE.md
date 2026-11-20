@@ -20,19 +20,28 @@ Proposte ordinate per **valore per l'utente / costo**. Ogni voce indica il probl
 | 7 | ✅ **Installato / non installato** (v0.10) | Sapere se un installer è già stato usato. | Incrocio con le chiavi `Uninstall` del registro (HKLM, WOW6432Node, HKCU) e le app MSIX. | 2 |
 | 8 | ✅ **Contenuto di ZIP/ISO** (v0.14) | Gli installer dentro gli archivi non vengono analizzati. | Indice delle voci di zip/7z/rar (SharpCompress) e delle ISO; ricerca anche dentro. | 3 |
 | 9 | ✅ **Etichette e note** (v0.14) | Ricordare perché si tiene un file ("driver stampante ufficio"). | Tabella `tags` nell'indice, ricerca per etichetta, colonna facoltativa. | 2 |
-| 10 | **Controllo aggiornamenti dei programmi** | Sapere se esiste una versione più nuova. | Confronto con i manifest pubblici di winget per i prodotti riconosciuti (opzionale, unica funzione con accesso a internet). | 3 |
+| 10 | ✅ **Controllo aggiornamenti dei programmi** (v1.3) | Sapere se esiste una versione più nuova. | Confronto con i manifest pubblici di winget per i prodotti riconosciuti (opzionale, unica funzione con accesso a internet). | 3 |
 | 11 | ✅ **Ricerca nel contenuto dei documenti** (v0.14) | Trovare un PDF o un Word da una parola del testo. | Estrazione testo (iFilter di Windows o librerie PDF/OpenXML) in una tabella FTS dedicata, solo per le cartelle scelte. | 4–5 |
 
 ## Qualità e manutenzione
 
 | # | Miglioria | Perché | Come | Stima |
 |---|---|---|---|---|
-| 12 | **Aggiornamento automatico dell'app** | Oggi bisogna scaricare a mano ogni Release. | Controllo della Release più recente su GitHub e sostituzione dell'exe al riavvio (con conferma). | 2 |
-| 13 | **Scansione veloce NTFS (MFT/USN)** | Su dischi interi con milioni di file l'enumerazione richiede minuti. | Lettura della Master File Table e del journal USN (richiede privilegi di amministratore): stesse prestazioni di "Everything". | 5 |
-| 14 | **Test dell'interfaccia più ampi** | Gli screenshot automatici vanno guardati a occhio. | Confronto automatico con immagini di riferimento (tolleranza sui pixel) per accorgersi di regressioni grafiche. | 2 |
-| 15 | **Separare il progetto Windows** | `PcOrg.Core` contiene alcune chiamate solo-Windows (MSI, WinVerifyTrust). | Spostarle in `PcOrg.Windows` dietro interfacce, per test più semplici e portabilità. | 1–2 |
-| 16 | **Accessibilità** | Uso da tastiera e con screen reader. | Nomi di automazione su tutti i controlli, ordine di tabulazione, contrasto verificato nei due temi. | 1–2 |
-| 17 | **Pacchetto MSIX / installer** | Alcune aziende preferiscono un installer gestito. | Pacchetto MSIX firmato in aggiunta all'exe portatile. | 1–2 |
+| 12 | ✅ **Aggiornamento automatico dell'app** (v1.3) | Oggi bisogna scaricare a mano ogni Release. | Controllo della Release più recente su GitHub e sostituzione dell'exe al riavvio (con conferma). | 2 |
+| 13 | ✅ **Scansione veloce NTFS (MFT)** (v1.3) | Su dischi interi con milioni di file l'enumerazione richiede minuti. | Lettura della Master File Table e del journal USN (richiede privilegi di amministratore): stesse prestazioni di "Everything". | 5 |
+| 14 | ✅ **Test dell'interfaccia più ampi** (v1.3) | Gli screenshot automatici vanno guardati a occhio. | Confronto automatico con immagini di riferimento (tolleranza sui pixel) per accorgersi di regressioni grafiche. | 2 |
+| 15 | ✅ **Separare il progetto Windows** (v1.3) | `PcOrg.Core` contiene alcune chiamate solo-Windows (MSI, WinVerifyTrust). | Spostarle in `PcOrg.Windows` dietro interfacce, per test più semplici e portabilità. | 1–2 |
+| 16 | ✅ **Accessibilità** (v1.3) | Uso da tastiera e con screen reader. | Nomi di automazione su tutti i controlli, ordine di tabulazione, contrasto verificato nei due temi. | 1–2 |
+| 17 | ✅ **Installer MSI** (v1.3; MSIX richiede la firma, vedi #5) | Alcune aziende preferiscono un installer gestito. | Pacchetto MSIX firmato in aggiunta all'exe portatile. | 1–2 |
+
+## Richieste degli utenti (v1.3)
+
+| Miglioria | Come |
+|---|---|
+| ✅ Elenco delle cartelle monitorate scorrevole | Righe proporzionali con barra di scorrimento e divisore trascinabile (prima la riga aveva altezza massima fissa e tagliava l'elenco). |
+| ✅ App usabile durante la scansione | Stato separato per scansione in background (IsScanning) e operazioni esclusive (IsBusy); scritture sull'indice fuori dal thread dell'interfaccia; salvataggi intermedi almeno ogni secondo. |
+| ✅ Carico su PC e rete | ScanPace: limite di letture al secondo per rete e dischi locali, un file alla volta in modalità leggera, thread in "background mode" di Windows (priorità bassa di CPU e I/O). |
+| ✅ Statistiche dei dischi | DiskActivity (letture per volume, tempo medio), DriveWatcher (dischi collegati/scollegati), storico in settings.json. |
 
 ## Note tecniche sullo stato attuale
 

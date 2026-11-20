@@ -27,7 +27,7 @@
             </StackPanel>
         </Grid>
 
-        <DataGrid x:Name="PlanGrid" Grid.Row="1" Margin="24,0" AutoGenerateColumns="False" IsReadOnly="True" RowHeight="32"
+        <DataGrid x:Name="PlanGrid" AutomationProperties.Name="File da spostare" Grid.Row="1" Margin="24,0" AutoGenerateColumns="False" IsReadOnly="True" RowHeight="32"
                   HeadersVisibility="Column" GridLinesVisibility="None">
             <DataGrid.Columns>
                 <DataGridTemplateColumn Header="Stato" Width="200" MinWidth="200" SortMemberPath="Status">

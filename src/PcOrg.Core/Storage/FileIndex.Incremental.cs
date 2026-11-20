@@ -2,6 +2,7 @@ using System.Globalization;
 using Microsoft.Data.Sqlite;
 using PcOrg.Core.Classification;
 using PcOrg.Core.Diagnostics;
+using PcOrg.Core.Indexing;
 
 namespace PcOrg.Core.Storage;
 
@@ -78,6 +79,52 @@ public sealed partial class FileIndex
         }
     }
 
+    /// <summary>Lettura delle cartelle dal file system, al ritmo impostato e con il conteggio delle letture per disco.</summary>
+    private sealed class FileSystemSource(bool network) : IDirectorySource
+    {
+        public long? GetDirectoryTime(string dir, CancellationToken cancellationToken)
+        {
+            ScanPace.Wait(network, cancellationToken);
+            var start = System.Diagnostics.Stopwatch.GetTimestamp();
+            try
+            {
+                return Directory.Exists(dir) ? ToUnixMilliseconds(Directory.GetLastWriteTimeUtc(dir)) : null;
+            }
+            finally
+            {
+                Drives.DiskActivity.RecordDirectory(dir, System.Diagnostics.Stopwatch.GetElapsedTime(start));
+            }
+        }
+
+        public (IReadOnlyList<ScannedFile> Files, IReadOnlyList<string> Subdirectories) List(string dir, CancellationToken cancellationToken)
+        {
+            ScanPace.Wait(network, cancellationToken);
+            var start = System.Diagnostics.Stopwatch.GetTimestamp();
+            var files = new List<ScannedFile>();
+            var subdirs = new List<string>();
+            foreach (var entry in new DirectoryInfo(dir).EnumerateFileSystemInfos("*", ListOptions))
+            {
+                if (entry is FileInfo f)
+                {
+                    try
+                    {
+                        files.Add(new ScannedFile(f.FullName, f.Length, f.LastWriteTimeUtc));
+                    }
+                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                    {
+                        // file sparito o illeggibile nel frattempo: si salta
+                    }
+                }
+                else if (!IsDirectoryLink(entry))
+                {
+                    subdirs.Add(entry.FullName);
+                }
+            }
+            Drives.DiskActivity.RecordDirectory(dir, System.Diagnostics.Stopwatch.GetElapsedTime(start));
+            return (files, subdirs);
+        }
+    }
+
     /// <summary>
     /// Vero se per la cartella vale l'aggiornamento rapido. Su FAT32 ed exFAT (chiavette, schede SD)
     /// Windows non aggiorna la data della cartella quando cambia il suo contenuto: lì serve sempre la
@@ -115,8 +162,10 @@ public sealed partial class FileIndex
     /// </summary>
     /// <param name="full">Rilegge tutte le cartelle anche se la loro data non è cambiata.</param>
     /// <param name="isStillAvailable">Controllato prima di eliminare le cartelle sparite (es. rete caduta).</param>
+    /// <param name="source">Da dove leggere cartelle e file: di norma il file system; per la scansione veloce NTFS
+    /// una fotografia della Master File Table (<see cref="Indexing.IDirectorySource"/>).</param>
     public ScanResult UpdateRoot(long rootId, string startPath, bool full = false, IProgress<ScanResult>? progress = null,
-        CancellationToken cancellationToken = default, Func<bool>? isStillAvailable = null)
+        CancellationToken cancellationToken = default, Func<bool>? isStillAvailable = null, IDirectorySource? source = null)
     {
         startPath = PathUtil.Normalize(startPath);
         using var conn = Connect();
@@ -150,6 +199,10 @@ public sealed partial class FileIndex
 
         var tx = conn.BeginTransaction();
         var pending = 0;
+        // Salvataggio anche a tempo: su una cartella di rete lenta 200 cartelle possono richiedere minuti,
+        // e intanto l'indice resterebbe bloccato in scrittura per le altre operazioni (etichette, spostamenti).
+        var sinceCommit = System.Diagnostics.Stopwatch.StartNew();
+        source ??= new FileSystemSource(NetworkPaths.IsNetworkPath(startPath));
         try
         {
             while (stack.Count > 0)
@@ -170,12 +223,12 @@ public sealed partial class FileIndex
                 long mtime;
                 try
                 {
-                    if (!Directory.Exists(dir))
+                    if (source.GetDirectoryTime(dir, cancellationToken) is not { } time)
                     {
                         visited.Remove(dir); // sparita: verrà tolta come "non visitata"
                         continue;
                     }
-                    mtime = ToUnixMilliseconds(Directory.GetLastWriteTimeUtc(dir));
+                    mtime = time;
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                 {
@@ -190,20 +243,11 @@ public sealed partial class FileIndex
                 }
 
                 // Cartella nuova o cambiata: se ne legge il contenuto e lo si confronta con l'indice.
-                List<FileInfo> files;
-                List<string> subdirs;
+                IReadOnlyList<ScannedFile> files;
+                IReadOnlyList<string> subdirs;
                 try
                 {
-                    var info = new DirectoryInfo(dir);
-                    files = [];
-                    subdirs = [];
-                    foreach (var entry in info.EnumerateFileSystemInfos("*", ListOptions))
-                    {
-                        if (entry is FileInfo f)
-                            files.Add(f);
-                        else if (!IsDirectoryLink(entry))
-                            subdirs.Add(entry.FullName);
-                    }
+                    (files, subdirs) = source.List(dir, cancellationToken);
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                 {
@@ -223,8 +267,9 @@ public sealed partial class FileIndex
                 if (Log.IsEnabled(LogLevel.Debug) && delta.Added + delta.Updated + delta.Removed > 0)
                     Log.Debug($"Cartella aggiornata: {dir} (+{delta.Added} ~{delta.Updated} -{delta.Removed})");
 
-                if (++pending >= DirectoryBatchSize)
+                if (++pending >= DirectoryBatchSize || (pending > 0 && sinceCommit.ElapsedMilliseconds >= 1000))
                 {
+                    sinceCommit.Restart();
                     // Salvataggio intermedio: un'interruzione non fa perdere il lavoro fatto.
                     tx.Commit();
                     tx.Dispose();
@@ -313,7 +358,7 @@ public sealed partial class FileIndex
     private readonly record struct FolderDelta(int Added, int Updated, int Removed);
 
     /// <summary>Allinea i file di una sola cartella con quanto trovato su disco, scrivendo solo le differenze.</summary>
-    private static FolderDelta SyncFolder(SqliteConnection conn, SqliteTransaction tx, long rootId, string dir, List<FileInfo> files)
+    private static FolderDelta SyncFolder(SqliteConnection conn, SqliteTransaction tx, long rootId, string dir, IReadOnlyList<ScannedFile> files)
     {
         var existing = new Dictionary<string, (long Size, long Mtime)>(StringComparer.OrdinalIgnoreCase);
         using (var select = Command(conn, "SELECT path, size, modified_utc FROM files WHERE folder = $f COLLATE NOCASE;", tx))
@@ -329,18 +374,10 @@ public sealed partial class FileIndex
         using var upsert = UpsertCommand(conn, tx);
         foreach (var file in files)
         {
-            present.Add(file.FullName);
-            long size, mtime;
-            try
-            {
-                size = file.Length;
-                mtime = ToUnixSeconds(file.LastWriteTimeUtc);
-            }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-            {
-                continue;
-            }
-            if (existing.TryGetValue(file.FullName, out var old))
+            present.Add(file.Path);
+            var size = file.Size;
+            var mtime = ToUnixSeconds(file.ModifiedUtc);
+            if (existing.TryGetValue(file.Path, out var old))
             {
                 if (old.Size == size && old.Mtime == mtime)
                     continue; // invariato: nessuna scrittura
@@ -350,7 +387,7 @@ public sealed partial class FileIndex
             {
                 added++;
             }
-            BindAndRun(upsert, rootId, file.FullName, size, mtime);
+            BindAndRun(upsert, rootId, file.Path, size, mtime);
         }
 
         foreach (var gone in existing.Keys.Where(p => !present.Contains(p)))

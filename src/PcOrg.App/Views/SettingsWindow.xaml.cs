@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PcOrg.App.Infrastructure;
 using PcOrg.App.ViewModels;
+using PcOrg.Core;
 using PcOrg.Core.Diagnostics;
 using PcOrg.Core.Classification;
 using PcOrg.Core.Rules;
@@ -68,6 +69,11 @@ public partial class SettingsWindow : Window
         VerifySignatures.IsChecked = settings.VerifySignatures;
         IndexContent.IsChecked = settings.IndexContent;
         CheckUpdates.IsChecked = settings.CheckUpdatesOnStartup;
+        NotifyNewDisks.IsChecked = settings.NotifyNewDisks;
+        FastNtfsScan.IsChecked = settings.FastNtfsScan;
+        NetworkDetailsOnDemand.IsChecked = settings.NetworkDetailsOnDemand;
+        SelectSpeed(NetworkSpeedChooser, settings.NetworkScanSpeed);
+        SelectSpeed(LocalSpeedChooser, settings.LocalScanSpeed);
         ShowPreview.IsChecked = vm.ShowPreviewPanel;
         ShowDetails.IsChecked = vm.ShowDetailsPanel;
 
@@ -235,7 +241,7 @@ public partial class SettingsWindow : Window
         SettingsText.Text = _vm.Settings.FilePath ?? "(non salvate)";
         LogText.Text = Log.FilePath is null ? "(non attivo)"
             : Log.Enabled ? Log.FilePath : $"{Log.FilePath} (disattivato)";
-        var busy = _vm.IsBusy;
+        var busy = _vm.IsWorking;
         CompactButton.IsEnabled = !busy;
         RebuildButton.IsEnabled = !busy;
     }
@@ -291,8 +297,19 @@ public partial class SettingsWindow : Window
             LogEnabled: LogEnabled.IsChecked == true,
             LogLevel: level,
             IndexContent: IndexContent.IsChecked == true,
-            CheckUpdatesOnStartup: CheckUpdates.IsChecked == true));
+            CheckUpdatesOnStartup: CheckUpdates.IsChecked == true,
+            LocalScanSpeed: SelectedSpeed(LocalSpeedChooser, ScanSpeed.Massima),
+            NetworkScanSpeed: SelectedSpeed(NetworkSpeedChooser, ScanSpeed.Normale),
+            NotifyNewDisks: NotifyNewDisks.IsChecked == true,
+            FastNtfsScan: FastNtfsScan.IsChecked == true,
+            NetworkDetailsOnDemand: NetworkDetailsOnDemand.IsChecked == true));
         _main.SaveLayout();
         DialogResult = true;
     }
+
+    private static void SelectSpeed(ComboBox chooser, ScanSpeed speed) =>
+        chooser.SelectedItem = chooser.Items.OfType<ComboBoxItem>().FirstOrDefault(i => (string)i.Tag == speed.ToString()) ?? chooser.Items[0];
+
+    private static ScanSpeed SelectedSpeed(ComboBox chooser, ScanSpeed fallback) =>
+        Enum.TryParse<ScanSpeed>((chooser.SelectedItem as ComboBoxItem)?.Tag as string, out var s) ? s : fallback;
 }

@@ -22,11 +22,11 @@
             </StackPanel>
 
             <TextBlock Text="Etichette (separate da virgola)" Margin="0,0,0,4" />
-            <TextBox x:Name="TagsBox" Padding="6,4" ToolTip="Es. ufficio, stampante, da tenere" />
+            <TextBox x:Name="TagsBox" AutomationProperties.Name="Etichette" Padding="6,4" ToolTip="Es. ufficio, stampante, da tenere" />
             <WrapPanel x:Name="KnownTags" Margin="0,8,0,0" />
 
             <TextBlock Text="Nota" Margin="0,12,0,4" />
-            <TextBox x:Name="NoteBox" Padding="6,4" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="80" MaxHeight="160"
+            <TextBox x:Name="NoteBox" AutomationProperties.Name="Nota" Padding="6,4" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="80" MaxHeight="160"
                      VerticalScrollBarVisibility="Auto" />
             <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="0,10,0,0"
                        Text="Etichette e note si trovano con la ricerca normale, seguono il file quando lo sposti con Gestione File e restano anche se ricostruisci l'indice. Lascia vuoti i campi per toglierle." />

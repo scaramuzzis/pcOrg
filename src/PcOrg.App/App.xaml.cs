@@ -17,7 +17,13 @@ namespace PcOrg.App;
 /// </summary>
 public partial class App : Application
 {
+    /// <summary>Le funzioni di Windows (registro, periferiche, Cestino, firme) sono in PcOrg.Windows.</summary>
+    static App() => PcOrg.Windows.WindowsPlatformSetup.Register();
+
     private Mutex? _instance;
+
+    /// <summary>Argomento del riavvio come amministratore: "--attendi-chiusura &lt;pid&gt;".</summary>
+    public const string RestartArgument = "--attendi-chiusura";
     private bool _sessionStarted;
 
     /// <summary>
@@ -33,6 +39,21 @@ public partial class App : Application
 
         // Registro attività: tutto ciò che succede (e ogni errore) finisce in log\pcorg.log.
         Log.Initialize(AppPaths.LogFolder);
+
+        // Riavvio come amministratore: si aspetta che la copia precedente si chiuda.
+        var wait = Array.IndexOf(e.Args, RestartArgument);
+        if (wait >= 0 && wait + 1 < e.Args.Length && int.TryParse(e.Args[wait + 1], out var previous))
+        {
+            try
+            {
+                using var old = System.Diagnostics.Process.GetProcessById(previous);
+                old.WaitForExit(TimeSpan.FromSeconds(30));
+            }
+            catch (ArgumentException)
+            {
+                // già chiusa
+            }
+        }
 
         // Una sola istanza per cartella dei dati: due copie aperte insieme scriverebbero sullo stesso
         // indice e sulle stesse preferenze. Se Gestione File è già aperto si porta in primo piano quello.

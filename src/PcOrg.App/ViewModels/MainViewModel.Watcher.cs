@@ -1,5 +1,6 @@
 using System.IO;
 using PcOrg.App.Infrastructure;
+using PcOrg.Core;
 using PcOrg.Core.Diagnostics;
 using PcOrg.Core.Indexing;
 using PcOrg.Core.Metadata;
@@ -38,12 +39,12 @@ public sealed partial class MainViewModel
     {
         // Durante una scansione o uno spostamento l'indice è già impegnato in scrittura: si aspetta,
         // così le modifiche rilevate non vanno perse per un blocco del database.
-        while (IsBusy)
+        while (IsWorking)
             await Task.Delay(500);
         await _watchGate.WaitAsync();
         try
         {
-            var result = await Task.Run(() => _index.ApplyChanges(changes));
+            var result = await Task.Run(() => ScanPace.InBackground(() => _index.ApplyChanges(changes)));
             if (result.FilesChanged == 0)
                 return;
             Log.Info($"Modifiche rilevate automaticamente: {DescribeChanges(result)} " +
@@ -52,14 +53,14 @@ public sealed partial class MainViewModel
             // Versioni e firme dei programmi appena arrivati.
             if (result.FilesAdded + result.FilesUpdated > 0)
             {
-                await Task.Run(() => MetadataUpdater.Run(_index, verifySignatures: _settings.VerifySignatures));
+                await Task.Run(() => ScanPace.InBackground(() => MetadataUpdater.Run(_index, verifySignatures: _settings.VerifySignatures)));
                 if (_settings.IndexContent)
-                    await Task.Run(() => PcOrg.Core.Content.ContentIndexer.Run(_index));
+                    await Task.Run(() => ScanPace.InBackground(() => PcOrg.Core.Content.ContentIndexer.Run(_index)));
             }
 
             await _dispatcher.InvokeAsync(async () =>
             {
-                if (!IsBusy)
+                if (!IsWorking)
                     Status = $"Modifiche rilevate: {DescribeChanges(result)}";
                 await RefreshAsync();
             }).Task.Unwrap();
@@ -75,5 +76,10 @@ public sealed partial class MainViewModel
     }
 
     /// <summary>Da chiamare alla chiusura: smette di osservare le cartelle.</summary>
-    public void Shutdown() => EnableWatching(false);
+    public void Shutdown()
+    {
+        EnableWatching(false);
+        _driveWatcher?.Dispose();
+        _driveWatcher = null;
+    }
 }

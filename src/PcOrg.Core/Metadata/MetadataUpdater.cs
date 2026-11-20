@@ -22,17 +22,23 @@ public static class MetadataUpdater
                 break;
 
             var results = new (PendingMetadata File, FileMeta? Meta)[batch.Count];
+            var network = batch.Any(b => NetworkPaths.IsNetworkPath(b.Path));
             Parallel.For(0, batch.Count,
-                new ParallelOptions { MaxDegreeOfParallelism = Math.Clamp(Environment.ProcessorCount / 2, 1, 4), CancellationToken = cancellationToken },
+                new ParallelOptions
+                {
+                    MaxDegreeOfParallelism = ScanPace.Parallelism(network, Math.Clamp(Environment.ProcessorCount / 2, 1, 4)),
+                    CancellationToken = cancellationToken,
+                },
                 i =>
                 {
                     FileMeta? meta = null;
+                    ScanPace.WaitFor(batch[i].Path, cancellationToken);
                     try
                     {
                         // Sulle cartelle di rete la verifica della firma leggerebbe ogni file per intero
                         // attraverso la rete: si legge solo chi ha firmato, senza verificarla.
                         var verify = verifySignatures && !NetworkPaths.IsNetworkPath(batch[i].Path);
-                        meta = MetadataExtractor.Extract(batch[i].Path, verify);
+                        meta = Drives.DiskActivity.Measure(batch[i].Path, directory: false, () => MetadataExtractor.Extract(batch[i].Path, verify));
                     }
                     catch (Exception ex) when (ex is not OperationCanceledException)
                     {

@@ -9,7 +9,11 @@ using PcOrg.Core.Storage;
 namespace PcOrg.App.ViewModels;
 
 /// <summary>Riquadro della Panoramica: un numero in evidenza, una riga di spiegazione e la scheda che apre.</summary>
-public sealed record StatCard(string Title, string Value, string Detail, string Glyph, Brush Accent, string Tab);
+public sealed record StatCard(string Title, string Value, string Detail, string Glyph, Brush Accent, string Tab)
+{
+    /// <summary>Testo letto dagli screen reader per il riquadro.</summary>
+    public string AccessibleText => $"{Title}: {Value}, {Detail}";
+}
 
 /// <summary>Barra "spazio per categoria" della Panoramica.</summary>
 public sealed record CategoryBar(FileCategory Category, string Name, string Glyph, Brush Accent, long Count, long Size, double Percent)
@@ -59,7 +63,7 @@ public sealed partial class MainViewModel
 
         CategoryBars.Clear();
         var max = _lastStats.Count == 0 ? 0 : _lastStats.Max(s => s.TotalSize);
-        foreach (var stat in _lastStats.OrderByDescending(s => s.TotalSize).ThenByDescending(s => s.Count))
+        foreach (var stat in _lastStats.OrderByDescending(s => s.TotalSize).ThenByDescending(s => s.Count).ThenBy(s => s.Category.DisplayName(), StringComparer.CurrentCultureIgnoreCase))
             CategoryBars.Add(new CategoryBar(stat.Category, stat.Category.DisplayName(), Glyphs.ForCategory(stat.Category),
                 CategoryColors.For(stat.Category), stat.Count, stat.TotalSize, max == 0 ? 0 : 100.0 * stat.TotalSize / max));
     }

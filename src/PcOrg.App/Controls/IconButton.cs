@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Media;
 
@@ -69,4 +70,23 @@ public class IconButton : Button
     }
 
     private string? AutomationName => System.Windows.Automation.AutomationProperties.GetName(this);
+
+    /// <summary>
+    /// Nome letto dagli screen reader: quello esplicito, altrimenti il testo del pulsante, altrimenti il
+    /// suggerimento (per i pulsanti con la sola icona). Senza, verrebbe letto il carattere dell'icona.
+    /// </summary>
+    public string AccessibleName =>
+        !string.IsNullOrWhiteSpace(AutomationName) ? AutomationName!
+        : !string.IsNullOrWhiteSpace(Label) ? Label!
+        : ToolTip as string ?? (ToolTip as ToolTip)?.Content as string ?? "";
+
+    protected override AutomationPeer OnCreateAutomationPeer() => new IconButtonAutomationPeer(this);
+
+    private sealed class IconButtonAutomationPeer(IconButton owner) : ButtonAutomationPeer(owner)
+    {
+        protected override string GetNameCore() => owner.AccessibleName;
+
+        // Il contenuto (icona e testo) è già riassunto nel nome: non va letto una seconda volta.
+        protected override List<AutomationPeer>? GetChildrenCore() => null;
+    }
 }

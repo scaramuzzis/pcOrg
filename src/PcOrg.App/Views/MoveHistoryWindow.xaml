@@ -30,7 +30,7 @@
             </StackPanel>
         </Grid>
 
-        <DataGrid x:Name="BatchGrid" Grid.Row="1" Margin="24,0" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" RowHeight="32"
+        <DataGrid x:Name="BatchGrid" AutomationProperties.Name="Spostamenti eseguiti" Grid.Row="1" Margin="24,0" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" RowHeight="32"
                   HeadersVisibility="Column" GridLinesVisibility="None" SelectionChanged="BatchGrid_SelectionChanged">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Data" Width="150" MinWidth="150"
@@ -55,7 +55,7 @@
 
         <TextBlock Grid.Row="2" Text="FILE DELLO SPOSTAMENTO SELEZIONATO" Style="{StaticResource SectionHeader}" Margin="26,14,0,6" />
 
-        <DataGrid x:Name="EntryGrid" Grid.Row="3" Margin="24,0" AutoGenerateColumns="False" IsReadOnly="True" RowHeight="30"
+        <DataGrid x:Name="EntryGrid" AutomationProperties.Name="File dello spostamento selezionato" Grid.Row="3" Margin="24,0" AutoGenerateColumns="False" IsReadOnly="True" RowHeight="30"
                   HeadersVisibility="Column" GridLinesVisibility="None">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Da" Binding="{Binding FromPath}" Width="*" ElementStyle="{StaticResource CellText}" />

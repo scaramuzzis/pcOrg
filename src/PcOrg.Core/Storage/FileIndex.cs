@@ -607,15 +607,31 @@ public sealed partial class FileIndex
 
     // ------------------------------------------------------------------ Metadati
 
+    /// <summary>
+    /// Vero per leggere versioni e firme dei file nelle cartelle di rete solo quando l'utente li seleziona
+    /// (la scansione in background le salta). Falso: si leggono in background come per le cartelle locali.
+    /// </summary>
+    public bool NetworkMetadataOnDemand { get; set; }
+
+    /// <summary>Condizione SQL sulle cartelle di cui leggere i metadati in background.</summary>
+    private string MetadataRootFilter()
+    {
+        if (!NetworkMetadataOnDemand)
+            return "";
+        var local = GetRoots().Where(r => !r.IsNetwork).Select(r => r.Id.ToString(CultureInfo.InvariantCulture)).ToList();
+        return $" AND f.root_id IN ({(local.Count == 0 ? "-1" : string.Join(",", local))})";
+    }
+
     /// <summary>File da cui leggere (o rileggere, se modificati) versione, produttore e firma.</summary>
     public IReadOnlyList<PendingMetadata> GetFilesNeedingMetadata(int limit = 500)
     {
         var extensions = string.Join(", ", MetadataExtractor.SupportedExtensions.Select(e => $"'{e}'"));
+        var roots = MetadataRootFilter();
         using var conn = Connect();
         using var cmd = Command(conn, $"""
             SELECT f.id, f.path, f.size, f.modified_utc FROM files f
             LEFT JOIN file_meta m ON m.file_id = f.id
-            WHERE f.ext IN ({extensions})
+            WHERE f.ext IN ({extensions}){roots}
               AND (m.file_id IS NULL OR m.scanned_size <> f.size OR m.scanned_mtime <> f.modified_utc)
             ORDER BY f.id LIMIT $n;
             """);
@@ -627,13 +643,23 @@ public sealed partial class FileIndex
         return list;
     }
 
+    /// <summary>Cartelle già note di una cartella monitorata (per stimare la durata di un aggiornamento).</summary>
+    public long CountDirectories(long rootId)
+    {
+        using var conn = Connect();
+        using var cmd = Command(conn, "SELECT COUNT(*) FROM dirs WHERE root_id = $r;");
+        cmd.Parameters.AddWithValue("$r", rootId);
+        return Convert.ToInt64(cmd.ExecuteScalar(), CultureInfo.InvariantCulture);
+    }
+
     public int CountFilesNeedingMetadata()
     {
         var extensions = string.Join(", ", MetadataExtractor.SupportedExtensions.Select(e => $"'{e}'"));
+        var roots = MetadataRootFilter();
         using var conn = Connect();
         return Convert.ToInt32(Scalar(conn, $"""
             SELECT COUNT(*) FROM files f LEFT JOIN file_meta m ON m.file_id = f.id
-            WHERE f.ext IN ({extensions})
+            WHERE f.ext IN ({extensions}){roots}
               AND (m.file_id IS NULL OR m.scanned_size <> f.size OR m.scanned_mtime <> f.modified_utc);
             """), CultureInfo.InvariantCulture);
     }

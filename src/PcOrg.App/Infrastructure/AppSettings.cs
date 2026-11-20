@@ -30,6 +30,19 @@ public sealed class WindowPlacement
     public bool Maximized { get; set; }
 }
 
+/// <summary>Disco visto almeno una volta da Gestione File (per riconoscere i dischi nuovi e contarne i collegamenti).</summary>
+public sealed class KnownDisk
+{
+    public string Id { get; set; } = "";
+    public string Label { get; set; } = "";
+    public string Type { get; set; } = "";
+    public long TotalBytes { get; set; }
+    public DateTime FirstSeenUtc { get; set; }
+    public DateTime LastSeenUtc { get; set; }
+    /// <summary>Quante volte è stato collegato mentre Gestione File era aperto.</summary>
+    public int Connections { get; set; }
+}
+
 /// <summary>
 /// Preferenze dell'utente, salvate in settings.json nella cartella dei dati.
 /// Il file è JSON leggibile: se viene danneggiato o cancellato l'app riparte con i valori predefiniti.
@@ -58,6 +71,27 @@ public sealed class AppSettings
 
     /// <summary>Rileva subito file aggiunti, modificati o eliminati mentre l'app è aperta.</summary>
     public bool WatchFolders { get; set; } = true;
+
+    /// <summary>Dischi già visti (chiavette e dischi esterni compresi).</summary>
+    public List<KnownDisk> KnownDisks { get; set; } = [];
+
+    /// <summary>Avvisa quando viene collegato un disco mai visto prima.</summary>
+    public bool NotifyNewDisks { get; set; } = true;
+
+    /// <summary>
+    /// Cartelle di rete: versioni e firme di programmi e installer si leggono solo quando selezioni il file,
+    /// non in background durante la scansione (carico minimo sul NAS; Prodotti e Driver si riempiono man mano).
+    /// </summary>
+    public bool NetworkDetailsOnDemand { get; set; }
+
+    /// <summary>Scansione veloce dei dischi NTFS leggendo la MFT (solo se l'app è avviata come amministratore).</summary>
+    public bool FastNtfsScan { get; set; } = true;
+
+    /// <summary>Ritmo di lettura delle cartelle sui dischi del PC.</summary>
+    public PcOrg.Core.ScanSpeed LocalScanSpeed { get; set; } = PcOrg.Core.ScanSpeed.Massima;
+
+    /// <summary>Ritmo di lettura delle cartelle di rete: limita il carico sul NAS o sul computer che le condivide.</summary>
+    public PcOrg.Core.ScanSpeed NetworkScanSpeed { get; set; } = PcOrg.Core.ScanSpeed.Normale;
 
     // ---------------------------------------------------------------- Registro attività
 

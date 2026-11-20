@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\PcOrg.Core\PcOrg.Core.csproj" />
+    <ProjectReference Include="..\..\src\PcOrg.Windows\PcOrg.Windows.csproj" />
   </ItemGroup>
 
 </Project>

@@ -16,7 +16,15 @@ public enum UpdateStatus
     NonDisponibile,
 }
 
-public sealed record UpdateInfo(UpdateStatus Status, string? LatestVersion, string? Url, string? Error = null);
+/// <summary>File allegato a una Release (pacchetto scaricabile).</summary>
+/// <param name="Sha256">Impronta SHA-256 in esadecimale minuscolo dichiarata da GitHub, se presente.</param>
+public sealed record ReleaseAsset(string Name, string DownloadUrl, long Size, string? Sha256);
+
+public sealed record UpdateInfo(UpdateStatus Status, string? LatestVersion, string? Url, string? Error = null)
+{
+    /// <summary>Pacchetti allegati all'ultima Release (vuoto se non disponibili).</summary>
+    public IReadOnlyList<ReleaseAsset> Assets { get; init; } = [];
+}
 
 /// <summary>
 /// Controlla sulla pagina Releases del progetto se esiste una versione più recente.
@@ -67,8 +75,30 @@ public static class UpdateChecker
         if (string.IsNullOrWhiteSpace(tag))
             return new UpdateInfo(UpdateStatus.NonDisponibile, null, ReleasesPage, "Risposta non riconosciuta.");
         var latest = tag.TrimStart('v', 'V');
+        var assets = ParseAssets(doc.RootElement);
         return VersionComparer.Instance.Compare(latest, currentVersion) > 0
-            ? new UpdateInfo(UpdateStatus.NuovaVersione, latest, url)
-            : new UpdateInfo(UpdateStatus.Aggiornato, latest, url);
+            ? new UpdateInfo(UpdateStatus.NuovaVersione, latest, url) { Assets = assets }
+            : new UpdateInfo(UpdateStatus.Aggiornato, latest, url) { Assets = assets };
+    }
+
+    private static List<ReleaseAsset> ParseAssets(JsonElement root)
+    {
+        var list = new List<ReleaseAsset>();
+        if (!root.TryGetProperty("assets", out var assets) || assets.ValueKind != JsonValueKind.Array)
+            return list;
+        foreach (var a in assets.EnumerateArray())
+        {
+            var name = a.TryGetProperty("name", out var n) ? n.GetString() : null;
+            var download = a.TryGetProperty("browser_download_url", out var d) ? d.GetString() : null;
+            if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(download))
+                continue;
+            var size = a.TryGetProperty("size", out var s) && s.TryGetInt64(out var v) ? v : 0;
+            string? sha = null;
+            if (a.TryGetProperty("digest", out var dg) && dg.GetString() is { } digest
+                && digest.StartsWith("sha256:", StringComparison.OrdinalIgnoreCase))
+                sha = digest[7..].Trim().ToLowerInvariant();
+            list.Add(new ReleaseAsset(name, download, size, sha));
+        }
+        return list;
     }
 }

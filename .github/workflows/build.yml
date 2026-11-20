@@ -22,14 +22,26 @@ jobs:
       - name: Test
         run: dotnet test PcOrg.sln -c Release
 
+      # Prove con servizi reali (catalogo di winget): informative, non bloccano la build.
+      - name: Test con internet
+        continue-on-error: true
+        env:
+          PCORG_ONLINE_TESTS: "1"
+        run: dotnet test tests/PcOrg.Core.Tests -c Release --no-build --filter "FullyQualifiedName~Indice_reale" --logger "console;verbosity=detailed"
+
       # Screenshot dell'app con dati di esempio, pubblicati sul ramo "screenshots".
       - name: Screenshot
         id: shots
         if: github.event_name == 'push'
         continue-on-error: true
+        timeout-minutes: 12
         env:
           PCORG_SCREENSHOTS: ${{ github.workspace }}\screenshots
         run: dotnet test tests/PcOrg.App.Tests -c Release --no-build --filter "FullyQualifiedName~Screenshots"
+
+      - name: Avanzamento degli screenshot
+        if: always() && github.event_name == 'push'
+        run: if (Test-Path screenshot-avanzamento.txt) { Get-Content screenshot-avanzamento.txt }
 
       - name: Pubblica gli screenshot
         if: github.event_name == 'push' && steps.shots.outcome == 'success'
@@ -50,6 +62,23 @@ jobs:
           name: screenshot
           path: screenshots/*.png
 
+      # Confronto con le schermate approvate (tests/PcOrg.App.Tests/Riferimenti): fallisce se una cambia troppo.
+      - name: Confronto con i riferimenti
+        id: visual
+        if: github.event_name == 'push' && steps.shots.outcome == 'success'
+        env:
+          PCORG_SCREENSHOTS: ${{ github.workspace }}\screenshots
+          PCORG_REFERENCES: ${{ github.workspace }}\tests\PcOrg.App.Tests\Riferimenti
+        run: dotnet test tests/PcOrg.App.Tests -c Release --no-build --filter "FullyQualifiedName~VisualRegression"
+
+      - name: Carica il confronto
+        if: always() && steps.visual.outcome != 'skipped'
+        uses: actions/upload-artifact@v5
+        with:
+          name: confronto-screenshot
+          path: confronto-screenshot/
+          if-no-files-found: ignore
+
       # Tre pacchetti: portatile (consigliato), leggero (richiede .NET 10 Desktop Runtime), file unico.
       - name: Pubblica i pacchetti
         run: |
@@ -59,6 +88,25 @@ jobs:
           Compress-Archive -Path out/portatile/GestioneFile -DestinationPath GestioneFile-portatile-win-x64.zip
           Compress-Archive -Path out/leggero/GestioneFile -DestinationPath GestioneFile-leggero-win-x64.zip
           Copy-Item out/fileunico/GestioneFile.exe GestioneFile.exe
+
+      # Installer MSI (installazione in Programmi, per tutti gli utenti) costruito dal pacchetto portatile.
+      - name: Installer MSI
+        id: msi
+        continue-on-error: true
+        run: |
+          $v = ([xml](Get-Content src/PcOrg.App/PcOrg.App.csproj)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
+          dotnet build installer/GestioneFile.Installer.wixproj -c Release -p:SourceDir=..\out\portatile\GestioneFile -p:ProductVersion=$v
+          Copy-Item installer/bin/x64/Release/GestioneFile-win-x64.msi GestioneFile-win-x64.msi -ErrorAction SilentlyContinue
+          if (-not (Test-Path GestioneFile-win-x64.msi)) { Get-ChildItem installer/bin -Recurse -Filter *.msi | Select-Object -First 1 | Copy-Item -Destination GestioneFile-win-x64.msi }
+          # Prova: installazione silenziosa, controllo dei file, disinstallazione.
+          $p = Start-Process msiexec.exe -ArgumentList '/i', 'GestioneFile-win-x64.msi', '/qn', '/l*v', 'msi-install.log' -Wait -PassThru
+          if ($p.ExitCode -ne 0) { Get-Content msi-install.log -Tail 60; throw "Installazione MSI non riuscita (codice $($p.ExitCode))." }
+          $exe = Join-Path $env:ProgramFiles 'Gestione File\GestioneFile.exe'
+          if (-not (Test-Path $exe)) { throw "Dopo l'installazione manca $exe." }
+          if (-not (Test-Path (Join-Path $env:ProgramFiles 'Gestione File\GestioneFile.installato'))) { throw "Manca il contrassegno dell'installazione." }
+          $p = Start-Process msiexec.exe -ArgumentList '/x', 'GestioneFile-win-x64.msi', '/qn' -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "Disinstallazione MSI non riuscita (codice $($p.ExitCode))." }
+          Write-Host "Installer MSI ${v}: installazione e disinstallazione riuscite."
 
       # Prova di avvio reale: lancia ogni exe pubblicato (con dati isolati in una copia temporanea)
       # e fallisce se entro 90 secondi non compare la finestra principale. I test dell'interfaccia
@@ -94,6 +142,8 @@ jobs:
             GestioneFile-portatile-win-x64.zip
             GestioneFile-leggero-win-x64.zip
             GestioneFile.exe
+            GestioneFile-win-x64.msi
+          if-no-files-found: warn
 
       # Si pubblica una Release quando si spinge un tag v* oppure quando il messaggio
       # del commit contiene [release] (la versione viene letta da PcOrg.App.csproj).
@@ -117,9 +167,11 @@ jobs:
             - **GestioneFile-portatile-win-x64.zip** (consigliato): estrai la cartella `GestioneFile` dove vuoi e avvia `GestioneFile.exe`. Contiene tutto il necessario, si avvia velocemente.
             - **GestioneFile-leggero-win-x64.zip** (2–3 MB): come il portatile ma richiede il [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0); se manca, Windows propone di scaricarlo.
             - **GestioneFile.exe**: un unico file da copiare, più lento ad avviarsi perché deve decomprimersi.
+            - **GestioneFile-win-x64.msi**: installazione classica in Programmi con collegamento nel menu Start, adatta anche alla distribuzione in azienda (criteri di gruppo, Intune).
 
             Se compare "PC protetto da Windows": Ulteriori informazioni → Esegui comunque.
           files: |
             GestioneFile-portatile-win-x64.zip
             GestioneFile-leggero-win-x64.zip
             GestioneFile.exe
+            GestioneFile-win-x64.msi

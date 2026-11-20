@@ -24,7 +24,8 @@ public class Screenshots
 {
     private sealed class SilentDialogs : IDialogService
     {
-        public string? PickFolder(string title) => null;
+        public string? PickFolder(string title) => FolderToPick;
+        public string? FolderToPick { get; set; }
         public string? AskNetworkFolder() => null;
         public string? PickSaveFile(string title, string defaultName, string filter) => SavePath;
         public void ShowAbout() { }
@@ -50,14 +51,17 @@ public class Screenshots
         Directory.CreateDirectory(output);
 
         Exception? failure = null;
+        _progressFile = Path.Combine(output, "..", "screenshot-avanzamento.txt");
+        File.WriteAllText(_progressFile, "");
         var thread = new Thread(() =>
         {
             try { Run(output); }
             catch (Exception ex) { failure = ex; }
-        });
+        }) { IsBackground = true }; // se si blocca non deve impedire la chiusura del processo di test
         thread.SetApartmentState(ApartmentState.STA);
         thread.Start();
-        thread.Join();
+        if (!thread.Join(TimeSpan.FromMinutes(8)))
+            throw new Xunit.Sdk.XunitException($"Screenshot bloccati dopo: {_lastStep}");
         if (failure is not null)
             throw new Xunit.Sdk.XunitException("Errore negli screenshot: " + failure);
     }
@@ -65,9 +69,13 @@ public class Screenshots
     private static void Run(string output)
     {
         SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext(Dispatcher.CurrentDispatcher));
-        var temp = Path.Combine(Path.GetTempPath(), "pcorg-shots-" + Guid.NewGuid().ToString("N"));
+        // Nome fisso (non casuale): i percorsi mostrati nelle schermate restano uguali da una build all'altra.
+        var temp = Path.Combine(Path.GetTempPath(), "pcorg-shots");
+        if (Directory.Exists(temp))
+            Directory.Delete(temp, recursive: true);
         var download = Path.Combine(temp, "Download");
         var archive = Path.Combine(temp, "Archivio");
+        Step("creazione dei dati di esempio");
         SampleData.Create(download);
         Directory.CreateDirectory(archive);
 
@@ -101,9 +109,12 @@ public class Screenshots
         index.SyncRoot(usbRoot.Id, FolderScanner.Enumerate(usbRoot.Path));
         Directory.Delete(usb, recursive: true);
 
+        Step("lettura metadati");
         MetadataUpdater.Run(index);
+        Step("lettura contenuto");
         PcOrg.Core.Content.ContentIndexer.Run(index);
 
+        Step("dati di esempio pronti");
         var app = new App();
         app.InitializeComponent();
         app.ShutdownMode = ShutdownMode.OnExplicitShutdown;
@@ -115,7 +126,8 @@ public class Screenshots
         welcome.Close();
 
         // 2. Elenco file con dettagli di un programma firmato
-        var vm = new MainViewModel(index, new SilentDialogs());
+        var mainDialogs = new SilentDialogs();
+        var vm = new MainViewModel(index, mainDialogs);
         var window = new MainWindow { DataContext = vm };
         app.MainWindow = window;
         Show(window);
@@ -350,6 +362,46 @@ public class Screenshots
             Pump(1500);
         }
 
+        // 34. Scheda Dischi: spazio, file indicizzati e letture fatte dall'app
+        // Un aggiornamento completo prima, così il riquadro "Risorse della scansione" ha dati veri.
+        Step("scansione completa per le risorse");
+        vm.FullScanCommand.Execute(null);
+        Pump(500);
+        WaitIdle(vm);
+        Step("scheda Dischi");
+        window.Tabs.SelectedIndex = MainViewModel.DisksTab;
+        vm.RefreshDisksCommand.Execute(null);
+        Pump(2000);
+        Capture(window, output, "34-dischi.png");
+
+        // 35. Versioni più recenti dal catalogo di winget (dati di esempio, senza internet)
+        PcOrg.App.Infrastructure.InstalledCatalog.Online = vm.Products.Take(3).Select((p, i) => (p, i)).ToDictionary(
+            x => x.p.Key, x => new PcOrg.Core.Updates.WingetMatch("Esempio." + x.i, x.p.Name, x.i == 1 ? x.p.LatestVersion ?? "1.0" : "99.0", x.i != 1));
+        window.Tabs.SelectedIndex = MainViewModel.ProductsTab;
+        vm.ProductsView.Refresh();
+        Pump(800);
+        Capture(window, output, "35-versioni-winget.png");
+        PcOrg.App.Infrastructure.InstalledCatalog.Online = new Dictionary<string, PcOrg.Core.Updates.WingetMatch>();
+        vm.ProductsView.Refresh();
+
+        // 36. Molte cartelle monitorate: l'elenco ha la sua barra di scorrimento
+        var dialogsForRoots = mainDialogs;
+        foreach (var extra in new[] { "Documenti ufficio", "Fatture 2025", "Progetti clienti", "Musica", "Scansioni" })
+        {
+            Step("aggiungo la cartella " + extra);
+            dialogsForRoots.FolderToPick = Directory.CreateDirectory(Path.Combine(temp, extra)).FullName;
+            vm.AddRootCommand.Execute(null);
+            Pump(1200);
+        }
+        dialogsForRoots.FolderToPick = null;
+        WaitIdle(vm);
+        window.Tabs.SelectedIndex = MainViewModel.OverviewTab;
+        Pump(800);
+        Capture(window, output, "36-molte-cartelle.png");
+        // Le schermate successive non devono dipendere da notifiche o scorrimenti rimasti da questo passo.
+        if (window.FindName("RootsList") is System.Windows.Controls.ListBox rootsList && vm.Roots.Count > 0)
+            rootsList.ScrollIntoView(vm.Roots[0]);
+
         // 11. Tema scuro
         app.ThemeMode = ThemeMode.Dark;
         Pump(1000);
@@ -364,6 +416,9 @@ public class Screenshots
         Pump(800);
         Capture(window, output, "33-prodotti-tema-scuro.png");
 
+        // Prima di chiudere si attende la fine delle scansioni: altrimenti la finestra chiede conferma.
+        WaitIdle(vm);
+        Step("chiusura");
         window.Close();
         app.Shutdown();
         Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
@@ -397,8 +452,32 @@ public class Screenshots
 
     // ------------------------------------------------------------------ Cattura
 
+    /// <summary>Attende la fine di scansioni e operazioni e chiude la notifica, per schermate sempre uguali.</summary>
+    private static void WaitIdle(MainViewModel vm)
+    {
+        Step("attesa della fine delle scansioni");
+        for (var i = 0; i < 120 && vm.IsWorking; i++)
+            Pump(500);
+        if (vm.IsToastVisible)
+            vm.DismissToastCommand.Execute(null);
+        Pump(400);
+    }
+
+    private static string? _progressFile;
+    private static volatile string _lastStep = "(inizio)";
+
+    /// <summary>Annota il passo in corso (con l'ora) per capire dove si ferma la generazione degli screenshot.</summary>
+    private static void Step(string text)
+    {
+        _lastStep = text;
+        if (_progressFile is not null)
+            File.AppendAllText(_progressFile, $"{DateTime.Now:HH:mm:ss.fff} {text}{Environment.NewLine}");
+    }
+
     private static void Capture(Window window, string folder, string name)
     {
+        Step("cattura " + name);
+        window.Activate(); // finestra attiva: bordo e barra del titolo sempre dello stesso colore
         window.UpdateLayout();
         Pump(300);
         var shot = TryPrintWindow(window);

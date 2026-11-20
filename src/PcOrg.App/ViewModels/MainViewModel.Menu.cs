@@ -5,6 +5,7 @@ using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PcOrg.App.Infrastructure;
+using PcOrg.Core;
 using PcOrg.Core.Diagnostics;
 using PcOrg.Core.Storage;
 
@@ -29,6 +30,9 @@ public sealed partial class MainViewModel
         _settings = settings;
         _persistSettings = settings.FilePath is not null;
         _scanOnStartup = settings.ScanOnStartup;
+        ScanPace.Local = settings.LocalScanSpeed;
+        ScanPace.Network = settings.NetworkScanSpeed;
+        _index.NetworkMetadataOnDemand = settings.NetworkDetailsOnDemand;
         ShowPreviewPanel = settings.ShowPreviewPanel;
         ShowDetailsPanel = settings.ShowDetailsPanel;
         SearchInContent = settings.SearchInContent;
@@ -65,7 +69,9 @@ public sealed partial class MainViewModel
     /// <summary>Opzioni modificabili dalla finestra Impostazioni.</summary>
     public sealed record Options(string Theme, bool ScanOnStartup, bool WatchFolders, bool VerifySignatures,
         bool ShowPreview, bool ShowDetails, bool LogEnabled, LogLevel LogLevel,
-        bool IndexContent = true, bool CheckUpdatesOnStartup = false);
+        bool IndexContent = true, bool CheckUpdatesOnStartup = false,
+        ScanSpeed LocalScanSpeed = ScanSpeed.Massima, ScanSpeed NetworkScanSpeed = ScanSpeed.Normale, bool NotifyNewDisks = true,
+        bool FastNtfsScan = true, bool NetworkDetailsOnDemand = false);
 
     /// <summary>Applica e salva le opzioni scelte nella finestra Impostazioni.</summary>
     public void ApplyOptions(Options o)
@@ -77,6 +83,11 @@ public sealed partial class MainViewModel
         _settings.LogLevel = o.LogLevel;
         _settings.IndexContent = o.IndexContent;
         _settings.CheckUpdatesOnStartup = o.CheckUpdatesOnStartup;
+        _settings.LocalScanSpeed = ScanPace.Local = o.LocalScanSpeed;
+        _settings.NetworkScanSpeed = ScanPace.Network = o.NetworkScanSpeed;
+        _settings.NotifyNewDisks = o.NotifyNewDisks;
+        _settings.FastNtfsScan = o.FastNtfsScan;
+        _settings.NetworkDetailsOnDemand = _index.NetworkMetadataOnDemand = o.NetworkDetailsOnDemand;
         ShowPreviewPanel = o.ShowPreview;
         ShowDetailsPanel = o.ShowDetails;
         ApplyTheme(o.Theme, save: false);
@@ -84,7 +95,8 @@ public sealed partial class MainViewModel
         EnableWatching(o.WatchFolders);
         SaveSettings();
         Log.Info($"Impostazioni: tema {o.Theme}, aggiornamento all'avvio {o.ScanOnStartup}, rilevamento automatico " +
-                 $"{o.WatchFolders}, verifica firme {o.VerifySignatures}, registro {o.LogEnabled} ({o.LogLevel}).");
+                 $"{o.WatchFolders}, verifica firme {o.VerifySignatures}, registro {o.LogEnabled} ({o.LogLevel}), " +
+                 $"velocità di scansione locale {o.LocalScanSpeed}, in rete {o.NetworkScanSpeed}.");
     }
 
     // ------------------------------------------------------------------ Manutenzione dell'indice
@@ -143,9 +155,15 @@ public sealed partial class MainViewModel
     [NotifyPropertyChangedFor(nameof(DetailsPanelVisible))]
     private bool _showDetailsPanel = true;
 
-    /// <summary>Scheda attiva: 0 = Panoramica, 1 = File, 2 = Prodotti, 3 = Cloni, 4 = Driver.</summary>
+    /// <summary>Scheda attiva: 0 = Panoramica, 1 = File, 2 = Prodotti, 3 = Cloni, 4 = Driver, 5 = Dischi.</summary>
     [ObservableProperty]
     private int _selectedTabIndex;
+
+    partial void OnSelectedTabIndexChanged(int value)
+    {
+        if (value == DisksTab)
+            Fire(RefreshDisksAsync(), "elenco dei dischi");
+    }
 
     public bool PreviewPanelVisible => IsPreviewVisible && ShowPreviewPanel;
     public bool DetailsPanelVisible => SelectedFile is not null && ShowDetailsPanel;
@@ -235,4 +253,36 @@ public sealed partial class MainViewModel
     /// <summary>Apre la guida; il parametro è (parte del) titolo del capitolo da mostrare.</summary>
     [RelayCommand]
     private void ShowHelp(string? chapter) => _dialogs.ShowHelp(chapter);
+
+    // ------------------------------------------------------------------ Amministratore
+
+    /// <summary>Vero se l'app ha i privilegi di amministratore (serve per la scansione veloce NTFS).</summary>
+    public bool IsElevated => PcOrg.Core.Platform.PlatformServices.Current.IsElevated;
+
+    /// <summary>Riavvia Gestione File come amministratore (Windows chiede conferma), per la scansione veloce NTFS.</summary>
+    [RelayCommand(CanExecute = nameof(CanRestartAsAdministrator))]
+    private void RestartAsAdministrator()
+    {
+        var exe = Environment.ProcessPath;
+        if (exe is null)
+            return;
+        try
+        {
+            Process.Start(new ProcessStartInfo(exe)
+            {
+                UseShellExecute = true,
+                Verb = "runas",
+                Arguments = $"{App.RestartArgument} {Environment.ProcessId}",
+            });
+        }
+        catch (System.ComponentModel.Win32Exception)
+        {
+            ShowToast("Riavvio come amministratore annullato.", ToastKind.Info);
+            return;
+        }
+        Log.Info("Riavvio come amministratore richiesto.");
+        Application.Current.MainWindow?.Close();
+    }
+
+    private bool CanRestartAsAdministrator() => !IsElevated;
 }

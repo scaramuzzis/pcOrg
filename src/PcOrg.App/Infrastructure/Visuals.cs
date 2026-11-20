@@ -52,6 +52,7 @@ public static class Glyphs
     public const string Download = "\uE896";
     public const string Edit = "\uE70F";
     public const string Lightbulb = "\uEA80";
+    public const string Drive = "\uEDA2";
 
     public static string ForCategory(FileCategory? category) => category switch
     {

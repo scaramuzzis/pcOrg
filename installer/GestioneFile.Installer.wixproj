@@ -1,0 +1,19 @@
+<Project Sdk="WixToolset.Sdk/5.0.2">
+  <!--
+    Pacchetto di installazione MSI (per installazioni gestite, es. in azienda con criteri di gruppo o Intune).
+    Non fa parte della soluzione: si costruisce su Windows dopo aver pubblicato il pacchetto portatile.
+
+      dotnet publish src/PcOrg.App -c Release -p:Pacchetto=Portatile -o out/portatile/GestioneFile
+      dotnet build installer/GestioneFile.Installer.wixproj -c Release -p:SourceDir=..\out\portatile\GestioneFile -p:ProductVersion=1.3.0
+  -->
+  <PropertyGroup>
+    <OutputName>GestioneFile-win-x64</OutputName>
+    <InstallerPlatform>x64</InstallerPlatform>
+    <SourceDir Condition="'$(SourceDir)' == ''">..\out\portatile\GestioneFile</SourceDir>
+    <ProductVersion Condition="'$(ProductVersion)' == ''">1.0.0</ProductVersion>
+    <DefineConstants>SourceDir=$(SourceDir);ProductVersion=$(ProductVersion)</DefineConstants>
+    <!-- Gli avvisi di validazione ICE non bloccano la build (il pacchetto contiene centinaia di file del runtime). -->
+    <SuppressValidation>true</SuppressValidation>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+</Project>

@@ -109,10 +109,10 @@ public sealed partial class MainViewModel
     }
 
     /// <summary>Cerca i cloni nelle cartelle monitorate (in background, interrompibile).</summary>
-    [RelayCommand(CanExecute = nameof(CanModify))]
+    [RelayCommand(CanExecute = nameof(CanScan))]
     private async Task FindDuplicatesAsync()
     {
-        IsBusy = true;
+        IsScanning = true;
         _scanCts = new CancellationTokenSource();
         var token = _scanCts.Token;
         var stopwatch = Stopwatch.StartNew();
@@ -120,7 +120,10 @@ public sealed partial class MainViewModel
         {
             var options = new DuplicateOptions(SelectedSizeOption?.Bytes ?? 1, IncludeNetworkInDuplicates, ScopeRootId);
             var progress = new Progress<DuplicateProgress>(p =>
-                Status = p.Total == 0 ? $"{p.Phase}…" : $"{p.Phase}: {p.Done:N0} di {p.Total:N0} file…");
+            {
+                ReportProgress(p.Phase, p.Done, p.Total);
+                Status = p.Total == 0 ? $"{p.Phase}…" : $"{p.Phase}: {p.Done:N0} di {p.Total:N0} file…";
+            });
             var groups = await Task.Run(() => DuplicateFinder.Find(_index, options, progress, token), token);
             ShowDuplicateGroups(groups);
             var wasted = groups.Sum(g => g.WastedBytes);
@@ -136,7 +139,7 @@ public sealed partial class MainViewModel
         }
         finally
         {
-            IsBusy = false;
+            IsScanning = false;
             _scanCts?.Dispose();
             _scanCts = null;
         }

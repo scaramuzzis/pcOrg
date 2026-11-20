@@ -64,7 +64,7 @@ Le cartelle monitorate sono quelle che Gestione File tiene in ordine: tipicament
 
 **Cartelle una dentro l'altra.** Se aggiungi una cartella che contiene cartelle già monitorate, queste vengono unite nella nuova. Non è invece possibile aggiungere una cartella che è già contenuta in un'altra monitorata: è già inclusa.
 
-Sotto ogni cartella sono indicati il percorso completo e la data dell'ultimo aggiornamento.
+Sotto ogni cartella sono indicati il percorso completo e la data dell'ultimo aggiornamento. Se le cartelle sono molte l'elenco ha la sua **barra di scorrimento**; trascinando la linea tra **Cartelle monitorate** e **Categorie** dai più spazio all'uno o all'altro elenco.
 
 **Cartelle di OneDrive.** Le cartelle sincronizzate con OneDrive (spesso Desktop e Documenti) vengono indicizzate normalmente. I file **disponibili solo online** (con la nuvoletta) compaiono nell'elenco ma Gestione File **non li apre**, per non farli scaricare: non ne legge versione e firma, non ne mostra l'anteprima e non li confronta nella ricerca dei cloni. Nei dettagli compare "Disponibile solo online".
 
@@ -82,6 +82,10 @@ Gestione File può tenere in ordine anche cartelle condivise su un **NAS** o su 
 
 **Quando la cartella non è raggiungibile** (NAS spento, PC portatile fuori casa) compare in grigio con la scritta **Non raggiungibile**. I suoi file restano nell'elenco e si possono cercare con i dati dell'ultimo aggiornamento; vengono aggiornati appena la cartella torna disponibile. Se la rete cade durante una scansione, l'elenco di quella cartella resta com'era: non si perde nulla.
 
+**Dettagli solo quando servono.** In **Impostazioni → Generale** puoi scegliere *Cartelle di rete: leggi versioni e firme solo quando selezioni un file*. La scansione delle cartelle di rete legge allora solo l'elenco dei file (nome, tipo, dimensione e data arrivano insieme, nella stessa risposta del NAS: è il minimo possibile) e i dettagli di un programma o di un installer vengono letti nel momento in cui lo selezioni. In cambio **Prodotti e versioni**, **Sul PC** e **Driver** mostrano solo i file di rete già aperti. Con l'opzione disattivata (predefinito) i dettagli si leggono in background dopo l'elenco, al ritmo scelto; in entrambi i casi un file selezionato che non è ancora stato letto viene letto subito.
+
+**Quanto pesa la scansione sulla rete.** Per ogni cartella Gestione File chiede al NAS o al computer che la condivide l'elenco del contenuto (una richiesta per cartella, pochi KB); dei file legge solo nome, dimensione e data, senza aprirli. Solo programmi e installer (`.exe`, `.msi`, `.sys`) vengono aperti per leggerne versione e firma (di solito pochi KB in testa al file); il contenuto di PDF e documenti per la ricerca nel contenuto viene letto **solo nelle cartelle locali**. Con milioni di file la prima scansione di una cartella di rete richiede quindi milioni di piccole richieste: con la velocità **Normale** (predefinita) sono al massimo 150 al secondo, un carico paragonabile a qualcuno che sfoglia le cartelle in Esplora risorse. Se il NAS è piccolo o il computer che condivide la cartella è usato da altri, scegli **Leggera** (25 letture al secondo, un file alla volta) in **Impostazioni → Generale → Carico sul PC e sulla rete**. Gli aggiornamenti successivi rileggono solo le cartelle cambiate e pesano pochissimo. Il carico reale di ogni scansione (letture, traffico, tempo di risposta del NAS) si vede nel riquadro **Risorse della scansione** della scheda [Dischi](#dischi).
+
 > Sui file in rete Gestione File legge chi ha firmato un programma ma non verifica la firma, perché la verifica richiederebbe di leggere ogni file per intero attraverso la rete. Per questo la firma compare con il simbolo **?**.
 
 ## Aggiornare l'indice
@@ -98,7 +102,13 @@ Su chiavette e schede di memoria formattate **FAT32 o exFAT** Windows non aggior
 
 Dopo l'aggiornamento Gestione File legge **versioni e firme** dei programmi e degli installer nuovi o modificati (`.exe`, `.msi`, `.sys`) e l'indirizzo delle connessioni remote (`.vnc`, `.rdp`). La prima volta può richiedere qualche minuto, perché la verifica della firma legge ogni programma per intero; le volte successive vengono letti solo i file nuovi.
 
-Puoi continuare a usare Gestione File durante l'aggiornamento. Il pulsante **Interrompi** nella barra di stato ferma l'operazione: riprenderà dal punto in cui si era fermata al prossimo aggiornamento.
+**Scansione veloce NTFS.** Se avvii Gestione File come amministratore (**Strumenti → Riavvia come amministratore**), la prima lettura di un disco intero aggiunto come cartella monitorata (es. `D:\`) e la scansione completa (Ctrl+F5) dei dischi interi e delle cartelle molto grandi (oltre 20.000 sottocartelle) leggono in un colpo solo la tabella dei file del disco (la *Master File Table*), come fanno i programmi di ricerca istantanea: con milioni di file è molte volte più rapida. Per le cartelle di rete, le chiavette FAT/exFAT o se qualcosa non va si usa automaticamente la scansione normale. Si può disattivare in **Impostazioni → Generale**.
+
+**Barra di avanzamento.** Durante ogni operazione lunga (scansione, versioni e firme, contenuto dei documenti, ricerca dei cloni, spostamenti, download) la barra di stato mostra la fase e la percentuale, con una barra che si riempie; la stessa barra sottile compare sotto la barra degli strumenti. Alla prima scansione di una cartella il totale non è ancora noto e la barra è animata; dalla volta successiva mostra la percentuale.
+
+**Puoi continuare a usare Gestione File durante l'aggiornamento**: cercare, aprire e spostare file, mettere etichette e aggiungere altre cartelle (vengono lette appena finisce la scansione in corso). Restano sospese solo le operazioni che hanno bisogno dell'indice completo: un'altra scansione, la ricerca dei cloni e la rimozione di cartelle. Il pulsante **Interrompi** nella barra di stato ferma l'operazione: riprenderà dal punto in cui si era fermata al prossimo aggiornamento.
+
+La scansione gira con **priorità bassa** di processore e disco, così il PC resta reattivo per gli altri programmi; il suo ritmo si regola in **Impostazioni → Generale → Carico sul PC e sulla rete**.
 
 **I dati restano salvati.** Tutto ciò che Gestione File trova viene registrato man mano nel file dell'indice (`indice.db`): chiudendo e riaprendo l'applicazione l'elenco ricompare subito, anche se avevi interrotto un aggiornamento a metà. Se chiudi la finestra mentre un aggiornamento è in corso, Gestione File te lo segnala, salva il lavoro fatto e poi si chiude.
 
@@ -220,6 +230,12 @@ Il pulsante **Seleziona le versioni vecchie** le seleziona tutte in un clic: poi
 
 > Il raggruppamento usa il nome del prodotto e il produttore letti dal file. Per i file senza queste informazioni viene usato il nome del file, quindi qualche raggruppamento può essere meno preciso.
 
+## Versioni più recenti dei programmi
+
+Nella scheda **Prodotti e versioni** il pulsante **Versioni più recenti** (anche **Strumenti → Cerca versioni più recenti dei programmi**) confronta i programmi trovati con il catalogo pubblico di **winget**, il gestore di pacchetti di Windows. La colonna **Online** indica per ogni programma riconosciuto "Disponibile la …" oppure "Aggiornato".
+
+Viene scaricato soltanto il catalogo pubblico (lo stesso che usa winget, alcuni MB, valido per un giorno): **nessun dato sui tuoi file lascia il PC**, il confronto avviene in locale. Un programma viene riconosciuto se nome e produttore corrispondono a un pacchetto del catalogo; i programmi poco diffusi possono non comparire.
+
 ## Driver e periferiche
 
 Chi conserva i driver accumula negli anni pacchetti per schede, stampanti e periferiche che non ha più. La scheda **Driver e periferiche** (**Ctrl+4**) confronta i driver del tuo archivio con le **periferiche presenti su questo PC** e ti dice quali servono, quali sono **più recenti** di quelli installati e quali **non servono più**.
@@ -239,6 +255,30 @@ Togli la spunta da **Solo periferiche con driver nell'archivio** per vedere tutt
 Lo stato compare anche nella colonna **Sul PC** (scheda Prodotti e colonna facoltativa dell'elenco file) per i file `.inf` e per gli altri file dello stesso pacchetto (`.sys`, `.cat`, `.dll`).
 
 > I driver forniti solo come programma di installazione (per esempio un unico `.exe` di NVIDIA) non contengono un `.inf` leggibile finché non vengono estratti: per quelli Gestione File mostra versione e produttore, ma non può confrontarli con le periferiche. Per installare un driver usa sempre il programma del produttore o Gestione dispositivi.
+
+## Dischi
+
+La scheda **Dischi** (**Ctrl+5**) mostra tutti i dischi: interni, chiavette e dischi USB, unità e cartelle di rete. Per ognuno:
+
+- **spazio** usato e libero, file system (NTFS, exFAT…);
+- **cartelle monitorate** e **file indicizzati** su quel disco;
+- **letture dell'app**: quante cartelle e quanti file Gestione File ha letto da quel disco da quando è aperto, con il **tempo medio** di una lettura (su un disco o una rete lenta è più alto) e l'ora dell'ultima lettura. **Azzera le letture** riporta i contatori a zero;
+- **collegamenti**: quante volte un disco esterno è stato collegato; i dischi visti in passato restano nell'elenco anche quando non sono collegati.
+
+**Risorse della scansione.** Durante ogni aggiornamento la barra di stato mostra, accanto a **Interrompi**, il traffico di rete al secondo, le letture al secondo, il processore e la memoria usati e, quando l'indice conosce già le cartelle, quanto manca alla fine. In cima alla scheda **Dischi** lo stesso riquadro mostra i dettagli della scansione in corso o dell'ultima:
+
+- **Durata** e tempo rimanente stimato (alla prima scansione di una cartella non è stimabile);
+- **Letture**: cartelle elencate e file aperti, con il ritmo al secondo;
+- **Tempo medio di risposta**: se cresce durante la scansione, il disco o il NAS sono sotto sforzo e conviene scegliere la velocità *Leggera*;
+- **Traffico di rete del PC**: dati ricevuti e inviati durante la scansione (comprende anche gli altri programmi aperti);
+- **Dati letti da Gestione File**: quanto ha letto l'app, dai file in rete e locali e dall'indice;
+- **Processore** e **Memoria** usati da Gestione File.
+
+A fine scansione lo stesso riepilogo viene scritto nel **registro attività**, così puoi confrontare scansioni diverse.
+
+Le colonne **File system**, **Ultima lettura** e **Visto la prima volta** sono nascoste per non allargare troppo l'elenco: si mostrano con il tasto destro su un'intestazione o da **Impostazioni → Colonne → Dischi**.
+
+**Quando colleghi un disco o una chiavetta** compare un avviso con nome, tipo e spazio occupato. Se il disco contiene cartelle monitorate vengono aggiornate subito; altrimenti **Monitoralo** lo aggiunge alle cartelle monitorate e lo legge. Lo stesso fa il pulsante **Monitora il disco** della scheda. L'avviso si può disattivare in **Impostazioni → Generale**.
 
 ## Regole di archiviazione
 
@@ -333,9 +373,11 @@ Usi tipici: un inventario dei driver da conservare, l'elenco degli installer da 
 | Sposta nel Cestino | **Canc** |
 | Cronologia spostamenti | **Ctrl+H** |
 | Scheda Panoramica | **Ctrl+0** |
-| Schede File / Prodotti / Cloni / Driver | **Ctrl+1** / **Ctrl+2** / **Ctrl+3** / **Ctrl+4** |
+| Schede File / Prodotti / Cloni / Driver / Dischi | **Ctrl+1** / **Ctrl+2** / **Ctrl+3** / **Ctrl+4** / **Ctrl+5** |
 | Impostazioni | **Ctrl+,** |
 | Guida | **F1** |
+
+**Screen reader.** Pulsanti, elenchi, campi e riquadri hanno un nome che l'Assistente vocale di Windows e NVDA leggono ad alta voce (per i pulsanti con la sola icona, il nome è quello del suggerimento).
 
 Anche i menu si usano da tastiera: premi **Alt** e la lettera sottolineata (per esempio **Alt+F** per il menu File). Con il tasto destro sull'elenco dei file compare un menu con le azioni più comuni.
 
@@ -363,6 +405,8 @@ Apri **Strumenti → Impostazioni** (o **Ctrl+,**). La finestra ha cinque schede
 - **Rileva automaticamente file nuovi, modificati o eliminati**: mentre Gestione File è aperto ogni modifica viene registrata subito.
 - **Aggiornamento rapido a ogni avvio**: l'elenco salvato compare subito e in background vengono rilette solo le cartelle cambiate.
 - **Verifica le firme digitali**: garantisce che i programmi non siano stati modificati, ma legge ogni programma per intero; disattivala se l'aggiornamento è lento.
+- **Avvisa quando colleghi un disco o una chiavetta** (vedi [Dischi](#dischi)).
+- **Carico sul PC e sulla rete**: velocità di scansione per le cartelle di rete e per i dischi del PC (*Massima*, *Normale*, *Leggera*) e **scansione veloce NTFS** quando l'app è avviata come amministratore.
 - **Pannelli**: mostra o nascondi l'anteprima delle immagini e i dettagli del file.
 
 **Categorie**
@@ -371,7 +415,7 @@ Nella scheda **Categorie** (raggiungibile anche da **Visualizza → Categorie da
 
 **Colonne**
 
-Scegli l'elenco da configurare (Elenco file, Prodotti, File del prodotto selezionato), spunta le colonne da mostrare e usa **Su** e **Giù** per cambiarne l'ordine. **Predefinite** riporta l'elenco com'era in origine. La colonna del nome resta sempre visibile.
+Scegli l'elenco da configurare (Elenco file, Prodotti, File del prodotto selezionato, Dischi e gli altri), spunta le colonne da mostrare e usa **Su** e **Giù** per cambiarne l'ordine. **Predefinite** riporta l'elenco com'era in origine. La colonna del nome resta sempre visibile.
 
 Oltre alle colonne standard, l'elenco dei file offre colonne facoltative: **Prodotto**, **Descrizione**, **Firma digitale**, **Architettura**, **Tipo di installer**, **Sul PC**, **Estensione** e **Percorso completo**.
 
@@ -405,7 +449,11 @@ Mostra dove sono salvati i dati e quanti file contiene l'indice, e permette di:
 
 ## Aggiornamenti di Gestione File
 
-Dal menu **? → Controlla aggiornamenti** Gestione File verifica se è stata pubblicata una versione più recente e, se c'è, propone di aprire la pagina da cui scaricarla. Puoi anche attivare il controllo a ogni avvio da **Impostazioni → Generale** (è disattivato per impostazione predefinita). Gestione File non si aggiorna da solo: scarichi tu il nuovo pacchetto e sostituisci la cartella; i tuoi dati non vengono toccati.
+Dal menu **? → Controlla aggiornamenti** Gestione File verifica se è stata pubblicata una versione più recente. Se c'è, la notifica offre **Aggiorna ora**: dopo la tua conferma Gestione File scarica il pacchetto adatto alla tua installazione (portatile, leggera, file unico o installata con l'MSI), ne controlla l'impronta digitale (SHA-256) pubblicata su GitHub, si chiude, sostituisce i file del programma e si riapre da solo. Indice, impostazioni e cartelle monitorate restano come sono; se qualcosa va storto si riapre la versione precedente e il registro attività indica cosa è successo.
+
+Puoi anche attivare il controllo a ogni avvio da **Impostazioni → Generale** (è disattivato per impostazione predefinita).
+
+**Installazione con MSI.** Oltre ai pacchetti da estrarre è disponibile **GestioneFile-win-x64.msi**, che installa Gestione File in *Programmi* per tutti gli utenti con un collegamento nel menu Start (adatto anche alla distribuzione in azienda). I dati restano in `%LOCALAPPDATA%\pcOrg` di ogni utente.
 
 ## Consigli per organizzare al meglio
 
@@ -434,13 +482,15 @@ Dal menu **? → Controlla aggiornamenti** Gestione File verifica se è stata pu
 
 **L'anteprima di una foto non si vede.** Per HEIC, WebP e AVIF installa l'estensione gratuita di Microsoft dallo Store. Un file danneggiato non può essere mostrato.
 
+**La scansione di una cartella di rete rallenta il NAS o il PC che la condivide.** In **Impostazioni → Generale → Carico sul PC e sulla rete** scegli la velocità **Leggera** per le cartelle di rete. Gli aggiornamenti dopo la prima scansione rileggono solo le cartelle cambiate.
+
 **Ho spostato dei file per errore.** Usa **Annulla** nella notifica oppure **Strumenti → Cronologia spostamenti → Riporta i file dov'erano**.
 
 **Voglio ricominciare da zero.** Chiudi Gestione File, apri la cartella dei dati (**Strumenti → Apri la cartella dei dati**) e cancella il file `indice.db`. Al successivo avvio ripartirai dalla schermata di benvenuto; i tuoi file non vengono toccati.
 
 ## Privacy e sicurezza
 
-- Tutte le analisi avvengono **sul tuo PC**, compresa la verifica delle firme digitali e la lettura del contenuto dei documenti. L'unica funzione che usa internet è il **controllo degli aggiornamenti**, che parte solo se lo chiedi (o lo attivi nelle Impostazioni) e legge soltanto il numero dell'ultima versione, senza inviare dati.
+- Tutte le analisi avvengono **sul tuo PC**, compresa la verifica delle firme digitali e la lettura del contenuto dei documenti. Usano internet solo il **controllo degli aggiornamenti** di Gestione File e la ricerca delle **versioni più recenti dei programmi** (catalogo di winget): partono solo se lo chiedi (o lo attivi nelle Impostazioni) e scaricano soltanto dati pubblici, senza inviare informazioni sui tuoi file.
 - Gestione File **non cancella definitivamente e non modifica** il contenuto dei file. Le uniche operazioni sui file sono quelle che confermi tu: gli spostamenti, sempre annullabili, e lo spostamento nel **Cestino di Windows**, da cui puoi ripristinare i file.
 - Nessun file viene **sovrascritto**: in caso di nomi uguali viene aggiunto un numero, per esempio `setup (2).exe`.
 - I dati di Gestione File (indice, cronologia, preferenze, registro attività) restano nella cartella dei dati sul tuo PC.

@@ -28,6 +28,9 @@ public sealed record CategoryItem(FileCategory? Category, string Name, long Coun
     public bool IsSubcategory => Extensions is not null;
     public string Glyph => Glyphs.ForCategory(Category);
     public Brush Accent => CategoryColors.For(Category);
+
+    /// <summary>Testo letto dagli screen reader per la voce dell'elenco.</summary>
+    public override string ToString() => $"{Name}, {Count:N0} file, {FileSizeConverter.Format(TotalSize)}";
 }
 
 /// <summary>Tipo di notifica a comparsa: determina icona e colore.</summary>
@@ -82,6 +85,7 @@ public sealed partial class MainViewModel : ObservableObject
 
         // Si aspetta il primo disegno della finestra, così l'utente vede subito i dati.
         await Task.Delay(800);
+        StartDriveWatcher();
         await RefreshInstalledAsync();
         if (_scanOnStartup && Roots.Count > 0)
             await ScanRootsAsync(Roots.Select(r => r.Root).ToList());
@@ -110,9 +114,9 @@ public sealed partial class MainViewModel : ObservableObject
     public async Task<bool> WaitUntilIdleAsync(TimeSpan timeout)
     {
         var stopwatch = Stopwatch.StartNew();
-        while (IsBusy && stopwatch.Elapsed < timeout)
+        while (IsWorking && stopwatch.Elapsed < timeout)
             await Task.Delay(100);
-        return !IsBusy;
+        return !IsWorking;
     }
 
     public ObservableCollection<RootItem> Roots { get; } = [];
@@ -219,7 +223,11 @@ public sealed partial class MainViewModel : ObservableObject
 
     private CancellationTokenSource? _previewCts;
 
-    partial void OnSelectedFileChanged(FileRecord? value) => Fire(LoadPreviewAsync(value), "anteprima");
+    partial void OnSelectedFileChanged(FileRecord? value)
+    {
+        Fire(LoadPreviewAsync(value), "anteprima");
+        Fire(LoadDetailsOnDemandAsync(value), "dettagli del file");
+    }
 
     private async Task LoadPreviewAsync(FileRecord? file)
     {
@@ -346,12 +354,30 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string _searchText = "";
 
+    /// <summary>
+    /// Operazione esclusiva in corso (spostamento, ricerca dei cloni, organizzazione, download): ne parte una alla volta.
+    /// </summary>
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(ScanCommand), nameof(FullScanCommand), nameof(AddRootCommand), nameof(RemoveRootCommand),
-        nameof(MoveSelectedCommand), nameof(CancelScanCommand), nameof(FindDuplicatesCommand),
+    [NotifyPropertyChangedFor(nameof(IsWorking))]
+    [NotifyCanExecuteChangedFor(nameof(ScanCommand), nameof(FullScanCommand), nameof(AddRootCommand), nameof(AddNetworkRootCommand),
+        nameof(RemoveRootCommand), nameof(MoveSelectedCommand), nameof(FindDuplicatesCommand),
         nameof(RecycleMarkedCommand), nameof(MoveMarkedCommand), nameof(RecycleSelectedCommand), nameof(OrganizeWithRulesCommand),
-        nameof(EditNotesCommand))]
+        nameof(EditNotesCommand), nameof(CheckProgramUpdatesCommand))]
     private bool _isBusy;
+
+    /// <summary>
+    /// Scansione o lettura dei metadati in background. Non blocca l'app: si può cercare, spostare, mettere
+    /// etichette e aggiungere cartelle (vengono scansionate subito dopo). Sono sospese solo le operazioni
+    /// che hanno bisogno dell'indice completo (nuova scansione, ricerca dei cloni, rimozione di cartelle).
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsWorking))]
+    [NotifyCanExecuteChangedFor(nameof(ScanCommand), nameof(FullScanCommand), nameof(RemoveRootCommand),
+        nameof(CancelScanCommand), nameof(FindDuplicatesCommand))]
+    private bool _isScanning;
+
+    /// <summary>Qualsiasi lavoro in corso (barra di avanzamento, chiusura sicura).</summary>
+    public bool IsWorking => IsBusy || IsScanning;
 
     [ObservableProperty]
     private string _status = "Pronto";
@@ -374,11 +400,11 @@ public sealed partial class MainViewModel : ObservableObject
             return;
         try
         {
-            var root = _index.AddRoot(folder);
+            var root = await Task.Run(() => _index.AddRoot(folder));
             ReloadRoots();
             if (!string.Equals(root.Path, PcOrg.Core.PathUtil.Normalize(folder), StringComparison.OrdinalIgnoreCase))
                 ShowToast($"Unità di rete salvata come {root.Path}: funzionerà anche se la lettera dell'unità cambia", ToastKind.Info);
-            await ScanRootsAsync([root]);
+            await ScanOrQueueAsync(root);
         }
         catch (Exception ex) when (ex is InvalidOperationException or IOException)
         {
@@ -408,10 +434,10 @@ public sealed partial class MainViewModel : ObservableObject
         }
         try
         {
-            var root = _index.AddRoot(path);
+            var root = await Task.Run(() => _index.AddRoot(path));
             ReloadRoots();
             ShowToast($"Cartella di rete aggiunta: {root.Path}", ToastKind.Success);
-            await ScanRootsAsync([root]);
+            await ScanOrQueueAsync(root);
         }
         catch (Exception ex) when (ex is InvalidOperationException or IOException or UnauthorizedAccessException)
         {
@@ -428,25 +454,41 @@ public sealed partial class MainViewModel : ObservableObject
                 $"Gestione File smetterà di tenere in ordine \"{root.Path}\".\n\nI file restano dove sono: vengono solo tolti dall'elenco.",
                 "Rimuovere la cartella?", "Rimuovi"))
             return;
-        _index.RemoveRoot(root.Id);
+        await Task.Run(() => _index.RemoveRoot(root.Id));
         ReloadRoots();
         await RefreshAsync();
         ShowToast($"Cartella rimossa: {root.Path}", ToastKind.Info);
     }
 
     private bool CanModify() => !IsBusy;
-    private bool CanRemoveRoot() => !IsBusy && SelectedRoot is not null;
+    private bool CanScan() => !IsBusy && !IsScanning;
+    private bool CanRemoveRoot() => !IsBusy && !IsScanning && SelectedRoot is not null;
 
     /// <summary>Aggiornamento rapido (F5): rilegge solo le cartelle cambiate.</summary>
-    [RelayCommand(CanExecute = nameof(CanModify))]
+    [RelayCommand(CanExecute = nameof(CanScan))]
     private Task ScanAsync() => ScanRootsAsync(ScopeRoots());
 
     /// <summary>Scansione completa (Ctrl+F5): rilegge tutte le cartelle, rileva anche i file modificati nel contenuto.</summary>
-    [RelayCommand(CanExecute = nameof(CanModify))]
+    [RelayCommand(CanExecute = nameof(CanScan))]
     private Task FullScanAsync() => ScanRootsAsync(ScopeRoots(), full: true);
 
-    [RelayCommand(CanExecute = nameof(IsBusy))]
+    [RelayCommand(CanExecute = nameof(IsScanning))]
     private void CancelScan() => _scanCts?.Cancel();
+
+    /// <summary>Cartelle aggiunte durante una scansione: vengono scansionate appena questa finisce.</summary>
+    private readonly List<RootFolder> _queuedRoots = [];
+
+    /// <summary>Scansiona subito la cartella, o la mette in coda se c'è già una scansione in corso.</summary>
+    private async Task ScanOrQueueAsync(RootFolder root)
+    {
+        if (IsScanning)
+        {
+            _queuedRoots.Add(root);
+            ShowToast($"{root.Path} verrà letta appena finisce la scansione in corso", ToastKind.Info);
+            return;
+        }
+        await ScanRootsAsync([root]);
+    }
 
     /// <summary>
     /// Aggiorna le cartelle indicate. Di norma è un aggiornamento rapido (<see cref="FileIndex.UpdateRoot"/>):
@@ -459,8 +501,28 @@ public sealed partial class MainViewModel : ObservableObject
             Status = "Aggiungi una cartella per iniziare.";
             return;
         }
+        // Le risorse si misurano per tutta l'operazione: scansione, versioni e firme, cartelle in coda.
+        var what = (full ? "scansione completa di " : "aggiornamento di ") +
+                   (roots.Count == 1 ? roots[0].Path : $"{roots.Count} cartelle");
+        var measuring = await StartResourceMonitorAsync(roots, what);
+        try
+        {
+            await ScanRootsCoreAsync(roots, full);
+        }
+        finally
+        {
+            if (measuring)
+                StopResourceMonitor();
+        }
+    }
 
-        IsBusy = true;
+    /// <summary>Sottocartelle oltre le quali la lettura della MFT conviene rispetto alla scansione normale.</summary>
+    private const int FastScanMinDirectories = 20_000;
+
+    private async Task ScanRootsCoreAsync(IReadOnlyList<RootFolder> roots, bool full)
+    {
+
+        IsScanning = true;
         _scanCts = new CancellationTokenSource();
         var token = _scanCts.Token;
         var total = ScanResult.Empty;
@@ -468,6 +530,8 @@ public sealed partial class MainViewModel : ObservableObject
         var stopwatch = Stopwatch.StartNew();
         var kind = full ? "Scansione completa" : "Aggiornamento rapido";
         Log.Info($"{kind} avviato: {string.Join(", ", roots.Select(r => r.Path))}");
+        // Scansione veloce NTFS: una lettura della MFT per volume, riusata per tutte le cartelle che ci stanno.
+        var snapshots = new Dictionary<string, PcOrg.Core.Indexing.Ntfs.MftSnapshot?>(StringComparer.OrdinalIgnoreCase);
         try
         {
             foreach (var root in roots)
@@ -483,14 +547,38 @@ public sealed partial class MainViewModel : ObservableObject
                 var fullForRoot = full || !FileIndex.SupportsQuickUpdate(root.Path);
                 if (fullForRoot && !full)
                     Log.Info($"{root.Path}: disco senza date di cartella affidabili (FAT/exFAT), scansione completa.");
-                var progress = new Progress<ScanResult>(p => Status =
-                    $"{kind} di {root.Path}: {p.DirectoriesVisited:N0} cartelle controllate, {p.DirectoriesChanged:N0} rilette, " +
-                    $"{p.FilesChanged:N0} file cambiati…");
+                PcOrg.Core.Indexing.Ntfs.MftSnapshot? snapshot = null;
+                // La MFT descrive l'intero disco: leggerla costa centinaia di MB di lettura e di memoria anche per
+                // una cartella piccola (misurato: 1,3 GB per il disco C: di un PC di sviluppo). Conviene solo per un
+                // disco intero o per cartelle molto grandi, e solo quando si deve rileggere tutto.
+                var isVolumeRoot = Path.GetPathRoot(root.Path) is { } volumeRoot
+                                   && string.Equals(volumeRoot.TrimEnd('\\'), root.Path.TrimEnd('\\'), StringComparison.OrdinalIgnoreCase);
+                var rereadsEverything = fullForRoot || root.LastScanUtc is null;
+                if (rereadsEverything && _settings.FastNtfsScan && !root.IsNetwork
+                    && (isVolumeRoot || await Task.Run(() => _index.CountDirectories(root.Id), token) >= FastScanMinDirectories)
+                    && PcOrg.Core.Platform.PlatformServices.Current.IsElevated)
+                {
+                    var volume = PcOrg.Core.Drives.DiskActivity.VolumeOf(root.Path);
+                    if (!snapshots.TryGetValue(volume, out snapshot))
+                    {
+                        Status = $"Lettura veloce della tabella dei file di {volume}…";
+                        snapshot = await Task.Run(() => PcOrg.Core.Platform.PlatformServices.Current.ReadVolumeSnapshot(root.Path, token), token);
+                        snapshots[volume] = snapshot;
+                    }
+                }
+                var fastText = snapshot is null ? "" : " (lettura veloce NTFS)";
+                var progress = new Progress<ScanResult>(p =>
+                {
+                    ReportScanWork(total.DirectoriesVisited + p.DirectoriesVisited);
+                    ReportProgress("Scansione", total.DirectoriesVisited + p.DirectoriesVisited, _resourceMonitor?.ExpectedWork ?? 0);
+                    Status = $"{kind} di {root.Path}{fastText}: {p.DirectoriesVisited:N0} cartelle controllate, {p.DirectoriesChanged:N0} rilette, " +
+                             $"{p.FilesChanged:N0} file cambiati…";
+                });
                 try
                 {
                     total += await Task.Run(
-                        () => _index.UpdateRoot(root.Id, root.Path, fullForRoot, progress, token,
-                            isStillAvailable: () => Directory.Exists(root.Path)), token);
+                        () => ScanPace.InBackground(() => _index.UpdateRoot(root.Id, root.Path, fullForRoot, progress, token,
+                            isStillAvailable: () => Directory.Exists(root.Path), source: snapshot)), token);
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                 {
@@ -523,35 +611,52 @@ public sealed partial class MainViewModel : ObservableObject
         }
         finally
         {
-            IsBusy = false;
+            IsScanning = false;
             _scanCts.Dispose();
             _scanCts = null;
+            if (snapshots.Values.Any(s => s is not null))
+            {
+                snapshots.Clear(); // la fotografia della MFT occupa molta memoria: la si libera subito
+                GC.Collect();
+            }
             ReloadRoots();
             await RefreshAsync();
         }
         await UpdateMetadataAsync();
         Fire(RefreshInstalledAsync(), "programmi installati");
+        if (_queuedRoots.Count > 0)
+        {
+            var queued = _queuedRoots.DistinctBy(r => r.Id).ToList();
+            _queuedRoots.Clear();
+            await ScanRootsAsync(queued);
+        }
     }
 
     /// <summary>Legge versione, produttore, architettura e firma dei file nuovi o modificati.</summary>
     private async Task UpdateMetadataAsync()
     {
-        IsBusy = true;
+        IsScanning = true;
         _scanCts = new CancellationTokenSource();
         var token = _scanCts.Token;
         try
         {
             var progress = new Progress<(int Done, int Total)>(p =>
-                Status = $"Lettura di versioni e firme: {p.Done:N0} di {p.Total:N0} file…");
-            var count = await Task.Run(() => MetadataUpdater.Run(_index, progress, token, _settings.VerifySignatures), token);
+            {
+                ReportProgress("Versioni e firme", p.Done, p.Total);
+                Status = $"Lettura di versioni e firme: {p.Done:N0} di {p.Total:N0} file…";
+            });
+            var count = await Task.Run(() => ScanPace.InBackground(() => MetadataUpdater.Run(_index, progress, token, _settings.VerifySignatures)), token);
             Status = count == 0 ? "Indice aggiornato." : $"Lette versioni e firme di {count:N0} file.";
 
             // Testo dei documenti e contenuto di ZIP e ISO, per la ricerca "nel contenuto".
             if (_settings.IndexContent)
             {
                 var contentProgress = new Progress<(int Done, int Total)>(p =>
-                    Status = $"Lettura del contenuto di documenti e archivi: {p.Done:N0} di {p.Total:N0} file…");
-                var read = await Task.Run(() => PcOrg.Core.Content.ContentIndexer.Run(_index, contentProgress, token), token);
+                {
+                    ReportProgress("Contenuto dei documenti", p.Done, p.Total);
+                    Status = $"Lettura del contenuto di documenti e archivi: {p.Done:N0} di {p.Total:N0} file…";
+                });
+                var read = await Task.Run(() => ScanPace.InBackground(() => PcOrg.Core.Content.ContentIndexer.Run(_index, contentProgress, token)), token);
                 if (read > 0)
                 {
                     Status = $"Letto il contenuto di {read:N0} documenti e archivi.";
@@ -565,7 +670,7 @@ public sealed partial class MainViewModel : ObservableObject
         }
         finally
         {
-            IsBusy = false;
+            IsScanning = false;
             _scanCts.Dispose();
             _scanCts = null;
         }
@@ -674,6 +779,7 @@ public sealed partial class MainViewModel : ObservableObject
     {
         var selectedKey = SelectedProduct?.Key;
         var groups = await Task.Run(() => ProductCatalog.Build(_index.GetProductFiles(ScopeRootId)));
+        ApplyWinget(groups);
         Products.ReplaceAll(groups);
         SelectedProduct = Products.FirstOrDefault(p => p.Key == selectedKey);
 
@@ -713,7 +819,7 @@ public sealed partial class MainViewModel : ObservableObject
             {
                 Results.ReplaceAll(results); // una sola notifica: la griglia si ridisegna una volta
             }
-            if (!IsBusy)
+            if (!IsWorking)
                 Status = results.Count >= query.Limit
                     ? $"Mostrati i primi {results.Count:N0} risultati ({stopwatch.ElapsedMilliseconds} ms): affina la ricerca"
                     : $"{results.Count:N0} file ({stopwatch.ElapsedMilliseconds} ms)";
@@ -806,7 +912,11 @@ public sealed partial class MainViewModel : ObservableObject
             }
 
             var count = plan.Count(p => p.WillMove);
-            var progress = new Progress<int>(n => Status = $"Spostamento {n:N0} di {count:N0}…");
+            var progress = new Progress<int>(n =>
+            {
+                ReportProgress("Spostamento", n, count);
+                Status = $"Spostamento {n:N0} di {count:N0}…";
+            });
             var description = $"{count} file in {destination}";
             var result = await Task.Run(() => _moves.Execute(plan, description, progress));
             Log.Info($"Spostamento #{result.BatchId}: {result.Moved} file in {destination}, {result.Errors.Count} errori." +

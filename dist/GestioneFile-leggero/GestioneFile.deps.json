@@ -7,10 +7,11 @@
   "targets": {
     ".NETCoreApp,Version=v10.0": {},
     ".NETCoreApp,Version=v10.0/win-x64": {
-      "GestioneFile/1.2.2": {
+      "GestioneFile/1.5.0": {
         "dependencies": {
           "CommunityToolkit.Mvvm": "8.4.0",
-          "PcOrg.Core": "1.0.0"
+          "PcOrg.Core": "1.0.0",
+          "PcOrg.Windows": "1.0.0"
         },
         "runtime": {
           "GestioneFile.dll": {}
@@ -132,11 +133,22 @@
             "fileVersion": "1.0.0.0"
           }
         }
+      },
+      "PcOrg.Windows/1.0.0": {
+        "dependencies": {
+          "PcOrg.Core": "1.0.0"
+        },
+        "runtime": {
+          "PcOrg.Windows.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
       }
     }
   },
   "libraries": {
-    "GestioneFile/1.2.2": {
+    "GestioneFile/1.5.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -205,6 +217,11 @@
       "hashPath": "system.io.hashing.10.0.0.nupkg.sha512"
     },
     "PcOrg.Core/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "PcOrg.Windows/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

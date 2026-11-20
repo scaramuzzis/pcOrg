@@ -18,6 +18,9 @@ public sealed record DeviceRow(Device Device, IReadOnlyList<DriverFileRow> Drive
     public string? Provider => Device.DriverProvider;
     public int DriverCount => Drivers.Count;
 
+    /// <summary>Testo letto dagli screen reader per la riga dell'elenco.</summary>
+    public override string ToString() => $"{Name}: {State}";
+
     /// <summary>La versione più recente presente nell'archivio.</summary>
     public string? BestVersion => Drivers.Select(d => d.Version).OrderByDescending(v => v, VersionComparer.Instance).FirstOrDefault();
 

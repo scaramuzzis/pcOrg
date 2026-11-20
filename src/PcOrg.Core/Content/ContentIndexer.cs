@@ -24,7 +24,9 @@ public static class ContentIndexer
             for (var i = 0; i < batch.Count; i++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                texts[i] = ContentExtractor.Extract(batch[i].Path);
+                ScanPace.WaitFor(batch[i].Path, cancellationToken);
+                var path = batch[i].Path;
+                texts[i] = Drives.DiskActivity.Measure(path, directory: false, () => ContentExtractor.Extract(path));
             }
             // Si salva anche chi non ha testo, così non viene riletto finché non cambia.
             index.SaveContent(batch.Select((file, i) => (file, texts[i])));
