@@ -360,6 +360,11 @@ public class Screenshots
         }
 
         // 34. Scheda Dischi: spazio, file indicizzati e letture fatte dall'app
+        // Un aggiornamento completo prima, così il riquadro "Risorse della scansione" ha dati veri.
+        Step("scansione completa per le risorse");
+        vm.FullScanCommand.Execute(null);
+        Pump(500);
+        WaitIdle(vm);
         Step("scheda Dischi");
         window.Tabs.SelectedIndex = MainViewModel.DisksTab;
         vm.RefreshDisksCommand.Execute(null);
