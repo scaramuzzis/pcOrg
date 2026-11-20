@@ -93,7 +93,10 @@ internal static class MftVolumeReader
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var n = (int)Math.Min(chunk, bytes);
+                var start = System.Diagnostics.Stopwatch.GetTimestamp();
                 ReadAt(stream, offset, buffer, n);
+                // Ogni blocco della MFT conta come una lettura del disco (scheda Dischi, risorse della scansione).
+                PcOrg.Core.Drives.DiskActivity.RecordFile(root, System.Diagnostics.Stopwatch.GetElapsedTime(start));
                 var usable = (int)Math.Min(n, remaining);
                 for (var i = 0; i + bytesPerRecord <= usable; i += bytesPerRecord)
                 {

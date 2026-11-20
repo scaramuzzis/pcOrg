@@ -512,6 +512,9 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
+    /// <summary>Sottocartelle oltre le quali la lettura della MFT conviene rispetto alla scansione normale.</summary>
+    private const int FastScanMinDirectories = 20_000;
+
     private async Task ScanRootsCoreAsync(IReadOnlyList<RootFolder> roots, bool full)
     {
 
@@ -541,11 +544,14 @@ public sealed partial class MainViewModel : ObservableObject
                 if (fullForRoot && !full)
                     Log.Info($"{root.Path}: disco senza date di cartella affidabili (FAT/exFAT), scansione completa.");
                 PcOrg.Core.Indexing.Ntfs.MftSnapshot? snapshot = null;
-                // La MFT descrive l'intero disco (anche milioni di file): conviene leggerla per la scansione completa
-                // o per la prima lettura di un disco intero, non per la prima lettura di una cartella piccola.
+                // La MFT descrive l'intero disco: leggerla costa centinaia di MB di lettura e di memoria anche per
+                // una cartella piccola (misurato: 1,3 GB per il disco C: di un PC di sviluppo). Conviene solo per un
+                // disco intero o per cartelle molto grandi, e solo quando si deve rileggere tutto.
                 var isVolumeRoot = Path.GetPathRoot(root.Path) is { } volumeRoot
                                    && string.Equals(volumeRoot.TrimEnd('\\'), root.Path.TrimEnd('\\'), StringComparison.OrdinalIgnoreCase);
-                if ((fullForRoot || (root.LastScanUtc is null && isVolumeRoot)) && _settings.FastNtfsScan && !root.IsNetwork
+                var rereadsEverything = fullForRoot || root.LastScanUtc is null;
+                if (rereadsEverything && _settings.FastNtfsScan && !root.IsNetwork
+                    && (isVolumeRoot || await Task.Run(() => _index.CountDirectories(root.Id), token) >= FastScanMinDirectories)
                     && PcOrg.Core.Platform.PlatformServices.Current.IsElevated)
                 {
                     var volume = PcOrg.Core.Drives.DiskActivity.VolumeOf(root.Path);
