@@ -477,6 +477,7 @@ public class Screenshots
     private static void Capture(Window window, string folder, string name)
     {
         Step("cattura " + name);
+        window.Activate(); // finestra attiva: bordo e barra del titolo sempre dello stesso colore
         window.UpdateLayout();
         Pump(300);
         var shot = TryPrintWindow(window);

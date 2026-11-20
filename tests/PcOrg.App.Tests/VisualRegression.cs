@@ -16,8 +16,12 @@ public class VisualRegression
     /// <summary>Un pixel è "diverso" se un canale cambia più di così (assorbe l'antialiasing del testo).</summary>
     public const int ChannelTolerance = 48;
 
-    /// <summary>Percentuale massima di pixel diversi: date e ore cambiano a ogni build.</summary>
-    public const double MaxDifferentPercent = 0.5;
+    /// <summary>
+    /// Percentuale massima di pixel diversi. Date e ore cambiano a ogni build (circa 0,3%); nel tema scuro le
+    /// barre di scorrimento di Windows compaiono e scompaiono da sole (circa 1%). Un difetto vero (una colonna
+    /// sparita, un pannello spostato) cambia molti più pixel.
+    /// </summary>
+    public const double MaxDifferentPercent = 1.5;
 
     /// <summary>
     /// Righe in fondo escluse dal confronto: su alcune macchine della build lo schermo è più basso della finestra

@@ -1,7 +1,7 @@
 # Screenshot di riferimento
 
 Qui stanno le schermate approvate. A ogni push la build su GitHub genera gli screenshot
-(ramo `screenshots`) e li confronta con questi: se una schermata cambia più dello 0,5 % dei pixel
+(ramo `screenshots`) e li confronta con questi: se una schermata cambia più dell'1,5 % dei pixel
 la build fallisce e l'artifact **confronto-screenshot** contiene il riepilogo e, per ogni schermata,
 un'immagine con i pixel cambiati in rosso.
 
