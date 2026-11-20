@@ -96,6 +96,8 @@ Gestione File tiene l'elenco aggiornato in tre modi, pensati per essere veloci a
 
 **2. Aggiornamento rapido (F5 e a ogni avvio).** Trova ciò che è cambiato mentre Gestione File era chiuso. Gestione File ricorda la data di modifica di ogni cartella: Windows la aggiorna quando nella cartella viene aggiunto, tolto o rinominato qualcosa. Le cartelle non cambiate non vengono rilette; si rileggono solo quelle cambiate e nell'indice si scrivono solo le differenze. Con 100.000 file in 1.000 cartelle, un aggiornamento senza modifiche richiede circa un centesimo di secondo.
 
+**Quando avviene.** All'avvio, pochi secondi dopo che compare la finestra, si aggiornano le **cartelle locali** (costano pochissimo). Le **cartelle di rete**, che su un NAS possono contenere molti GB e decine di migliaia di sottocartelle, si aggiornano solo quando è passato l'intervallo scelto in **Impostazioni → Generale → Aggiorna le cartelle di rete**: ogni 4, 8, 12, 24 (predefinito) o 36 ore, oppure *Solo quando premo F5*. Il controllo vale sia all'avvio sia mentre Gestione File resta aperto (ogni 10 minuti verifica se qualche cartella di rete è "scaduta"); se il NAS non risponde si riprova al giro successivo dell'intervallo. **F5** aggiorna sempre tutto subito.
+
 Su chiavette e schede di memoria formattate **FAT32 o exFAT** Windows non aggiorna la data delle cartelle: per quelle Gestione File esegue automaticamente la scansione completa, così non perde nessun file.
 
 **3. Scansione completa (Ctrl+F5 o File → Scansione completa).** Rilegge tutte le cartelle. Serve raramente: per esempio se un file è stato *modificato nel contenuto* (non aggiunto o rinominato) mentre Gestione File era chiuso, perché in quel caso la data della cartella non cambia.
@@ -403,7 +405,8 @@ Apri **Strumenti → Impostazioni** (o **Ctrl+,**). La finestra ha cinque schede
 
 - **Tema**: come Windows (segue il tema chiaro o scuro del sistema), chiaro oppure scuro.
 - **Rileva automaticamente file nuovi, modificati o eliminati**: mentre Gestione File è aperto ogni modifica viene registrata subito.
-- **Aggiornamento rapido a ogni avvio**: l'elenco salvato compare subito e in background vengono rilette solo le cartelle cambiate.
+- **Aggiornamento rapido delle cartelle locali a ogni avvio**: l'elenco salvato compare subito e in background vengono rilette solo le cartelle cambiate.
+- **Aggiorna le cartelle di rete**: ogni 4, 8, 12, 24 o 36 ore, oppure solo quando premi F5.
 - **Verifica le firme digitali**: garantisce che i programmi non siano stati modificati, ma legge ogni programma per intero; disattivala se l'aggiornamento è lento.
 - **Avvisa quando colleghi un disco o una chiavetta** (vedi [Dischi](#dischi)).
 - **Carico sul PC e sulla rete**: velocità di scansione per le cartelle di rete e per i dischi del PC (*Massima*, *Normale*, *Leggera*) e **scansione veloce NTFS** quando l'app è avviata come amministratore.

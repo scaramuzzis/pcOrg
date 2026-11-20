@@ -87,8 +87,14 @@ public sealed partial class MainViewModel : ObservableObject
         await Task.Delay(800);
         StartDriveWatcher();
         await RefreshInstalledAsync();
-        if (_scanOnStartup && Roots.Count > 0)
-            await ScanRootsAsync(Roots.Select(r => r.Root).ToList());
+        // Qualche secondo di respiro: l'utente vede subito l'elenco salvato e può già lavorare.
+        await Task.Delay(TimeSpan.FromSeconds(3));
+        // Cartelle locali a ogni avvio (se l'opzione è attiva); cartelle di rete solo se è passato l'intervallo scelto.
+        var automatic = _safeMode ? [] : RootsForAutomaticUpdate(includeLocal: _scanOnStartup);
+        if (!_safeMode)
+            StartNetworkSchedule();
+        if (automatic.Count > 0)
+            await ScanRootsAsync(automatic);
         else if (await Task.Run(() => _index.CountFilesNeedingMetadata() + (_settings.IndexContent ? _index.CountFilesNeedingContent() : 0)) > 0)
             await UpdateMetadataAsync(); // es. indice creato con una versione precedente
         if (_settings.CheckUpdatesOnStartup && !_safeMode)
@@ -566,7 +572,9 @@ public sealed partial class MainViewModel : ObservableObject
                         snapshots[volume] = snapshot;
                     }
                 }
-                var fastText = snapshot is null ? "" : " (lettura veloce NTFS)";
+                var fastText = snapshot is not null ? " (lettura veloce NTFS)"
+                    : fullForRoot && !full ? " (chiavetta o disco FAT/exFAT: Windows non segna le cartelle cambiate, si rilegge tutto)"
+                    : "";
                 var progress = new Progress<ScanResult>(p =>
                 {
                     ReportScanWork(total.DirectoriesVisited + p.DirectoriesVisited);
