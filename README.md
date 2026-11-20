@@ -5,7 +5,9 @@ sparsi nel PC. Scegli le cartelle da tenere sotto controllo; Gestione File le in
 per categoria e li trova all'istante mentre scrivi. Sei tu a decidere se e dove spostarli: prima
 vedi un'anteprima, e ogni spostamento si può annullare.
 
-## Cosa fa oggi (v1.7)
+## Cosa fa oggi (v1.7.1)
+- **Cloni (1.7.1)**: dopo la ricerca sono già segnate da eliminare le copie più vecchie (si tiene la più recente; a parità
+  di data di modifica decide la data di creazione); si eliminano esattamente le copie spuntate, mai tutte.
 - **Anteprima di video, audio, documenti e testo (1.7)**: fotogramma e riproduzione di video e brani nel pannello,
   prima pagina e inizio del testo di PDF e documenti Office, prime righe dei file di testo.
 - **Aggiornamento delle cartelle di rete programmato (1.6)**: all'avvio si aggiornano le cartelle locali; quelle di rete

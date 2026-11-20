@@ -219,8 +219,18 @@ public class UiSmokeTests
         vm.SelectedSizeOption = vm.SizeOptions[0];
         await_(vm.FindDuplicatesCommand.ExecuteAsync(null));
         Assert.Single(vm.DuplicateGroups);
-        vm.MarkDoublesCommand.Execute(null);
+        Assert.Equal(1, vm.MarkedCount); // dopo la ricerca le copie da eliminare sono già proposte
+        Assert.Equal(2, vm.DuplicateFiles.Count);
+        // L'utente sceglie l'altra copia: deve essere eliminata quella, non quella proposta.
+        var proposed = vm.DuplicateFiles.Single(i => i.IsMarked);
+        var chosen = vm.DuplicateFiles.Single(i => !i.IsMarked);
+        proposed.IsMarked = false;
+        chosen.IsMarked = true;
+        Assert.Equal("Da eliminare", chosen.State);
         Assert.Equal(1, vm.MarkedCount);
+        // Cambiare regola non deve toccare i segni messi a mano.
+        vm.SelectedKeepRule = vm.KeepRules.First(r => r.Rule == PcOrg.Core.Duplicates.KeepRule.PiuVecchio);
+        Assert.True(vm.DuplicateFiles.Single(i => i.File.Id == chosen.File.Id).IsMarked);
         var originalRecycle = PcOrg.Core.Moving.RecycleBin.SendToRecycleBin;
         PcOrg.Core.Moving.RecycleBin.SendToRecycleBin = path => { File.Delete(path); return true; };
         try
@@ -230,6 +240,8 @@ public class UiSmokeTests
             dialogs.ConfirmResult = false;
             Assert.Empty(vm.DuplicateGroups);
             Assert.Single(Directory.GetFiles(folder, "host-*.exe"));
+            Assert.False(File.Exists(chosen.File.Path));  // eliminata la copia scelta
+            Assert.True(File.Exists(proposed.File.Path)); // l'altra è rimasta
         }
         finally
         {

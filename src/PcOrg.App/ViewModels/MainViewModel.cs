@@ -64,7 +64,7 @@ public sealed partial class MainViewModel : ObservableObject
         ProductsView = CollectionViewSource.GetDefaultView(Products);
         ProductsView.Filter = FilterProduct;
         SelectedSizeOption = SizeOptions[1];
-        SelectedKeepRule = KeepRules[0];
+        SelectedKeepRule = KeepRules.First(r => r.Rule == PcOrg.Core.Duplicates.CleanupRules.DefaultRule);
         ReloadRoots();
         Fire(StartupAsync(), "avvio");
     }

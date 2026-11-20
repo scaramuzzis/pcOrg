@@ -318,15 +318,16 @@ Le impronte vengono ricordate: la ricerca successiva rilegge solo i file nuovi o
 
 **Scegliere cosa eliminare.**
 
-- Scegli una regola: **tieni la copia più vecchia** (di solito l'originale), **la più recente**, **quella con il percorso più corto** o **più lungo**;
-- premi **Segna i doppioni**: in tutti i gruppi vengono segnate le copie da eliminare, tranne quella da tenere (indicata come **Da tenere**);
-- puoi correggere a mano spuntando o togliendo la casella **Da eliminare** di ogni copia.
+- Appena finita la ricerca, in ogni gruppo sono già segnate le **copie più vecchie** da eliminare: si tiene la **più recente** (indicata come **Da tenere**, in verde), le altre sono indicate come **Da eliminare** (in rosso). Nulla viene eliminato finché non premi **Sposta nel Cestino** e confermi;
+- "più vecchia" e "più recente" guardano la data di modifica e, se è uguale (succede quasi sempre, perché copiando un file Windows mantiene la data di modifica dell'originale), la **data di creazione**: la copia fatta per ultima è la più recente;
+- puoi scegliere un'altra regola: **tieni la copia più recente** (predefinita), **la più vecchia**, **quella con il percorso più corto** o **più lungo**. I segni proposti si aggiornano subito;
+- puoi correggere a mano spuntando o togliendo la casella **Da eliminare** di ogni copia: da quel momento cambiare regola non tocca più i tuoi segni (per tornare alla proposta premi **Segna i doppioni**).
 
-Poi usa **Sposta nel Cestino** oppure **Sposta in…** (per esempio in una cartella "Doppioni" da controllare con calma).
+Vengono eliminate **esattamente le copie con la casella spuntata**. Poi usa **Sposta nel Cestino** oppure **Sposta in…** (per esempio in una cartella "Doppioni" da controllare con calma).
 
 > **Sicurezza.** Gestione File non permette di eliminare **tutte** le copie di un file: se in un gruppo le hai segnate tutte, te lo segnala e non procede. Prima di spostare nel Cestino controlla che ogni file esista ancora e non sia cambiato dall'ultimo aggiornamento. I file vanno nel **Cestino di Windows**, da cui puoi sempre ripristinarli.
 
-**Cestino anche dalle altre schede.** Nelle schede **File** e **Prodotti e versioni** puoi spostare nel Cestino i file selezionati con il tasto **Canc**, con il menu **Modifica → Sposta nel Cestino** o con il tasto destro. Utile, per esempio, dopo aver selezionato le **versioni vecchie** di un programma.
+**Cestino anche dalle altre schede.** Nelle schede **File** e **Prodotti e versioni** puoi spostare nel Cestino i file selezionati con il tasto **Canc**, con il menu **Modifica → Sposta nel Cestino** o con il tasto destro. Utile, per esempio, dopo aver selezionato le **versioni vecchie** di un programma. Anche così vale la regola di sicurezza: se tra i file selezionati ci sono tutte le copie di un clone, l'operazione viene fermata.
 
 ## Spostare i file
 
