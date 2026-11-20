@@ -53,6 +53,8 @@ public static class Glyphs
     public const string Edit = "\uE70F";
     public const string Lightbulb = "\uEA80";
     public const string Drive = "\uEDA2";
+    public const string Play = "\uE768";
+    public const string Stop = "\uE71A";
 
     public static string ForCategory(FileCategory? category) => category switch
     {

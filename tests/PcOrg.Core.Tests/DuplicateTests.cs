@@ -119,3 +119,73 @@ public class DuplicateTests
         }
     }
 }
+
+public class CleanupRulesTests
+{
+    private static Storage.FileRecord F(long id, string path, DateTime modified) =>
+        new(id, 1, path, Path.GetFileName(path), ".zip", Path.GetDirectoryName(path) ?? "", 100, modified, Classification.FileCategory.Archivio);
+
+    private static readonly DateTime Jan = new(2024, 1, 10, 8, 0, 0, DateTimeKind.Utc);
+    private static readonly DateTime Mar = new(2024, 3, 5, 8, 0, 0, DateTimeKind.Utc);
+
+    [Fact]
+    public void Di_norma_si_tiene_la_copia_piu_recente_e_si_eliminano_le_piu_vecchie()
+    {
+        Assert.Equal(KeepRule.PiuRecente, CleanupRules.DefaultRule);
+        Assert.Equal(KeepRule.PiuRecente, CleanupRules.Ordered[0]);
+        var group = new DuplicateGroup("h", 100, [F(1, @"C:\a\x.zip", Jan), F(2, @"C:\b\x.zip", Mar), F(3, @"C:\c\x.zip", Jan.AddDays(1))]);
+        Assert.Equal(2, CleanupRules.Keeper(group, CleanupRules.DefaultRule).Id);
+        Assert.Equal([1L, 3L], CleanupRules.Doubles([group], CleanupRules.DefaultRule).Select(f => f.Id).Order());
+        Assert.Equal(1, CleanupRules.Keeper(group, KeepRule.PiuVecchio).Id);
+    }
+
+    [Fact]
+    public void A_parita_di_data_di_modifica_decide_la_data_di_creazione()
+    {
+        // Copiando un file Windows mantiene la data di modifica: le copie hanno la stessa data.
+        var original = CleanupRules.CreationTime;
+        try
+        {
+            var created = new Dictionary<string, DateTime>
+            {
+                [@"C:\originale\x.zip"] = Jan,
+                [@"C:\copia\x.zip"] = Mar, // creata dopo: è la copia più recente
+            };
+            CleanupRules.CreationTime = p => created.TryGetValue(p, out var d) ? d : null;
+            var group = new DuplicateGroup("h", 100, [F(1, @"C:\copia\x.zip", Jan), F(2, @"C:\originale\x.zip", Jan)]);
+            Assert.Equal(1, CleanupRules.Keeper(group, KeepRule.PiuRecente).Id);
+            Assert.Equal(2, CleanupRules.Keeper(group, KeepRule.PiuVecchio).Id);
+            Assert.Equal(2, Assert.Single(CleanupRules.Doubles([group], KeepRule.PiuRecente)).Id); // si elimina l'originale più vecchio
+        }
+        finally
+        {
+            CleanupRules.CreationTime = original;
+        }
+    }
+
+    [Fact]
+    public void Senza_date_distinte_la_scelta_e_comunque_stabile()
+    {
+        var original = CleanupRules.CreationTime;
+        try
+        {
+            CleanupRules.CreationTime = _ => null;
+            var a = F(1, @"C:\uno\due\x.zip", Jan);
+            var b = F(2, @"C:\uno\x.zip", Jan);
+            Assert.Equal(2, CleanupRules.Keeper(new DuplicateGroup("h", 100, [a, b]), KeepRule.PiuRecente).Id);
+            Assert.Equal(2, CleanupRules.Keeper(new DuplicateGroup("h", 100, [b, a]), KeepRule.PiuRecente).Id); // ordine indifferente
+        }
+        finally
+        {
+            CleanupRules.CreationTime = original;
+        }
+    }
+
+    [Fact]
+    public void Non_si_eliminano_mai_tutte_le_copie()
+    {
+        var group = new DuplicateGroup("h", 100, [F(1, @"C:\a\x.zip", Jan), F(2, @"C:\b\x.zip", Mar)]);
+        Assert.Single(CleanupRules.GroupsLosingAllCopies([group], new HashSet<long> { 1, 2 }));
+        Assert.Empty(CleanupRules.GroupsLosingAllCopies([group], new HashSet<long> { 1 }));
+    }
+}

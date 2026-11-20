@@ -96,6 +96,8 @@ Gestione File tiene l'elenco aggiornato in tre modi, pensati per essere veloci a
 
 **2. Aggiornamento rapido (F5 e a ogni avvio).** Trova ciò che è cambiato mentre Gestione File era chiuso. Gestione File ricorda la data di modifica di ogni cartella: Windows la aggiorna quando nella cartella viene aggiunto, tolto o rinominato qualcosa. Le cartelle non cambiate non vengono rilette; si rileggono solo quelle cambiate e nell'indice si scrivono solo le differenze. Con 100.000 file in 1.000 cartelle, un aggiornamento senza modifiche richiede circa un centesimo di secondo.
 
+**Quando avviene.** All'avvio, pochi secondi dopo che compare la finestra, si aggiornano le **cartelle locali** (costano pochissimo). Le **cartelle di rete**, che su un NAS possono contenere molti GB e decine di migliaia di sottocartelle, si aggiornano solo quando è passato l'intervallo scelto in **Impostazioni → Generale → Aggiorna le cartelle di rete**: ogni 4, 8, 12, 24 (predefinito) o 36 ore, oppure *Solo quando premo F5*. Il controllo vale sia all'avvio sia mentre Gestione File resta aperto (ogni 10 minuti verifica se qualche cartella di rete è "scaduta"); se il NAS non risponde si riprova al giro successivo dell'intervallo. **F5** aggiorna sempre tutto subito.
+
 Su chiavette e schede di memoria formattate **FAT32 o exFAT** Windows non aggiorna la data delle cartelle: per quelle Gestione File esegue automaticamente la scansione completa, così non perde nessun file.
 
 **3. Scansione completa (Ctrl+F5 o File → Scansione completa).** Rilegge tutte le cartelle. Serve raramente: per esempio se un file è stato *modificato nel contenuto* (non aggiunto o rinominato) mentre Gestione File era chiuso, perché in quel caso la data della cartella non cambia.
@@ -207,13 +209,17 @@ Seleziona uno o più file e usa **Etichette…** (scheda File), il tasto destro,
 - **Seguono il file** quando lo sposti con Gestione File e restano anche se ricostruisci l'indice.
 - Per toglierle, lascia vuoti i campi.
 
-## Anteprima delle immagini
+## Anteprima
 
-Quando selezioni una foto o un'immagine, a destra dell'elenco compare il pannello **Anteprima** con l'immagine, le dimensioni in pixel e il peso del file. Con un doppio clic (o **Invio**) l'immagine si apre nel visualizzatore di Windows.
+Selezionando un file, il pannello **Anteprima** a destra mostra:
 
-I formati supportati sono JPG, PNG, GIF, BMP, TIFF e ICO. Per **HEIC** (le foto dell'iPhone), **WebP** e **AVIF** serve l'estensione gratuita di Microsoft dallo Store: se manca, il pannello lo indica.
+- **foto e immagini** (JPG, PNG, GIF, BMP, TIFF, ICO; WebP, HEIC e AVIF con le estensioni gratuite di Microsoft), con le dimensioni in pixel;
+- **video e audio**: il fotogramma o la copertina come in Esplora risorse e il pulsante **Riproduci**, che li riproduce direttamente nel pannello (**Ferma** per interrompere). Si riproducono i formati che Windows sa leggere; per alcuni (es. MKV) serve il codec;
+- **PDF, Word, Excel, PowerPoint e OpenDocument**: la miniatura della prima pagina, se Windows ne ha una (dipende dai programmi installati), e l'**inizio del testo**;
+- **file di testo** (txt, log, csv, json, xml, ini, script, file .rdp…): le prime righe;
+- **altri formati** di cui Windows fornisce una miniatura.
 
-Il pannello si può nascondere da **Visualizza → Pannello anteprima immagini**.
+I file **disponibili solo online** (OneDrive) non vengono aperti, per non scaricarli. Per programmi, archivi e immagini disco il pannello non compare. Il pannello si nasconde da **Visualizza → Pannello anteprima**.
 
 ## Prodotti e versioni
 
@@ -312,15 +318,16 @@ Le impronte vengono ricordate: la ricerca successiva rilegge solo i file nuovi o
 
 **Scegliere cosa eliminare.**
 
-- Scegli una regola: **tieni la copia più vecchia** (di solito l'originale), **la più recente**, **quella con il percorso più corto** o **più lungo**;
-- premi **Segna i doppioni**: in tutti i gruppi vengono segnate le copie da eliminare, tranne quella da tenere (indicata come **Da tenere**);
-- puoi correggere a mano spuntando o togliendo la casella **Da eliminare** di ogni copia.
+- Appena finita la ricerca, in ogni gruppo sono già segnate le **copie più vecchie** da eliminare: si tiene la **più recente** (indicata come **Da tenere**, in verde), le altre sono indicate come **Da eliminare** (in rosso). Nulla viene eliminato finché non premi **Sposta nel Cestino** e confermi;
+- "più vecchia" e "più recente" guardano la data di modifica e, se è uguale (succede quasi sempre, perché copiando un file Windows mantiene la data di modifica dell'originale), la **data di creazione**: la copia fatta per ultima è la più recente;
+- puoi scegliere un'altra regola: **tieni la copia più recente** (predefinita), **la più vecchia**, **quella con il percorso più corto** o **più lungo**. I segni proposti si aggiornano subito;
+- puoi correggere a mano spuntando o togliendo la casella **Da eliminare** di ogni copia: da quel momento cambiare regola non tocca più i tuoi segni (per tornare alla proposta premi **Segna i doppioni**).
 
-Poi usa **Sposta nel Cestino** oppure **Sposta in…** (per esempio in una cartella "Doppioni" da controllare con calma).
+Vengono eliminate **esattamente le copie con la casella spuntata**. Poi usa **Sposta nel Cestino** oppure **Sposta in…** (per esempio in una cartella "Doppioni" da controllare con calma).
 
 > **Sicurezza.** Gestione File non permette di eliminare **tutte** le copie di un file: se in un gruppo le hai segnate tutte, te lo segnala e non procede. Prima di spostare nel Cestino controlla che ogni file esista ancora e non sia cambiato dall'ultimo aggiornamento. I file vanno nel **Cestino di Windows**, da cui puoi sempre ripristinarli.
 
-**Cestino anche dalle altre schede.** Nelle schede **File** e **Prodotti e versioni** puoi spostare nel Cestino i file selezionati con il tasto **Canc**, con il menu **Modifica → Sposta nel Cestino** o con il tasto destro. Utile, per esempio, dopo aver selezionato le **versioni vecchie** di un programma.
+**Cestino anche dalle altre schede.** Nelle schede **File** e **Prodotti e versioni** puoi spostare nel Cestino i file selezionati con il tasto **Canc**, con il menu **Modifica → Sposta nel Cestino** o con il tasto destro. Utile, per esempio, dopo aver selezionato le **versioni vecchie** di un programma. Anche così vale la regola di sicurezza: se tra i file selezionati ci sono tutte le copie di un clone, l'operazione viene fermata.
 
 ## Spostare i file
 
@@ -403,7 +410,8 @@ Apri **Strumenti → Impostazioni** (o **Ctrl+,**). La finestra ha cinque schede
 
 - **Tema**: come Windows (segue il tema chiaro o scuro del sistema), chiaro oppure scuro.
 - **Rileva automaticamente file nuovi, modificati o eliminati**: mentre Gestione File è aperto ogni modifica viene registrata subito.
-- **Aggiornamento rapido a ogni avvio**: l'elenco salvato compare subito e in background vengono rilette solo le cartelle cambiate.
+- **Aggiornamento rapido delle cartelle locali a ogni avvio**: l'elenco salvato compare subito e in background vengono rilette solo le cartelle cambiate.
+- **Aggiorna le cartelle di rete**: ogni 4, 8, 12, 24 o 36 ore, oppure solo quando premi F5.
 - **Verifica le firme digitali**: garantisce che i programmi non siano stati modificati, ma legge ogni programma per intero; disattivala se l'aggiornamento è lento.
 - **Avvisa quando colleghi un disco o una chiavetta** (vedi [Dischi](#dischi)).
 - **Carico sul PC e sulla rete**: velocità di scansione per le cartelle di rete e per i dischi del PC (*Massima*, *Normale*, *Leggera*) e **scansione veloce NTFS** quando l'app è avviata come amministratore.

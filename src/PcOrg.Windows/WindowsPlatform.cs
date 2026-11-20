@@ -426,6 +426,8 @@ public sealed class WindowsPlatform : IPlatformServices
         }
     }
 
+    public ThumbnailImage? GetThumbnail(string path, int size) => ShellThumbnail.Get(path, size);
+
     public (long Read, long Written)? ProcessIoCounters() =>
         GetProcessIoCounters(GetCurrentProcess(), out var io) ? ((long)io.ReadTransferCount, (long)io.WriteTransferCount) : null;
 

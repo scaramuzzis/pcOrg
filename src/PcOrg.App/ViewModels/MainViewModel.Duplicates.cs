@@ -19,9 +19,11 @@ public sealed partial class DuplicateFileItem(FileRecord file, bool isKeeper, Ac
     /// <summary>La copia che la regola scelta suggerisce di tenere.</summary>
     public bool IsKeeper { get; } = isKeeper;
 
-    public string State => IsKeeper ? "Da tenere" : "Copia";
+    /// <summary>Stato mostrato: quello che succederà premendo "Sposta nel Cestino".</summary>
+    public string State => IsMarked ? "Da eliminare" : IsKeeper ? "Da tenere" : "Resta";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(State))]
     private bool _isMarked;
 
     partial void OnIsMarkedChanged(bool value) => onMarkChanged(this);
@@ -51,7 +53,13 @@ public sealed partial class MainViewModel
     ];
 
     public IReadOnlyList<KeepRuleOption> KeepRules { get; } =
-        Enum.GetValues<KeepRule>().Select(r => new KeepRuleOption(r, CleanupRules.Describe(r))).ToList();
+        CleanupRules.Ordered.Select(r => new KeepRuleOption(r, CleanupRules.Describe(r))).ToList();
+
+    /// <summary>
+    /// Vero se i segni sono quelli proposti dalla regola (non modificati a mano): cambiando regola si aggiornano.
+    /// Se l'utente ha tolto o messo dei segni a mano, cambiare regola non li tocca.
+    /// </summary>
+    private bool _marksFollowRule;
 
     [ObservableProperty]
     private SizeOption? _selectedSizeOption;
@@ -75,11 +83,20 @@ public sealed partial class MainViewModel
     [ObservableProperty]
     private string _markedSummary = "Nessun file segnato";
 
-    private KeepRule CurrentRule => SelectedKeepRule?.Rule ?? KeepRule.PiuVecchio;
+    private KeepRule CurrentRule => SelectedKeepRule?.Rule ?? CleanupRules.DefaultRule;
 
     partial void OnSelectedDuplicateGroupChanged(DuplicateGroup? value) => ShowGroupFiles(value);
 
-    partial void OnSelectedKeepRuleChanged(KeepRuleOption? value) => ShowGroupFiles(SelectedDuplicateGroup);
+    partial void OnSelectedKeepRuleChanged(KeepRuleOption? value)
+    {
+        if (_marksFollowRule && _marked.Count > 0)
+            MarkDoubles(); // i segni proposti seguono la nuova regola
+        else
+            ShowGroupFiles(SelectedDuplicateGroup);
+    }
+
+    /// <summary>Durante il ridisegno dell'elenco le caselle cambiano senza che sia l'utente a toccarle.</summary>
+    private bool _showingGroupFiles;
 
     private void ShowGroupFiles(DuplicateGroup? group)
     {
@@ -87,12 +104,22 @@ public sealed partial class MainViewModel
         if (group is null)
             return;
         var keeper = CleanupRules.Keeper(group, CurrentRule);
-        foreach (var file in group.Files)
-            DuplicateFiles.Add(new DuplicateFileItem(file, file.Id == keeper.Id, OnMarkChanged) { IsMarked = _marked.Contains(file.Id) });
+        _showingGroupFiles = true;
+        try
+        {
+            foreach (var file in group.Files.OrderByDescending(f => f.Id == keeper.Id))
+                DuplicateFiles.Add(new DuplicateFileItem(file, file.Id == keeper.Id, OnMarkChanged) { IsMarked = _marked.Contains(file.Id) });
+        }
+        finally
+        {
+            _showingGroupFiles = false;
+        }
     }
 
     private void OnMarkChanged(DuplicateFileItem item)
     {
+        if (!_showingGroupFiles)
+            _marksFollowRule = false; // segno messo o tolto a mano
         if (item.IsMarked)
             _marked.Add(item.File.Id);
         else
@@ -126,6 +153,10 @@ public sealed partial class MainViewModel
             });
             var groups = await Task.Run(() => DuplicateFinder.Find(_index, options, progress, token), token);
             ShowDuplicateGroups(groups);
+            // Si propongono subito le copie da eliminare secondo la regola (di norma le più vecchie):
+            // niente viene eliminato finché non si preme "Sposta nel Cestino" e si conferma.
+            if (groups.Count > 0)
+                MarkDoubles();
             var wasted = groups.Sum(g => g.WastedBytes);
             Status = $"Ricerca dei cloni completata in {stopwatch.Elapsed.TotalSeconds:N1} s";
             ShowToast(groups.Count == 0
@@ -168,6 +199,7 @@ public sealed partial class MainViewModel
         _marked.Clear();
         foreach (var file in CleanupRules.Doubles(DuplicateGroups, CurrentRule))
             _marked.Add(file.Id);
+        _marksFollowRule = true;
         ShowGroupFiles(SelectedDuplicateGroup);
         UpdateMarkedSummary();
     }
@@ -175,6 +207,7 @@ public sealed partial class MainViewModel
     [RelayCommand]
     private void ClearMarks()
     {
+        _marksFollowRule = false;
         _marked.Clear();
         ShowGroupFiles(SelectedDuplicateGroup);
         UpdateMarkedSummary();
@@ -231,7 +264,25 @@ public sealed partial class MainViewModel
             ShowToast("Seleziona prima uno o più file", ToastKind.Info);
             return;
         }
-        await RecycleAsync(files);
+        // Nella scheda Cloni lo stesso controllo del pulsante: mai eliminare tutte le copie di un file.
+        var ids = files.Select(f => f.Id).ToHashSet();
+        var losing = CleanupRules.GroupsLosingAllCopies(DuplicateGroups, ids);
+        if (losing.Count > 0)
+        {
+            _dialogs.Error(
+                $"Hai selezionato tutte le copie di \"{losing[0].Name}\": così il file andrebbe perso.\n\n" +
+                "Lascia almeno una copia, oppure usa le caselle \"Da eliminare\" e il pulsante \"Sposta nel Cestino\".",
+                "Resterebbe senza nessuna copia");
+            return;
+        }
+        if (await RecycleAsync(files) && DuplicateGroups.Count > 0)
+        {
+            _marked.ExceptWith(ids);
+            ShowDuplicateGroups(DuplicateGroups
+                .Select(g => g with { Files = g.Files.Where(f => !ids.Contains(f.Id)).ToList() })
+                .Where(g => g.Files.Count > 1)
+                .ToList());
+        }
     }
 
     /// <summary>Chiede conferma e sposta i file nel Cestino di Windows; restituisce true se l'operazione è avvenuta.</summary>

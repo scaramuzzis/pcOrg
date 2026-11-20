@@ -70,6 +70,10 @@ public partial class SettingsWindow : Window
         IndexContent.IsChecked = settings.IndexContent;
         CheckUpdates.IsChecked = settings.CheckUpdatesOnStartup;
         NotifyNewDisks.IsChecked = settings.NotifyNewDisks;
+        foreach (var hours in MainViewModel.NetworkUpdateChoices)
+            NetworkUpdateChooser.Items.Add(new ComboBoxItem { Content = MainViewModel.DescribeNetworkInterval(hours), Tag = hours });
+        NetworkUpdateChooser.SelectedItem = NetworkUpdateChooser.Items.OfType<ComboBoxItem>().FirstOrDefault(i => (int)i.Tag == settings.NetworkUpdateHours)
+                                            ?? NetworkUpdateChooser.Items.OfType<ComboBoxItem>().First(i => (int)i.Tag == 24);
         FastNtfsScan.IsChecked = settings.FastNtfsScan;
         NetworkDetailsOnDemand.IsChecked = settings.NetworkDetailsOnDemand;
         SelectSpeed(NetworkSpeedChooser, settings.NetworkScanSpeed);
@@ -302,7 +306,8 @@ public partial class SettingsWindow : Window
             NetworkScanSpeed: SelectedSpeed(NetworkSpeedChooser, ScanSpeed.Normale),
             NotifyNewDisks: NotifyNewDisks.IsChecked == true,
             FastNtfsScan: FastNtfsScan.IsChecked == true,
-            NetworkDetailsOnDemand: NetworkDetailsOnDemand.IsChecked == true));
+            NetworkDetailsOnDemand: NetworkDetailsOnDemand.IsChecked == true,
+            NetworkUpdateHours: (NetworkUpdateChooser.SelectedItem as ComboBoxItem)?.Tag as int? ?? 24));
         _main.SaveLayout();
         DialogResult = true;
     }

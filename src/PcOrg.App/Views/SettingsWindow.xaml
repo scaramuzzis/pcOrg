@@ -40,9 +40,16 @@
                         <CheckBox x:Name="WatchFolders" Content="Rileva automaticamente file nuovi, modificati o eliminati (consigliato)" />
                         <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="28,2,0,12"
                                    Text="Mentre Gestione File è aperto, ogni file che scarichi, sposti o elimini nelle cartelle monitorate viene registrato subito, senza ripetere la scansione." />
-                        <CheckBox x:Name="ScanOnStartup" Content="Aggiornamento rapido delle cartelle a ogni avvio" />
+                        <CheckBox x:Name="ScanOnStartup" Content="Aggiornamento rapido delle cartelle locali a ogni avvio" />
                         <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="28,2,0,12"
                                    Text="Trova ciò che è cambiato mentre Gestione File era chiuso. È rapido anche con milioni di file: rilegge solo le cartelle in cui qualcosa è stato aggiunto, tolto o rinominato. Per un controllo totale usa File → Scansione completa (Ctrl+F5)." />
+                        <DockPanel Margin="0,0,0,2">
+                            <TextBlock Text="Aggiorna le cartelle di rete:" VerticalAlignment="Center" Margin="0,0,10,0" />
+                            <ComboBox x:Name="NetworkUpdateChooser" MinWidth="260" HorizontalAlignment="Left"
+                                      AutomationProperties.Name="Ogni quanto aggiornare le cartelle di rete" />
+                        </DockPanel>
+                        <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="0,2,0,12"
+                                   Text="Le cartelle di rete (anche molti GB su un NAS) vengono aggiornate all'avvio e mentre Gestione File è aperto solo quando è passato questo tempo dall'ultimo aggiornamento; le cartelle locali a ogni avvio. Con &quot;Solo quando premo F5&quot; si aggiornano solo a mano." />
                         <CheckBox x:Name="IndexContent" Content="Leggi il contenuto di documenti e archivi, per poterli cercare" />
                         <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="28,2,0,12"
                                    Text="Indicizza il testo di PDF, Word, PowerPoint, Excel e file di testo, e l'elenco dei file dentro ZIP e ISO. Serve al pulsante &quot;Nel contenuto&quot; della ricerca. Solo cartelle locali; la prima volta può richiedere qualche minuto." />

@@ -79,6 +79,12 @@ public sealed class AppSettings
     public bool NotifyNewDisks { get; set; } = true;
 
     /// <summary>
+    /// Ogni quante ore aggiornare automaticamente le cartelle di rete (all'avvio e mentre l'app è aperta);
+    /// 0 = solo quando l'utente preme F5. Le cartelle locali si aggiornano a ogni avvio.
+    /// </summary>
+    public int NetworkUpdateHours { get; set; } = 24;
+
+    /// <summary>
     /// Cartelle di rete: versioni e firme di programmi e installer si leggono solo quando selezioni il file,
     /// non in background durante la scansione (carico minimo sul NAS; Prodotti e Driver si riempiono man mano).
     /// </summary>
